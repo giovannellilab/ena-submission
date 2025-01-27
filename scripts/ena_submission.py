@@ -4,6 +4,8 @@ import argparse
 
 import pandas as pd
 
+import subprocess
+
 
 def read_input(input_file: str) -> pd.DataFrame:
 
@@ -28,7 +30,7 @@ def read_input(input_file: str) -> pd.DataFrame:
 def create_template(
     input_file: str,
     template_file: str
-) -> None:
+) -> str:
 
     project_df = read_input(input_file)
 
@@ -75,11 +77,53 @@ def create_template(
     with open(output_path, mode="w") as handle:
         handle.write(samples_all)
 
-    return None
+    return output_path
+
+
+def register_sample(
+    sample_xml: str,
+    template_file: str,
+    user_password
+) -> None:
+
+    # Define input XML files
+    submission_xml = os.path.join(
+        os.path.dirname(template_file),
+        "submission.xml"
+    )
+
+    # WARNING: project name is assumed to be in the first field of the path
+    project_name = os.path.basename(sample_xml).split("_")[0]
+    output_file = os.path.join(
+        os.path.dirname(sample_xml),
+        f"{project_name}_ena_samples_receipt.xml"
+    )
+
+    # Build the command
+
+    command = [
+        "curl",
+        "-u", user_password,
+        "-F", f"SUBMISSION=@{submission_xml}", 
+        "-F", f"SAMPLE=@{sample_xml}",
+        "-F", "LAUNCH=YES",
+        "-o", output_file,
+        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+    ]
+
+    print(command)
+
+    # # Execute the command
+    # try:
+    #     subprocess.run(command, check=True, text=True)
+    #     print(f"Response successfully written to {output_file}")
+    # except subprocess.CalledProcessError as e:
+    #     print(f"Error:", {e.stderr})
 
 
 if __name__ == "__main__":
 
+    
     parser = argparse.ArgumentParser("preprocess_sequences")
     parser.add_argument(
         "-i", "--input_file",
@@ -91,9 +135,20 @@ if __name__ == "__main__":
         help="Template file for creating the XML for submission.",
         type=str
     )
+    parser.add_argument(
+        "-u", "--user_password",
+        help="User and password for the submission (e.g. user1:password1234).",
+        type=str
+    )
     args = parser.parse_args()
 
-    create_template(
+    sample_xml = create_template(
         input_file=args.input_file,
         template_file=args.template_file
+    )
+
+    register_sample(
+        sample_xml=sample_xml,
+        template_file=args.template_file,
+        user_password=args.user_password
     )
