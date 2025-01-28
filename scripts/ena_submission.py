@@ -9,22 +9,22 @@ import subprocess
 
 def load_metadata(input_file: str) -> pd.DataFrame:
 
-    project_df = pd.read_excel(
+    metadata_df = pd.read_excel(
         input_file,
         sheet_name="sample_submission"
     )
 
     # Drop first and last empty rows
-    project_df = project_df\
+    metadata_df = metadata_df\
         .iloc[1:]\
         .dropna(subset=["sample_alias"])
 
     # Remove time from the date
-    project_df["collection date"] = \
-        pd.to_datetime(project_df["collection date"])\
+    metadata_df["collection date"] = \
+        pd.to_datetime(metadata_df["collection date"])\
         .dt.strftime("%Y-%m-%d")
 
-    return project_df
+    return metadata_df
 
 
 def create_samples_file(
@@ -32,12 +32,12 @@ def create_samples_file(
     template_file: str
 ) -> str:
 
-    project_df = load_metadata(input_file)
+    metadata_df = load_metadata(input_file)
 
     samples_all = []
 
     # Create a template for each sample
-    for _, row in project_df.iterrows():
+    for _, row in metadata_df.iterrows():
 
         # Avoid errors while formatting numbers
         row = row.astype(str)
