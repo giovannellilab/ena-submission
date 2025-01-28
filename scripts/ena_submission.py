@@ -143,7 +143,7 @@ def parse_samples_receipt(
         alias = sample.get("alias")
         title = sample.get("accession")
         ext_id_element = sample.find("EXT_ID")
-        exit_id = ext_id_element.get("accession")
+        ext_id = ext_id_element.get("accession")
 
         study_id = metadata_df[metadata_df["sample_alias"] == alias]\
             ["project name"]\
@@ -153,7 +153,7 @@ def parse_samples_receipt(
             "project_id": study_id,
             "sample_alias": alias,
             "sample_accession": title,
-            "biosample_id": exit_id
+            "biosample_id": ext_id
         }).to_frame().T
 
         data_df.append(row)
