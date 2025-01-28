@@ -4,6 +4,8 @@ import argparse
 
 import pandas as pd
 
+import bs4 as bs
+
 import subprocess
 
 
@@ -110,15 +112,53 @@ def register_samples(
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
-    # Execute the command
-    try:
-        subprocess.run(command, check=True, text=True)
-        print(f"Response successfully written to {output_path}")
+    # # Execute the command
+    # try:
+    #     subprocess.run(command, check=True, text=True)
+    #     print(f"Response successfully written to {output_path}")
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error:", {e.stderr})
+    # except subprocess.CalledProcessError as e:
+    #     print(f"Error:", {e.stderr})
 
     return output_path
+
+
+def parse_samples_receipt(
+    receipt_path: str,
+    metadata_path: str
+) -> pd.DataFrame:
+
+    # Programmatically assign study ID
+    metadata_df = load_metadata(metadata_path)
+
+    # Load receipt
+    with open(receipt_path, mode="r") as handle:
+        xml_data = bs.BeautifulSoup(handle, "xml")
+
+    data_df = []
+    samples = xml_data.find_all("SAMPLE")
+
+    for sample in samples:
+
+        alias = sample.get("alias")
+        title = sample.get("accession")
+        ext_id_element = sample.find("EXT_ID")
+        exit_id = ext_id_element.get("accession")
+
+        study_id = metadata_df[metadata_df["sample_alias"] == alias]\
+            ["project name"]\
+            .values[0]
+
+        row = pd.Series({
+            "project_id": study_id,
+            "sample_alias": alias,
+            "sample_accession": title,
+            "biosample_id": exit_id
+        }).to_frame().T
+
+        data_df.append(row)
+
+    return pd.concat(data_df)
 
 
 if __name__ == "__main__":
@@ -150,4 +190,9 @@ if __name__ == "__main__":
         samples_path=samples_path,
         template_path=args.template_path,
         user_password=args.user_password
+    )
+
+    receipt_df = parse_samples_receipt(
+        receipt_path=receipt_path,
+        metadata_path=args.metadata_path
     )
