@@ -83,8 +83,8 @@ def create_samples_file(
 def register_samples(
     samples_path: str,
     template_path: str,
-    user_password
-) -> None:
+    user_password: str
+) -> str:
 
     # Define input XML files
     submission_path = os.path.join(
@@ -100,7 +100,6 @@ def register_samples(
     )
 
     # Build the command
-
     command = [
         "curl",
         "-u", user_password,
@@ -118,6 +117,8 @@ def register_samples(
 
     except subprocess.CalledProcessError as e:
         print(f"Error:", {e.stderr})
+
+    return output_path
 
 
 if __name__ == "__main__":
@@ -145,7 +146,7 @@ if __name__ == "__main__":
         template_path=args.template_path
     )
 
-    register_samples(
+    receipt_path = register_samples(
         samples_path=samples_path,
         template_path=args.template_path,
         user_password=args.user_password
