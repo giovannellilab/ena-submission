@@ -141,9 +141,8 @@ def parse_samples_receipt(
         xml_data = bs.BeautifulSoup(handle, "xml")
 
     data_df = []
-    samples = xml_data.find_all("SAMPLE")
 
-    for sample in samples:
+    for sample in xml_data.find_all("SAMPLE"):
 
         alias = sample.get("alias")
         title = sample.get("accession")
