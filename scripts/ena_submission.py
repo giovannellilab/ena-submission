@@ -80,7 +80,7 @@ def create_samples_file(
     return output_path
 
 
-def register_sample(
+def register_samples(
     sample_xml: str,
     template_file: str,
     user_password
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         template_file=args.template_file
     )
 
-    register_sample(
+    register_samples(
         sample_xml=sample_xml,
         template_file=args.template_file,
         user_password=args.user_password
