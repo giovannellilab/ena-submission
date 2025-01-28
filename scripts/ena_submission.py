@@ -7,10 +7,10 @@ import pandas as pd
 import subprocess
 
 
-def load_metadata(input_file: str) -> pd.DataFrame:
+def load_metadata(input_path: str) -> pd.DataFrame:
 
     metadata_df = pd.read_excel(
-        input_file,
+        input_path,
         sheet_name="sample_submission"
     )
 
@@ -28,11 +28,11 @@ def load_metadata(input_file: str) -> pd.DataFrame:
 
 
 def create_samples_file(
-    input_file: str,
-    template_file: str
+    input_path: str,
+    template_path: str
 ) -> str:
 
-    metadata_df = load_metadata(input_file)
+    metadata_df = load_metadata(input_path)
 
     samples_all = []
 
@@ -42,7 +42,7 @@ def create_samples_file(
         # Avoid errors while formatting numbers
         row = row.astype(str)
 
-        with open(template_file, mode="r") as handle:
+        with open(template_path, mode="r") as handle:
             template_xml = handle.read()
 
         template_xml = template_xml\
@@ -69,9 +69,9 @@ def create_samples_file(
         "</SAMPLE_SET>" + "\n"
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(input_file).split("_")[0]
+    project_name = os.path.basename(input_path).split("_")[0]
     output_path = os.path.join(
-        os.path.dirname(input_file),
+        os.path.dirname(input_path),
         f"{project_name}_ena_samples.xml"
     )
     with open(output_path, mode="w") as handle:
@@ -82,19 +82,19 @@ def create_samples_file(
 
 def register_samples(
     samples_xml: str,
-    template_file: str,
+    template_path: str,
     user_password
 ) -> None:
 
     # Define input XML files
     submission_xml = os.path.join(
-        os.path.dirname(template_file),
+        os.path.dirname(template_path),
         "submission.xml"
     )
 
     # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(samples_xml).split("_")[0]
-    output_file = os.path.join(
+    output_path = os.path.join(
         os.path.dirname(samples_xml),
         f"{project_name}_ena_samples_receipt.xml"
     )
@@ -107,14 +107,14 @@ def register_samples(
         "-F", f"SUBMISSION=@{submission_xml}", 
         "-F", f"SAMPLE=@{samples_xml}",
         "-F", "LAUNCH=YES",
-        "-o", output_file,
+        "-o", output_path,
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
     # Execute the command
     try:
         subprocess.run(command, check=True, text=True)
-        print(f"Response successfully written to {output_file}")
+        print(f"Response successfully written to {output_path}")
 
     except subprocess.CalledProcessError as e:
         print(f"Error:", {e.stderr})
@@ -124,12 +124,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("preprocess_sequences")
     parser.add_argument(
-        "-i", "--input_file",
+        "-i", "--input_path",
         help="Excel file containing the metadata for the sequences.",
         type=str
     )
     parser.add_argument(
-        "-t", "--template_file",
+        "-t", "--template_path",
         help="Template file for creating the XML for submission.",
         type=str
     )
@@ -141,12 +141,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     samples_xml = create_samples_file(
-        input_file=args.input_file,
-        template_file=args.template_file
+        input_path=args.input_path,
+        template_path=args.template_path
     )
 
     register_samples(
         samples_xml=samples_xml,
-        template_file=args.template_file,
+        template_path=args.template_path,
         user_password=args.user_password
     )
