@@ -111,14 +111,12 @@ def register_sample(
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
-    print(command)
-
-    # # Execute the command
-    # try:
-    #     subprocess.run(command, check=True, text=True)
-    #     print(f"Response successfully written to {output_file}")
-    # except subprocess.CalledProcessError as e:
-    #     print(f"Error:", {e.stderr})
+    # Execute the command
+    try:
+        subprocess.run(command, check=True, text=True)
+        print(f"Response successfully written to {output_file}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error:", {e.stderr})
 
 
 if __name__ == "__main__":
