@@ -38,7 +38,7 @@ def create_samples_file(
 
     template_path = os.path.join(
         template_dir,
-        "ena_sample_template.xml"
+        "samples.xml"
     )
 
     samples_all = []
