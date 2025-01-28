@@ -27,7 +27,7 @@ def load_metadata(input_file: str) -> pd.DataFrame:
     return project_df
 
 
-def create_template(
+def create_samples_file(
     input_file: str,
     template_file: str
 ) -> str:
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    sample_xml = create_template(
+    sample_xml = create_samples_file(
         input_file=args.input_file,
         template_file=args.template_file
     )
