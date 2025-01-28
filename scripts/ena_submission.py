@@ -81,21 +81,21 @@ def create_samples_file(
 
 
 def register_samples(
-    samples_xml: str,
+    samples_path: str,
     template_path: str,
     user_password
 ) -> None:
 
     # Define input XML files
-    submission_xml = os.path.join(
+    submission_path = os.path.join(
         os.path.dirname(template_path),
         "submission.xml"
     )
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(samples_xml).split("_")[0]
+    project_name = os.path.basename(samples_path).split("_")[0]
     output_path = os.path.join(
-        os.path.dirname(samples_xml),
+        os.path.dirname(samples_path),
         f"{project_name}_ena_samples_receipt.xml"
     )
 
@@ -104,8 +104,8 @@ def register_samples(
     command = [
         "curl",
         "-u", user_password,
-        "-F", f"SUBMISSION=@{submission_xml}", 
-        "-F", f"SAMPLE=@{samples_xml}",
+        "-F", f"SUBMISSION=@{submission_path}", 
+        "-F", f"SAMPLE=@{samples_path}",
         "-F", "LAUNCH=YES",
         "-o", output_path,
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
@@ -140,13 +140,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    samples_xml = create_samples_file(
+    samples_path = create_samples_file(
         input_path=args.input_path,
         template_path=args.template_path
     )
 
     register_samples(
-        samples_xml=samples_xml,
+        samples_path=samples_path,
         template_path=args.template_path,
         user_password=args.user_password
     )
