@@ -7,7 +7,7 @@ import pandas as pd
 import subprocess
 
 
-def read_input(input_file: str) -> pd.DataFrame:
+def load_metadata(input_file: str) -> pd.DataFrame:
 
     project_df = pd.read_excel(
         input_file,
@@ -32,7 +32,7 @@ def create_template(
     template_file: str
 ) -> str:
 
-    project_df = read_input(input_file)
+    project_df = load_metadata(input_file)
 
     samples_all = []
 
@@ -115,13 +115,13 @@ def register_sample(
     try:
         subprocess.run(command, check=True, text=True)
         print(f"Response successfully written to {output_file}")
+
     except subprocess.CalledProcessError as e:
         print(f"Error:", {e.stderr})
 
 
 if __name__ == "__main__":
 
-    
     parser = argparse.ArgumentParser("preprocess_sequences")
     parser.add_argument(
         "-i", "--input_file",
