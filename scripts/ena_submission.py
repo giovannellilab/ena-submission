@@ -7,10 +7,10 @@ import pandas as pd
 import subprocess
 
 
-def load_metadata(input_path: str) -> pd.DataFrame:
+def load_metadata(metadata_path: str) -> pd.DataFrame:
 
     metadata_df = pd.read_excel(
-        input_path,
+        metadata_path,
         sheet_name="sample_submission"
     )
 
@@ -28,11 +28,11 @@ def load_metadata(input_path: str) -> pd.DataFrame:
 
 
 def create_samples_file(
-    input_path: str,
+    metadata_path: str,
     template_path: str
 ) -> str:
 
-    metadata_df = load_metadata(input_path)
+    metadata_df = load_metadata(metadata_path)
 
     samples_all = []
 
@@ -69,9 +69,9 @@ def create_samples_file(
         "</SAMPLE_SET>" + "\n"
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(input_path).split("_")[0]
+    project_name = os.path.basename(metadata_path).split("_")[0]
     output_path = os.path.join(
-        os.path.dirname(input_path),
+        os.path.dirname(metadata_path),
         f"{project_name}_ena_samples.xml"
     )
     with open(output_path, mode="w") as handle:
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("preprocess_sequences")
     parser.add_argument(
-        "-i", "--input_path",
+        "-i", "--metadata_path",
         help="Excel file containing the metadata for the sequences.",
         type=str
     )
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     samples_path = create_samples_file(
-        input_path=args.input_path,
+        metadata_path=args.metadata_path,
         template_path=args.template_path
     )
 
