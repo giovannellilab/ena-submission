@@ -31,10 +31,15 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 def create_samples_file(
     metadata_path: str,
-    template_path: str
+    template_dir: str
 ) -> str:
 
     metadata_df = load_metadata(metadata_path)
+
+    template_path = os.path.join(
+        template_dir,
+        "ena_sample_template.xml"
+    )
 
     samples_all = []
 
@@ -84,13 +89,13 @@ def create_samples_file(
 
 def register_samples(
     samples_path: str,
-    template_path: str,
+    template_dir: str,
     user_password: str
 ) -> str:
 
     # Define input XML files
     submission_path = os.path.join(
-        os.path.dirname(template_path),
+        template_dir,
         "submission.xml"
     )
 
@@ -170,8 +175,8 @@ if __name__ == "__main__":
         type=str
     )
     parser.add_argument(
-        "-t", "--template_path",
-        help="Template file for creating the XML for submission.",
+        "-t", "--template_dir",
+        help="Directory containing the templates for the submission.",
         type=str
     )
     parser.add_argument(
@@ -183,12 +188,12 @@ if __name__ == "__main__":
 
     samples_path = create_samples_file(
         metadata_path=args.metadata_path,
-        template_path=args.template_path
+        template_dir=args.template_dir
     )
 
     receipt_path = register_samples(
         samples_path=samples_path,
-        template_path=args.template_path,
+        template_dir=args.template_dir,
         user_password=args.user_password
     )
 
