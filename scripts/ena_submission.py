@@ -165,6 +165,56 @@ def parse_samples_receipt(
     return pd.concat(data_df)
 
 
+def create_experiment(
+    receipt_path: str,
+    metadata_path: str,
+    template_dir: str,
+    experiment_type: str
+) -> str:
+
+    template_path = os.path.join(
+        template_dir,
+        f"experiment_{experiment_type}.xml"
+    )
+
+    receipt_df = parse_samples_receipt(
+        receipt_path=receipt_path,
+        metadata_path=metadata_path
+    )
+
+    experiment_all = []
+
+    for _, row in receipt_df.iterrows():
+        row = row.astype(str)
+
+        with open(template_path, mode="r") as handle:
+            template_xml = handle.read()
+
+        template_xml = template_xml\
+            .replace("$$$STUDY_ID$$$", row["project_id"])\
+            .replace("$$$EXPERIMENT_ALIAS$$$", row["sample_alias"])\
+            .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])
+
+        experiment_all += [template_xml]
+
+    experiment_all = \
+        '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
+        "<EXPERIMENT_SET>" + "\n" + \
+        "\n".join(experiment_all) + "\n" + \
+        "</EXPERIMENT_SET>" + "\n"
+
+    # WARNING: project name is assumed to be in the first field of the path
+    project_name = os.path.basename(metadata_path).split("_")[0]
+    output_path = os.path.join(
+        os.path.dirname(metadata_path),
+        f"{project_name}_ena_experiment.xml"
+    )
+    with open(output_path, mode="w") as handle:
+        handle.write(experiment_all)
+
+    return output_path
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("preprocess_sequences")
@@ -176,6 +226,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t", "--template_dir",
         help="Directory containing the templates for the submission.",
+        type=str
+    )
+    parser.add_argument(
+        "-e", "--experiment_type",
+        help="Either 16S or metagenomics.",
         type=str
     )
     parser.add_argument(
@@ -196,7 +251,9 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
 
-    receipt_df = parse_samples_receipt(
+    experiment_path = create_experiment(
         receipt_path=receipt_path,
-        metadata_path=args.metadata_path
+        metadata_path=args.metadata_path,
+        template_dir=args.template_dir,
+        experiment_type=args.experiment_type
     )
