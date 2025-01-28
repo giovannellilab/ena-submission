@@ -1,3 +1,22 @@
+# ENA submission script
+
+# This script performs the following steps programmatically:
+
+# 1. Sample registration
+#   1.1. Load sample metadata
+#   1.2. Create the sample.xml file for registering the samples
+#   1.3. Register the samples in ENA according to that metadata
+
+# 2. Experiment registration
+# 2.1. Parse the receipt after sample registration
+# 2.2. Register the experiments according to that information
+
+# 3. Run registration
+
+
+# ---------------------------------------------------------------------------- #
+
+
 import os
 
 import argparse
