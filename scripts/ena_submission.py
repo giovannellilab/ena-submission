@@ -12,10 +12,12 @@
 # 2.2. Register the experiments according to that information
 
 # 3. Run registration
+# 3.1 iterate through sample directories for computing checksums
+# 3.2 Register the runs according to the information
 
 
 # ---------------------------------------------------------------------------- #
-
+import re
 
 import os
 
@@ -234,6 +236,127 @@ def create_experiment(
     return output_path
 
 
+def compute_checksum(subdir_path: str,
+                     ) -> dict:
+    
+    #computing checksums of for-rev cleaned reads: *_[12].fastq.gz
+    os.chdir(subdir_path)
+    exp_alias = subdir_path.split('/')[-1]
+    print(exp_alias)
+    bash_command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"        
+    try:
+        subprocess.run(bash_command, shell=True, check=True, executable="/bin/bash")
+        print(f"Successfully generated checksums.txt in {subdir_path}")
+
+        checksum_file = os.path.join(subdir_path,'checksums.txt')
+
+
+        files, checksums= [],[]
+        
+        #excludes raw reads: such TA_221020_S_EU.raw_2.fastq.gz
+        regex = r"^(?!.*raw).*_[12]\.fastq\.gz$"
+
+        with open(checksum_file,'r') as reader:
+                for line in reader:
+
+                    if re.search(regex,line):
+
+                        line = line.strip()
+                        [md5,id] = line.split()
+                        files.append(id)
+                        checksums.append(md5)
+                        #files.append((id,md5))
+                print(files)
+                print(checksums)
+
+
+        sample = {'experiment_alias' : exp_alias,'forward_r1_fastq' : files[0],
+                     'reverse_r2_fastq' :  files[1],'forward_r1_md5sum' : checksums[0],
+                     'reverse_r2_md5sum' : checksums[1] }
+
+
+    except subprocess.CalledProcessError as e:
+                print(f"Error executing command: {e}")
+     
+    return sample
+
+
+def create_run(sample_path: str,
+                 metadata_path: str,
+                 template_dir: str,
+                 experiment_type: str
+                 ) -> str:
+    
+    if not os.path.exists(sample_path):
+        print(f'Error {sample_path} not correctly inputed')
+        return
+  
+    #iterating over subdirectories
+    subdirs = [d for d in os.listdir(sample_path) 
+    if os.path.isdir(os.path.join(sample_path, d))]
+
+    #setting dataframe
+    df_run = pd.DataFrame(columns = ['experiment_alias','forward_r1_fastq','reverse_r2_fastq',
+                                 'forward_r1_md5sum','reverse_r2_md5sum'])
+    
+    for subdir in sorted(subdirs):
+        subdir_path = os.path.join(sample_path, subdir)
+        print(f"\nProcessing directory: {subdir}")
+        
+        #computes paired-end cehcksums for each file in a subdirecotry (SAMPLE)
+        #create a dataframe
+        id_5dm_samples = compute_checksum(subdir_path=subdir_path)
+        df_run.loc[len(df_run)] = id_5dm_samples
+        
+    #         f"experiment_{run_type}.xml"
+    
+        template_path = os.path.join(
+            template_dir,f'run_template_{experiment_type}.xml'
+        )
+    
+
+    run_all = []
+
+    for _, row in df_run.iterrows():
+        row = row.astype(str)
+
+        with open(template_path, mode="r") as handle:
+            template_xml = handle.read()
+
+        template_xml = template_xml\
+            .replace("$$$STUDY_ID$$$", row["experiment_alias"])\
+            .replace("$$$EXPERIMENT_ALIAS$$$", row["experiment_alias"])\
+            .replace("$$$FORWARD_R1_FASTQ$$$", row["forward_r1_fastq"])\
+            .replace("$$$FORWARD_R1_MD5SUM$$$", row["forward_r1_md5sum"])\
+            .replace("$$$REVERSE_R2_FASTQ$$$", row["reverse_r2_fastq"])\
+            .replace("$$$REVERSE_R2_MD5SUM$$$", row["reverse_r2_md5sum"])
+
+        run_all += [template_xml]
+
+    run_all = \
+        '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
+        "<RUN_SET>" + "\n" + \
+        "\n".join(run_all) + "\n" + \
+        "</RUN_SET>" + "\n"
+    
+    print('\n')
+    #change it absed on you metadata path
+
+    project_name = os.path.basename(metadata_path).split("_")[0]
+    output_path = os.path.join(
+        os.path.dirname(metadata_path),
+        f"{project_name}_ena_run_{experiment_type}.xml"
+    )
+    with open(output_path, mode="w") as handle:
+        handle.write(run_all)
+
+
+    return df_run,output_path
+
+
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("preprocess_sequences")
@@ -272,6 +395,13 @@ if __name__ == "__main__":
 
     experiment_path = create_experiment(
         receipt_path=receipt_path,
+        metadata_path=args.metadata_path,
+        template_dir=args.template_dir,
+        experiment_type=args.experiment_type
+    )
+
+    run_path = create_run(
+        samples_path=samples_path,
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type
