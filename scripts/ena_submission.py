@@ -203,6 +203,9 @@ def create_experiment(
     experiment_type: str
 ) -> str:
 
+    # WARNING: project name is assumed to be in the first field of the path
+    project_name = os.path.basename(metadata_path).split("_")[0]
+
     template_path = os.path.join(
         template_dir,
         f"experiment_{experiment_type}.xml"
@@ -221,9 +224,11 @@ def create_experiment(
         with open(template_path, mode="r") as handle:
             template_xml = handle.read()
 
+        exp_alias = f"{project_name}-{row['sample_alias']}-{experiment_type}"
+
         template_xml = template_xml\
             .replace("$$$STUDY_ID$$$", row["project_id"])\
-            .replace("$$$EXPERIMENT_ALIAS$$$", row["sample_alias"])\
+            .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
             .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])
 
         experiment_xml += [template_xml]
@@ -234,8 +239,6 @@ def create_experiment(
         "\n".join(experiment_xml) + "\n" + \
         "</EXPERIMENT_SET>" + "\n"
 
-    # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
     output_path = os.path.join(
         os.path.dirname(metadata_path),
         f"{project_name}_ena_experiment.xml"
@@ -258,6 +261,7 @@ def create_run(
     if not os.path.exists(samples_dir):
         raise FileNotFoundError(f"{samples_dir} does not exist!")
 
+    # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
 
     template_path = os.path.join(
