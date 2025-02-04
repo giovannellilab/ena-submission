@@ -109,7 +109,7 @@ def create_samples_file(
 
 
 def register_samples(
-    samples_path: str,
+    samples_xml_path: str,
     template_dir: str,
     user_password: str
 ) -> str:
@@ -121,9 +121,9 @@ def register_samples(
     )
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(samples_path).split("_")[0]
+    project_name = os.path.basename(samples_xml_path).split("_")[0]
     output_path = os.path.join(
-        os.path.dirname(samples_path),
+        os.path.dirname(samples_xml_path),
         f"{project_name}_ena_samples_receipt.xml"
     )
 
@@ -132,7 +132,7 @@ def register_samples(
         "curl",
         "-u", user_password,
         "-F", f"SUBMISSION=@{submission_path}", 
-        "-F", f"SAMPLE=@{samples_path}",
+        "-F", f"SAMPLE=@{samples_xml_path}",
         "-F", "LAUNCH=YES",
         "-o", output_path,
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
@@ -381,13 +381,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    samples_path = create_samples_file(
+    samples_xml_path = create_samples_file(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir
     )
 
     receipt_path = register_samples(
-        samples_path=samples_path,
+        samples_xml_path=samples_xml_path,
         template_dir=args.template_dir,
         user_password=args.user_password
     )
@@ -400,7 +400,7 @@ if __name__ == "__main__":
     )
 
     run_path = create_run(
-        samples_path=samples_path,
+        samples_xml_path=samples_xml_path,
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type
