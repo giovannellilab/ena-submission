@@ -74,19 +74,25 @@ def create_samples_file(
             template_xml = handle.read()
 
         template_xml = template_xml\
-            .replace("$SAMPLE_TITLE$", row["sample_title"])\
-            .replace("$SAMPLE_ALIAS$", row["sample_alias"])\
-            .replace("$ENV_TAX_ID$", row["tax_id"])\
-            .replace("$ENV_SCI_NAME$", row["scientific_name"])\
-            .replace("$PROJECT_NAME$", row["project name"])\
-            .replace("$COLLECTION_DATE$", row["collection date"])\
-            .replace("$LATITUDE$", row["geographic location (latitude)"])\
-            .replace("$LONGITUDE$", row["geographic location (longitude)"])\
-            .replace("$ENV_BROAD$", row["broad-scale environmental context"])\
-            .replace("$ENV_LOCAL$", row["local environmental context"])\
-            .replace("$ENV_MEDIUM$", row["environmental medium"])\
-            .replace("$ELEVATION$", row["elevation"])\
-            .replace("$LOC$", row["geographic location (country and/or sea)"])
+            .replace("$$$SAMPLE_TITLE$$$", row["sample_title"])\
+            .replace("$$$SAMPLE_ALIAS$$$", row["sample_alias"])\
+            .replace("$$$ENV_TAX_ID$$$", row["tax_id"])\
+            .replace("$$$ENV_SCI_NAME$$$", row["scientific_name"])\
+            .replace("$$$PROJECT_NAME$$$", row["project name"])\
+            .replace("$$$COLLECTION_DATE$$$", row["collection date"])\
+            .replace("$$$LATITUDE$$$", row["geographic location (latitude)"])\
+            .replace("$$$LONGITUDE$$$", row["geographic location (longitude)"])\
+            .replace(
+                "$$$ENV_BROAD$$$",
+                row["broad-scale environmental context"]
+            )\
+            .replace("$$$ENV_LOCAL$$$", row["local environmental context"])\
+            .replace("$$$ENV_MEDIUM$$$", row["environmental medium"])\
+            .replace("$$$ELEVATION$$$", row["elevation"])\
+            .replace(
+                "$$$LOC$$$",
+                row["geographic location (country and/or sea)"]
+            )
 
         samples_all += [template_xml]
 

@@ -1,49 +1,49 @@
-  <SAMPLE alias="$SAMPLE_ALIAS$" center_name="">
-    <TITLE>$SAMPLE_TITLE$</TITLE>
+  <SAMPLE alias="$$$SAMPLE_ALIAS$$$" center_name="">
+    <TITLE>$$$SAMPLE_TITLE$$$</TITLE>
     <SAMPLE_NAME>
-      <TAXON_ID>$ENV_TAX_ID$</TAXON_ID>
-      <SCIENTIFIC_NAME>$ENV_SCI_NAME$</SCIENTIFIC_NAME>
+      <TAXON_ID>$$$ENV_TAX_ID$$$</TAXON_ID>
+      <SCIENTIFIC_NAME>$$$ENV_SCI_NAME$$$</SCIENTIFIC_NAME>
       <COMMON_NAME></COMMON_NAME>
     </SAMPLE_NAME>
     <SAMPLE_ATTRIBUTES>
       <SAMPLE_ATTRIBUTE>
         <TAG>project name</TAG>
-        <VALUE>$PROJECT_NAME$</VALUE>
+        <VALUE>$$$PROJECT_NAME$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>collection date</TAG>
-        <VALUE>$COLLECTION_DATE$</VALUE>
+        <VALUE>$$$COLLECTION_DATE$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>geographic location (latitude)</TAG>
-        <VALUE>$LATITUDE$</VALUE>
+        <VALUE>$$$LATITUDE$$$</VALUE>
     	  <UNITS>DD</UNITS>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>geographic location (longitude)</TAG>
-        <VALUE>$LONGITUDE$</VALUE>
+        <VALUE>$$$LONGITUDE$$$</VALUE>
     	  <UNITS>DD</UNITS>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>broad-scale environmental context</TAG>
-        <VALUE>$ENV_BROAD$</VALUE>
+        <VALUE>$$$ENV_BROAD$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>local environmental context</TAG>
-        <VALUE>$ENV_LOCAL$</VALUE>
+        <VALUE>$$$ENV_LOCAL$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>environmental medium</TAG>
-        <VALUE>$ENV_MEDIUM$</VALUE>
+        <VALUE>$$$ENV_MEDIUM$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>elevation</TAG>
-        <VALUE>$ELEVATION$</VALUE>
+        <VALUE>$$$ELEVATION$$$</VALUE>
     	  <UNITS>m</UNITS>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>geographic location (country and/or sea)</TAG>
-        <VALUE>$LOC$</VALUE>
+        <VALUE>$$$LOC$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>ENA-CHECKLIST</TAG>
