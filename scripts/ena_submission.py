@@ -363,7 +363,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-f", "--file_pattern",
-        help="Pattern followed in naming the sequence files.",
+        help="Pattern followed in naming the forward sequence files.",
         type=str,
         default="*_1.fastq.gz"
     )
