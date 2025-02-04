@@ -15,8 +15,8 @@
 # 3.1 iterate through sample directories for computing checksums
 # 3.2 Register the runs according to the information
 
-
 # ---------------------------------------------------------------------------- #
+
 import re
 
 import os
@@ -236,14 +236,14 @@ def create_experiment(
     return output_path
 
 
-def compute_checksum(subdir_path: str,
-                     ) -> dict:
-    
+def compute_checksum(subdir_path: str) -> dict:
+
     #computing checksums of for-rev cleaned reads: *_[12].fastq.gz
     os.chdir(subdir_path)
     exp_alias = subdir_path.split('/')[-1]
     print(exp_alias)
-    bash_command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"        
+    bash_command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"
+
     try:
         subprocess.run(bash_command, shell=True, check=True, executable="/bin/bash")
         print(f"Successfully generated checksums.txt in {subdir_path}")
@@ -270,22 +270,24 @@ def compute_checksum(subdir_path: str,
                 print(checksums)
 
 
-        sample = {'experiment_alias' : exp_alias,'forward_r1_fastq' : files[0],
+        sample = {
+            'experiment_alias' : exp_alias,'forward_r1_fastq' : files[0],
                      'reverse_r2_fastq' :  files[1],'forward_r1_md5sum' : checksums[0],
                      'reverse_r2_md5sum' : checksums[1] }
 
 
     except subprocess.CalledProcessError as e:
-                print(f"Error executing command: {e}")
-     
+        print(f"Error executing command: {e}")
+
     return sample
 
 
-def create_run(sample_path: str,
-                 metadata_path: str,
-                 template_dir: str,
-                 experiment_type: str
-                 ) -> str:
+def create_run(
+    sample_path: str,
+    metadata_path: str,
+    template_dir: str,
+    experiment_type: str
+) -> str:
     
     if not os.path.exists(sample_path):
         print(f'Error {sample_path} not correctly inputed')
@@ -352,9 +354,6 @@ def create_run(sample_path: str,
 
 
     return df_run,output_path
-
-
-
 
 
 if __name__ == "__main__":
