@@ -17,6 +17,12 @@
 
 # ---------------------------------------------------------------------------- #
 
+# IMPORTANT! Some considerations must be taken into account:
+# Project name is assumed to be the first field in the metadata filename
+# Sample alias is assumed to be the first three fields in the sample filename
+
+# ---------------------------------------------------------------------------- #
+
 import re
 
 import os
@@ -297,7 +303,9 @@ def create_run(
         with open(template_path, mode="r") as handle:
             template_xml = handle.read()
 
-        sample_alias = os.path.basename(os.path.dirname(filename_for))
+        # WARNING: sample alias is assumed to be the first three fields
+        sample_alias = os.path.basename(filename_for)
+        sample_alias = "_".join(sample_alias.split("_")[:3])
         exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
 
         template_xml = template_xml\
