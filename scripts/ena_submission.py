@@ -244,46 +244,51 @@ def create_experiment(
 
 def compute_checksum(subdir_path: str) -> dict:
 
-    #computing checksums of for-rev cleaned reads: *_[12].fastq.gz
+    # Change to data directory
     os.chdir(subdir_path)
-    exp_alias = subdir_path.split('/')[-1]
-    print(exp_alias)
-    bash_command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"
+
+    # Compute checksums of for-rev cleaned reads: *_[12].fastq.gz
+    exp_alias = subdir_path.split("/")[-1]
+
+    print(f"[+] Computing checksum for experiment {exp_alias}")
+    command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"
 
     try:
-        subprocess.run(bash_command, shell=True, check=True, executable="/bin/bash")
-        print(f"Successfully generated checksums.txt in {subdir_path}")
+        subprocess.run(command, shell=True, check=True, executable="/bin/bash")
+        print(f"[+] Successfully generated checksums.txt in {subdir_path}")
 
-        checksum_file = os.path.join(subdir_path,'checksums.txt')
+        checksum_file = os.path.join(
+            subdir_path,
+            "checksums.txt"
+        )
 
+        files, checksums = [], []
 
-        files, checksums= [],[]
-        
-        #excludes raw reads: such TA_221020_S_EU.raw_2.fastq.gz
+        # Exclude raw reads (e.g. TA_221020_S_EU.raw_2.fastq.gz)
         regex = r"^(?!.*raw).*_[12]\.fastq\.gz$"
 
-        with open(checksum_file,'r') as reader:
-                for line in reader:
-
-                    if re.search(regex,line):
-
-                        line = line.strip()
-                        [md5,id] = line.split()
-                        files.append(id)
-                        checksums.append(md5)
-                        #files.append((id,md5))
-                print(files)
-                print(checksums)
+        with open(checksum_file, mode="r") as handle:
+            for line in handle:
+                if re.search(regex, line):
+                    line = line.strip()
+                    [md5, id] = line.split()
+                    files.append(id)
+                    checksums.append(md5)
+                    #files.append((id,md5))
+            print(files)
+            print(checksums)
 
 
         sample = {
-            'experiment_alias' : exp_alias,'forward_r1_fastq' : files[0],
-                     'reverse_r2_fastq' :  files[1],'forward_r1_md5sum' : checksums[0],
-                     'reverse_r2_md5sum' : checksums[1] }
-
+            "experiment_alias": exp_alias,
+            "forward_r1_fastq": files[0],
+            "reverse_r2_fastq": files[1],
+            "forward_r1_md5sum" : checksums[0],
+            "reverse_r2_md5sum" : checksums[1]
+        }
 
     except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {e}")
+        print(f"Error:", {e.stderr})
 
     return sample
 
@@ -293,35 +298,39 @@ def create_run(
     metadata_path: str,
     template_dir: str,
     experiment_type: str
-) -> str:
-    
+) -> None:
+
     if not os.path.exists(sample_path):
-        print(f'Error {sample_path} not correctly inputed')
-        return
-  
-    #iterating over subdirectories
+        print(f"Error {sample_path} not correctly inputed")
+        return None
+
+    # Iterate over subdirectories
     subdirs = [d for d in os.listdir(sample_path) 
     if os.path.isdir(os.path.join(sample_path, d))]
 
-    #setting dataframe
-    df_run = pd.DataFrame(columns = ['experiment_alias','forward_r1_fastq','reverse_r2_fastq',
-                                 'forward_r1_md5sum','reverse_r2_md5sum'])
-    
+    # Create initial dataframe
+    df_run = pd.DataFrame(columns=[
+        "experiment_alias",
+        "forward_r1_fastq",
+        "reverse_r2_fastq",
+        "forward_r1_md5sum",
+        "reverse_r2_md5sum"
+    ])
+
     for subdir in sorted(subdirs):
         subdir_path = os.path.join(sample_path, subdir)
         print(f"\nProcessing directory: {subdir}")
-        
+
         #computes paired-end cehcksums for each file in a subdirecotry (SAMPLE)
         #create a dataframe
         id_5dm_samples = compute_checksum(subdir_path=subdir_path)
         df_run.loc[len(df_run)] = id_5dm_samples
-        
-    #         f"experiment_{run_type}.xml"
-    
+
         template_path = os.path.join(
-            template_dir,f'run_template_{experiment_type}.xml'
+            template_dir,
+            f"run_template_{experiment_type}.xml"
         )
-    
+
 
     run_all = []
 
@@ -346,9 +355,6 @@ def create_run(
         "<RUN_SET>" + "\n" + \
         "\n".join(run_all) + "\n" + \
         "</RUN_SET>" + "\n"
-    
-    print('\n')
-    #change it absed on you metadata path
 
     project_name = os.path.basename(metadata_path).split("_")[0]
     output_path = os.path.join(
@@ -358,8 +364,7 @@ def create_run(
     with open(output_path, mode="w") as handle:
         handle.write(run_all)
 
-
-    return df_run,output_path
+    return None
 
 
 if __name__ == "__main__":
@@ -405,7 +410,7 @@ if __name__ == "__main__":
         experiment_type=args.experiment_type
     )
 
-    run_path = create_run(
+    create_run(
         samples_xml_path=samples_xml_path,
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
