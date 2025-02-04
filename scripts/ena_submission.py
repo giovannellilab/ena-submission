@@ -21,6 +21,10 @@ import re
 
 import os
 
+import glob
+
+import hashlib
+
 import argparse
 
 import pandas as pd
@@ -209,7 +213,7 @@ def create_experiment(
         metadata_path=metadata_path
     )
 
-    experiment_all = []
+    experiment_xml = []
 
     for _, row in receipt_df.iterrows():
         row = row.astype(str)
@@ -222,12 +226,12 @@ def create_experiment(
             .replace("$$$EXPERIMENT_ALIAS$$$", row["sample_alias"])\
             .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])
 
-        experiment_all += [template_xml]
+        experiment_xml += [template_xml]
 
-    experiment_all = \
+    experiment_xml = \
         '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
         "<EXPERIMENT_SET>" + "\n" + \
-        "\n".join(experiment_all) + "\n" + \
+        "\n".join(experiment_xml) + "\n" + \
         "</EXPERIMENT_SET>" + "\n"
 
     # WARNING: project name is assumed to be in the first field of the path
@@ -237,134 +241,84 @@ def create_experiment(
         f"{project_name}_ena_experiment.xml"
     )
     with open(output_path, mode="w") as handle:
-        handle.write(experiment_all)
+        handle.write(experiment_xml)
 
     return output_path
 
 
-def compute_checksum(subdir_path: str) -> dict:
-
-    # Change to data directory
-    os.chdir(subdir_path)
-
-    # Compute checksums of for-rev cleaned reads: *_[12].fastq.gz
-    exp_alias = subdir_path.split("/")[-1]
-
-    print(f"[+] Computing checksum for experiment {exp_alias}")
-    command = "for f in *_[12].fastq.gz; do md5sum $f; done > checksums.txt"
-
-    try:
-        subprocess.run(command, shell=True, check=True, executable="/bin/bash")
-        print(f"[+] Successfully generated checksums.txt in {subdir_path}")
-
-        checksum_file = os.path.join(
-            subdir_path,
-            "checksums.txt"
-        )
-
-        files, checksums = [], []
-
-        # Exclude raw reads (e.g. TA_221020_S_EU.raw_2.fastq.gz)
-        regex = r"^(?!.*raw).*_[12]\.fastq\.gz$"
-
-        with open(checksum_file, mode="r") as handle:
-            for line in handle:
-                if re.search(regex, line):
-                    line = line.strip()
-                    [md5, id] = line.split()
-                    files.append(id)
-                    checksums.append(md5)
-                    #files.append((id,md5))
-            print(files)
-            print(checksums)
-
-
-        sample = {
-            "experiment_alias": exp_alias,
-            "forward_r1_fastq": files[0],
-            "reverse_r2_fastq": files[1],
-            "forward_r1_md5sum" : checksums[0],
-            "reverse_r2_md5sum" : checksums[1]
-        }
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error:", {e.stderr})
-
-    return sample
-
-
 def create_run(
-    sample_path: str,
+    samples_dir: str,
     metadata_path: str,
     template_dir: str,
-    experiment_type: str
-) -> None:
+    experiment_type: str,
+    file_pattern: str
+) -> str:
 
-    if not os.path.exists(sample_path):
-        print(f"Error {sample_path} not correctly inputed")
-        return None
+    # Raise error if samples directory does not exist
+    if not os.path.exists(samples_dir):
+        raise FileNotFoundError(f"{samples_dir} does not exist!")
 
-    # Iterate over subdirectories
-    subdirs = [d for d in os.listdir(sample_path) 
-    if os.path.isdir(os.path.join(sample_path, d))]
+    project_name = os.path.basename(metadata_path).split("_")[0]
 
-    # Create initial dataframe
-    df_run = pd.DataFrame(columns=[
-        "experiment_alias",
-        "forward_r1_fastq",
-        "reverse_r2_fastq",
-        "forward_r1_md5sum",
-        "reverse_r2_md5sum"
-    ])
+    template_path = os.path.join(
+        template_dir,
+        f"run_{experiment_type}.xml"
+    )
 
-    for subdir in sorted(subdirs):
-        subdir_path = os.path.join(sample_path, subdir)
-        print(f"\nProcessing directory: {subdir}")
+    run_xml = []
 
-        #computes paired-end cehcksums for each file in a subdirecotry (SAMPLE)
-        #create a dataframe
-        id_5dm_samples = compute_checksum(subdir_path=subdir_path)
-        df_run.loc[len(df_run)] = id_5dm_samples
+    pattern_for = f"{samples_dir}/**/{file_pattern}"
 
-        template_path = os.path.join(
-            template_dir,
-            f"run_template_{experiment_type}.xml"
-        )
+    for filename_for in glob.glob(pattern_for, recursive=True):
 
+        # Avoid raw reads
+        if "raw" in filename_for:
+            continue
 
-    run_all = []
+        # Get reverse file from forward one
+        # WARNING: may generate errors there are multiple "1" in the pattern
+        pattern_rev = f"{samples_dir}/**/{file_pattern.replace('1', '2')}"
+        filename_rev = glob.glob(pattern_rev, recursive=True)
 
-    for _, row in df_run.iterrows():
-        row = row.astype(str)
+        # Raise error when there is not exactly one reverse file
+        if len(filename_rev) != 1:
+            raise ValueError(f"Found {len(filename_rev)} reverse files!")
+
+        filename_rev = filename_rev[0]
+
+        # Compute the checksum (MD5)
+        hash_for = hashlib.md5(open(filename_for, mode="rb").read()).hexdigest()
+        hash_rev = hashlib.md5(open(filename_rev, mode="rb").read()).hexdigest()
 
         with open(template_path, mode="r") as handle:
             template_xml = handle.read()
 
+        sample_alias = os.path.basename(os.path.dirname(filename_for))
+        exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
+
         template_xml = template_xml\
-            .replace("$$$STUDY_ID$$$", row["experiment_alias"])\
-            .replace("$$$EXPERIMENT_ALIAS$$$", row["experiment_alias"])\
-            .replace("$$$FORWARD_R1_FASTQ$$$", row["forward_r1_fastq"])\
-            .replace("$$$FORWARD_R1_MD5SUM$$$", row["forward_r1_md5sum"])\
-            .replace("$$$REVERSE_R2_FASTQ$$$", row["reverse_r2_fastq"])\
-            .replace("$$$REVERSE_R2_MD5SUM$$$", row["reverse_r2_md5sum"])
+            .replace("$$$EXPERIMENT_ALIAS$$$",  exp_alias)\
+            .replace("$$$FORWARD_R1_FASTQ$$$",  filename_for)\
+            .replace("$$$FORWARD_R1_MD5SUM$$$", hash_for)\
+            .replace("$$$REVERSE_R2_FASTQ$$$",  filename_rev)\
+            .replace("$$$REVERSE_R2_MD5SUM$$$", hash_rev)
 
-        run_all += [template_xml]
+        run_xml += [template_xml]
 
-    run_all = \
+    run_xml = \
         '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
         "<RUN_SET>" + "\n" + \
-        "\n".join(run_all) + "\n" + \
+        "\n".join(run_xml) + "\n" + \
         "</RUN_SET>" + "\n"
 
-    project_name = os.path.basename(metadata_path).split("_")[0]
     output_path = os.path.join(
         os.path.dirname(metadata_path),
         f"{project_name}_ena_run_{experiment_type}.xml"
     )
     with open(output_path, mode="w") as handle:
-        handle.write(run_all)
+        handle.write(run_xml)
 
-    return None
+    return output_path
 
 
 if __name__ == "__main__":
@@ -373,6 +327,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-i", "--metadata_path",
         help="Excel file containing the metadata for the sequences.",
+        type=str
+    )
+    parser.add_argument(
+        "-s", "--samples_dir",
+        help="Directory containing the sequences to submit.",
         type=str
     )
     parser.add_argument(
@@ -389,6 +348,12 @@ if __name__ == "__main__":
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
         type=str
+    )
+    parser.add_argument(
+        "-f", "--file_pattern",
+        help="Pattern followed in naming the sequence files.",
+        type=str,
+        default="*_1.fastq.gz"
     )
     args = parser.parse_args()
 
@@ -410,9 +375,12 @@ if __name__ == "__main__":
         experiment_type=args.experiment_type
     )
 
-    create_run(
-        samples_xml_path=samples_xml_path,
+    run_path = create_run(
+        samples_dir=args.samples_dir,
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
-        experiment_type=args.experiment_type
+        experiment_type=args.experiment_type,
+        file_pattern=args.file_pattern
     )
+
+    print(f"[SUCCESS] Run XML file saved to {run_path}")
