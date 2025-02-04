@@ -260,7 +260,7 @@ def create_run(
     metadata_path: str,
     template_dir: str,
     experiment_type: str,
-    file_pattern: str
+    forward_pattern: str
 ) -> str:
 
     # Raise error if samples directory does not exist
@@ -277,7 +277,7 @@ def create_run(
 
     run_xml = []
 
-    pattern_for = f"{samples_dir}/**/{file_pattern}"
+    pattern_for = f"{samples_dir}/**/{forward_pattern}"
 
     for filename_for in glob.glob(pattern_for, recursive=True):
 
@@ -287,7 +287,7 @@ def create_run(
 
         # Get reverse file from forward one
         # WARNING: may generate errors there are multiple "1" in the pattern
-        pattern_rev = f"{samples_dir}/**/{file_pattern.replace('1', '2')}"
+        pattern_rev = f"{samples_dir}/**/{forward_pattern.replace('1', '2')}"
         filename_rev = glob.glob(pattern_rev, recursive=True)
 
         # Raise error when there is not exactly one reverse file
@@ -362,7 +362,7 @@ if __name__ == "__main__":
         type=str
     )
     parser.add_argument(
-        "-f", "--file_pattern",
+        "-f", "--forward_pattern",
         help="Pattern followed in naming the forward sequence files.",
         type=str,
         default="*_1.fastq.gz"
@@ -392,7 +392,7 @@ if __name__ == "__main__":
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type,
-        file_pattern=args.file_pattern
+        forward_pattern=args.forward_pattern
     )
 
     print(f"[SUCCESS] Run XML file saved to {run_path}")
