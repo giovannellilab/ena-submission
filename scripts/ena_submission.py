@@ -333,6 +333,54 @@ def create_run(
 
     return output_path
 
+def register_objects(
+        samples_path: str,
+        metadata_path: str,
+        template_path: str,
+        user_password: str
+):
+    project_name = os.path.basename(samples_path).split("_")[0]
+    metadata = os.path.dirname(metadata_path)
+
+    # input paths
+
+    run_path = os.path.join(metadata,"run.xml")
+    submission_path = os.path.join(template_path,"submission.xml")
+    experiment_path = os.path.join(metadata,"experiment.xml")
+    print(run_path)
+    print(submission_path)
+    print(experiment_path)
+    # ouput path
+    output_path = os.path.join(metadata,
+        f"{project_name}_ena_object_receipt.xml"
+    )
+
+    print(output_path)
+    
+    command = [
+        "curl",
+        "-u", user_password,
+        "-F", f"SUBMISSION=@{submission_path}", 
+        "-F", f"EXPERIMENT=@{experiment_path}",
+        "-F", f"RUN=@{run_path}",
+        "-F", "LAUNCH=YES",
+        "-o", output_path,
+        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+    ]
+
+    # Execute the command
+    try:
+        subprocess.run(command, check=True, text=True)
+        print('Object (experiment-run) succesfully submitted')
+        print(f"Object receipt successfully written to {output_path}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error:", {e.stderr})
+
+    return output_path
+
+
+
 
 if __name__ == "__main__":
 
