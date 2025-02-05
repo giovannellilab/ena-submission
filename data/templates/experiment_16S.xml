@@ -1,5 +1,5 @@
     <EXPERIMENT alias="$$$EXPERIMENT_ALIAS$$$">
-       <TITLE>$$$EXPERIMENT_ALIAS$$$</TITLE>
+       <TITLE>"$$$TITLE$$$"</TITLE>
        <STUDY_REF accession="$$$STUDY_ID$$$"/>
        <DESIGN>
            <DESIGN_DESCRIPTION/>
