@@ -23,7 +23,7 @@
        <EXPERIMENT_ATTRIBUTES>
            <EXPERIMENT_ATTRIBUTE>
                <TAG>library preparation date</TAG>
-               <VALUE>2010-08</VALUE>
+               <VALUE>$$$YEAR$$$</VALUE>
            </EXPERIMENT_ATTRIBUTE>
        </EXPERIMENT_ATTRIBUTES>
    </EXPERIMENT>

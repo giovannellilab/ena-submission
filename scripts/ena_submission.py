@@ -34,6 +34,8 @@ import hashlib
 
 import argparse
 
+from datetime import datetime
+
 import pandas as pd
 
 import bs4 as bs
@@ -237,7 +239,8 @@ def create_experiment(
             .replace("$$$STUDY_ID$$$", row["project_id"])\
             .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
             .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
-            .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])
+            .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
+            .replace("$$$YEAR$$$", str(datetime.now().year))
 
         experiment_xml += [template_xml]
 
