@@ -336,36 +336,31 @@ def create_run(
 
 
 def register_objects(
-    samples_path: str,
     metadata_path: str,
-    template_path: str,
+    template_dir: str,
     user_password: str
-) -> None:
-    project_name = os.path.basename(samples_path).split("_")[0]
-    metadata = os.path.dirname(metadata_path)
+) -> str:
+
+    project_name = os.path.basename(metadata_path).split("_")[0]
+    metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
     run_path = os.path.join(
-        metadata,
+        metadata_dir,
         f"{project_name}_ena_run.xml"
     )
     experiment_path = os.path.join(
-        metadata,
+        metadata_dir,
         "experiment.xml"
     )
     submission_path = os.path.join(
-        template_path,
+        template_dir,
         "submission.xml"
     )
     output_path = os.path.join(
-        metadata,
+        metadata_dir,
         f"{project_name}_ena_object_receipt.xml"
     )
-
-    print(run_path)
-    print(submission_path)
-    print(experiment_path)
-    print(output_path)
 
     command = [
         "curl",
@@ -387,7 +382,7 @@ def register_objects(
     # except subprocess.CalledProcessError as e:
     #     print(f"Error:", {e.stderr})
 
-    return None
+    return output_path
 
 
 if __name__ == "__main__":
@@ -452,4 +447,10 @@ if __name__ == "__main__":
         forward_pattern=args.forward_pattern
     )
 
-    print(f"[SUCCESS] Run XML file saved to {run_path}")
+    final_path = register_objects(
+        metadata_path=args.metadata_path,
+        template_dir=args.template_dir,
+        user_password=args.user_password
+    )
+
+    print(f"[SUCCESS] Submission-ready XML file saved to {final_path}")
