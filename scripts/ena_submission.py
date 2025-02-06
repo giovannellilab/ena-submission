@@ -248,7 +248,7 @@ def create_experiment(
 
     output_path = os.path.join(
         os.path.dirname(metadata_path),
-        f"{project_name}_ena_experiment.xml"
+        f"{project_name}_ena_experiment_{experiment_type}.xml"
     )
     with open(output_path, mode="w") as handle:
         handle.write(experiment_xml)
