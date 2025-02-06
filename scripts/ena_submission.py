@@ -169,7 +169,7 @@ def register_samples(
 
 
 def parse_samples_receipt(
-    receipt_path: str,
+    samples_receipt_path: str,
     metadata_path: str
 ) -> pd.DataFrame:
 
@@ -177,7 +177,7 @@ def parse_samples_receipt(
     metadata_df = load_metadata(metadata_path)
 
     # Load receipt
-    with open(receipt_path, mode="r") as handle:
+    with open(samples_receipt_path, mode="r") as handle:
         xml_data = bs.BeautifulSoup(handle, "xml")
 
     data_df = []
@@ -206,7 +206,7 @@ def parse_samples_receipt(
 
 
 def create_experiment(
-    receipt_path: str,
+    samples_receipt_path: str,
     metadata_path: str,
     template_dir: str,
     experiment_type: str
@@ -221,7 +221,7 @@ def create_experiment(
     )
 
     receipt_df = parse_samples_receipt(
-        receipt_path=receipt_path,
+        samples_receipt_path=samples_receipt_path,
         metadata_path=metadata_path
     )
 
@@ -430,14 +430,14 @@ if __name__ == "__main__":
         template_dir=args.template_dir
     )
 
-    receipt_path = register_samples(
+    samples_receipt_path = register_samples(
         samples_xml_path=samples_xml_path,
         template_dir=args.template_dir,
         user_password=args.user_password
     )
 
     experiment_path = create_experiment(
-        receipt_path=receipt_path,
+        samples_receipt_path=samples_receipt_path,
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type
@@ -451,11 +451,11 @@ if __name__ == "__main__":
         forward_pattern=args.forward_pattern
     )
 
-    final_path = register_objects(
+    final_receipt_path = register_objects(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type,
         user_password=args.user_password
     )
 
-    print(f"[SUCCESS] Submission-ready XML file saved to {final_path}")
+    print(f"[SUCCESS] Submission-ready XML file saved to {final_receipt_path}")
