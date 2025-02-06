@@ -124,6 +124,8 @@ def create_samples_file(
     with open(output_path, mode="w") as handle:
         handle.write(samples_all)
 
+    print(f"[+] Samples XML created: {output_path}")
+
     return output_path
 
 
@@ -160,7 +162,7 @@ def register_samples(
     # # Execute the command
     # try:
     #     subprocess.run(command, check=True, text=True)
-    #     print(f"Response successfully written to {output_path}")
+    #     print(f"[+] Samples receipt XML created: {output_path}")
 
     # except subprocess.CalledProcessError as e:
     #     print(f"Error:", {e.stderr})
@@ -257,6 +259,8 @@ def create_experiment(
     with open(output_path, mode="w") as handle:
         handle.write(experiment_xml)
 
+    print(f"[+] Experiment XML created: {output_path}")
+
     return output_path
 
 
@@ -335,6 +339,8 @@ def create_run(
     with open(output_path, mode="w") as handle:
         handle.write(run_xml)
 
+    print(f"[+] Run XML created: {output_path}")
+
     return output_path
 
 
@@ -372,7 +378,6 @@ def register_objects(
         "-F", f"SUBMISSION=@{submission_path}", 
         "-F", f"EXPERIMENT=@{experiment_path}",
         "-F", f"RUN=@{run_path}",
-        "-F", "LAUNCH=YES",
         "-o", output_path,
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
@@ -380,8 +385,7 @@ def register_objects(
     # # Execute the command
     # try:
     #     subprocess.run(command, check=True, text=True)
-    #     print('Object (experiment-run) succesfully submitted')
-    #     print(f"Object receipt successfully written to {output_path}")
+    #     print(f"[+] Objects receipt XML created: {output_path}")
 
     # except subprocess.CalledProcessError as e:
     #     print(f"Error:", {e.stderr})
