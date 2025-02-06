@@ -10,9 +10,9 @@
                <LIBRARY_SOURCE>METAGENOMIC</LIBRARY_SOURCE>
                <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
                <LIBRARY_LAYOUT>
-                   <PAIRED NOMINAL_LENGTH="250" NOMINAL_SDEV=""/> #nominal lenght is the average frg. lenght prior sequencing
+                   <PAIRED NOMINAL_LENGTH="250"/>
                </LIBRARY_LAYOUT>
-               <LIBRARY_CONSTRUCTION_PROTOCOL>Sequencing libraries were generated and indexes were added to attribute sequences to each sample. Briefly, PCR amplification of targeted regions was performed by using specific primers connecting with barcodes. The PCR products with proper size were selected by 2% agarose gel electrophoresis. Same amount of PCR products from each sample was pooled, end-repaired,A-tailed and further ligated with Illumina adapters. Libraries were sequenced on a paired-end Illumina platform to generate paired-end raw reads.Subsequently, library quality was assessed and quantified by QPCR. Quantified libraries will be pooled and sequenced, according to effective library concentration and data amount required</LIBRARY_CONSTRUCTION_PROTOCOL>
+               <LIBRARY_CONSTRUCTION_PROTOCOL>Sequencing libraries were generated and indexes were added to attribute sequences to each sample. Briefly, PCR amplification of targeted regions was performed by using specific primers connecting with barcodes. The PCR products with proper size were selected by 2% agarose gel electrophoresis. Same amount of PCR products from each sample was pooled, end-repaired, A-tailed and further ligated with Illumina adapters. Libraries were sequenced on a paired-end Illumina platform to generate paired-end raw reads.Subsequently, library quality was assessed and quantified by QPCR. Quantified libraries will be pooled and sequenced, according to effective library concentration and data amount required</LIBRARY_CONSTRUCTION_PROTOCOL>
            </LIBRARY_DESCRIPTOR>
        </DESIGN>
        <PLATFORM>

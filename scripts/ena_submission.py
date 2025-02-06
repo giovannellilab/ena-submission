@@ -165,7 +165,7 @@ def register_samples(
     #     print(f"[+] Samples receipt XML created: {output_path}")
 
     # except subprocess.CalledProcessError as e:
-    #     print(f"Error:", {e.stderr})
+    #     print(f"[!] Error:", {e.stderr})
 
     return output_path
 
@@ -388,7 +388,7 @@ def register_objects(
     #     print(f"[+] Objects receipt XML created: {output_path}")
 
     # except subprocess.CalledProcessError as e:
-    #     print(f"Error:", {e.stderr})
+    #     print(f"[!] Error:", {e.stderr})
 
     return output_path
 
