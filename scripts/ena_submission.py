@@ -341,6 +341,7 @@ def create_run(
 def register_objects(
     metadata_path: str,
     template_dir: str,
+    experiment_type: str,
     user_password: str
 ) -> str:
 
@@ -350,11 +351,11 @@ def register_objects(
     # Define paths
     run_path = os.path.join(
         metadata_dir,
-        f"{project_name}_ena_run.xml"
+        f"{project_name}_ena_run_{experiment_type}.xml"
     )
     experiment_path = os.path.join(
         metadata_dir,
-        "experiment.xml"
+        f"{project_name}_ena_experiment_{experiment_type}.xml"
     )
     submission_path = os.path.join(
         template_dir,
@@ -453,6 +454,7 @@ if __name__ == "__main__":
     final_path = register_objects(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
+        experiment_type=args.experiment_type,
         user_password=args.user_password
     )
 
