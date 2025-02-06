@@ -236,6 +236,7 @@ def create_experiment(
         template_xml = template_xml\
             .replace("$$$STUDY_ID$$$", row["project_id"])\
             .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
+            .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
             .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])
 
         experiment_xml += [template_xml]
