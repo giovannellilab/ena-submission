@@ -333,30 +333,39 @@ def create_run(
 
     return output_path
 
+
 def register_objects(
-        samples_path: str,
-        metadata_path: str,
-        template_path: str,
-        user_password: str
-):
+    samples_path: str,
+    metadata_path: str,
+    template_path: str,
+    user_password: str
+) -> None:
     project_name = os.path.basename(samples_path).split("_")[0]
     metadata = os.path.dirname(metadata_path)
 
-    # input paths
-
-    run_path = os.path.join(metadata,"run.xml")
-    submission_path = os.path.join(template_path,"submission.xml")
-    experiment_path = os.path.join(metadata,"experiment.xml")
-    print(run_path)
-    print(submission_path)
-    print(experiment_path)
-    # ouput path
-    output_path = os.path.join(metadata,
+    # Define paths
+    run_path = os.path.join(
+        metadata,
+        f"{project_name}_ena_run.xml"
+    )
+    experiment_path = os.path.join(
+        metadata,
+        "experiment.xml"
+    )
+    submission_path = os.path.join(
+        template_path,
+        "submission.xml"
+    )
+    output_path = os.path.join(
+        metadata,
         f"{project_name}_ena_object_receipt.xml"
     )
 
+    print(run_path)
+    print(submission_path)
+    print(experiment_path)
     print(output_path)
-    
+
     command = [
         "curl",
         "-u", user_password,
@@ -368,18 +377,16 @@ def register_objects(
         "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
-    # Execute the command
-    try:
-        subprocess.run(command, check=True, text=True)
-        print('Object (experiment-run) succesfully submitted')
-        print(f"Object receipt successfully written to {output_path}")
+    # # Execute the command
+    # try:
+    #     subprocess.run(command, check=True, text=True)
+    #     print('Object (experiment-run) succesfully submitted')
+    #     print(f"Object receipt successfully written to {output_path}")
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error:", {e.stderr})
+    # except subprocess.CalledProcessError as e:
+    #     print(f"Error:", {e.stderr})
 
-    return output_path
-
-
+    return None
 
 
 if __name__ == "__main__":
