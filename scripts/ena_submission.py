@@ -319,6 +319,10 @@ def create_run(
         sample_alias = "_".join(sample_alias.split("_")[:3])
         exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
 
+        # Add only the filename instead of the whole path
+        filename_for = os.path.basename(filename_for)
+        filename_rev = os.path.basename(filename_rev)
+
         template_xml = template_xml\
             .replace("$$$EXPERIMENT_ALIAS$$$",  exp_alias)\
             .replace("$$$FORWARD_R1_FASTQ$$$",  filename_for)\
