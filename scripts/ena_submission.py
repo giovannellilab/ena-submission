@@ -296,14 +296,16 @@ def create_run(
 
         # Get reverse file from forward one
         # WARNING: may generate errors there are multiple "1" in the pattern
-        pattern_rev = f"{samples_dir}/**/{forward_pattern.replace('1', '2')}"
-        filename_rev = glob.glob(pattern_rev, recursive=True)
+        forward_pattern = forward_pattern.replace("*", "")
+        reverse_pattern = forward_pattern.replace("1", "2")
+        filename_rev = filename_for.replace(
+            forward_pattern,
+            reverse_pattern
+        )
 
         # Raise error when there is not exactly one reverse file
-        if len(filename_rev) != 1:
-            raise ValueError(f"Found {len(filename_rev)} reverse files!")
-
-        filename_rev = filename_rev[0]
+        if not os.path.exists(filename_rev):
+            raise ValueError(f"[!] Reverse file not found: {filename_rev}")
 
         # Compute the checksum (MD5)
         hash_for = hashlib.md5(open(filename_for, mode="rb").read()).hexdigest()
