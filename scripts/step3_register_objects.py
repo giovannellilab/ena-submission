@@ -14,13 +14,7 @@
 
 import os
 
-import glob
-
-import hashlib
-
 import argparse
-
-from datetime import datetime
 
 import subprocess
 
@@ -106,4 +100,4 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
 
-    print(f"[STEP3] Experiments and runs info saved to {final_receipt_path}")
+    print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
