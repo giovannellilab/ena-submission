@@ -14,6 +14,7 @@ conda activate ena
 conda install bs4 openpyxl -y
 ```
 
+
 ## Concepts
 
 ENA requires the following workflow to programmatically submit your reads to ENA Archive
@@ -28,13 +29,17 @@ This information must be compiled prior registration in a google sheet
 ENA requires the raw read files to be trimmed/clean prior upload. IN our case we are going to use clean data
 already pre-processed by the sequencing company.
 Moreover, for each file .fastq.gz, an MD5 checksum must be computed and saved for the next step
+With this procedure, data are submitted in the 'ENA upload area', where can stay up to 2 months prior deletion.
+Therefore, we must 'push' these files from this stage area to a permament storage by registering the relationship between these files
+and the experiments to which are associated and their MD5 checksums.
 
 3) Registering Experiement - Run Objects
 Another important relationship in the ENA workflow is the Experiment -Run object association which refers to a single sample.
 This allows to have different experiements and runs to be associated to the same SAMPLE (biological material)
 For exmaple in our Lab, is common to have 2 Exp-run objects for each sample: 16S and Metagenomes experiments.
 Moreover, an Experiemtn could have more than one run associated to it, referring to the sequencing pits (during sequencing), 
-In our case, we will ahve just one run for experiment.
+In our case, we will have just one run for experiment.
+Once the RUN and EXPERIMENT .xml files are created, we can register the previously uploaded files permanently.
 
 ## Workflow
 
