@@ -42,8 +42,17 @@ In our case, we will ahve just one run for experiment.
 
 python ena_submission.py 
 
-    - Outputs --> sample receipt
+    - Register Samples --> sample receipt
+    - Outputs -->
 
-2) Uploading samples
+2) Uploading raw reads files
+
+python data_upload.py
+    - Uploads 16_S forward/reverse.fastq.gz
+    - Uploads Metagenomes forward/reverse.fastq.gz
+
+3) Registering Experiments-Runs Objects
+
+
 
 ----------
