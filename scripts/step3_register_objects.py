@@ -47,6 +47,11 @@ def register_objects(
         f"{project_name}_ena_object_receipt.xml"
     )
 
+    # Check all files exist beforehand
+    for path in (run_path, experiment_path, submission_path):
+        if not os.path.exists(path):
+            raise FileNotFoundError(path)
+
     command = [
         "curl",
         "-u", user_password,
