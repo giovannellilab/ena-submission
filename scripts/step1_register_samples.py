@@ -107,7 +107,7 @@ def create_samples_file(
     with open(output_path, mode="w") as handle:
         handle.write(samples_all)
 
-    print(f"[+] Samples XML created: {output_path}")
+    print(f"[STEP1][+] Samples XML created: {output_path}")
 
     return output_path
 
@@ -184,4 +184,4 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
 
-    print(f"[STEP1] Samples receipt saved to: {samples_receipt_path}")
+    print(f"[STEP1][+] Samples receipt saved to: {samples_receipt_path}")
