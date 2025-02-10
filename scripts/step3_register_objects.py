@@ -9,7 +9,6 @@
 # IMPORTANT! Some considerations must be taken into account:
 # 1) Project name is assumed to be the first field in the metadata filename
 # 2) Sample alias is assumed to be the first three fields in the sample filename
-# 3) The file pattern for forward reads must contain just one "1"
 
 # ---------------------------------------------------------------------------- #
 

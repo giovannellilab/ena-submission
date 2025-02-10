@@ -8,8 +8,8 @@
 #   1.3. Register the samples in ENA according to that metadata
 
 # 2. Experiment and run metadata retrieval
-# 2.1 Iterate through sample directories for computing checksums
-# 2.2 Create experiment and run XML files that will be used in the third step
+#   2.1 Iterate through sample directories for computing checksums
+#   2.2 Create experiment and run XML files that will be used in STEP 3
 
 # NOTE: the final registration of experiments and runs will be done in STEP 3
 
@@ -18,6 +18,7 @@
 # IMPORTANT! Some considerations must be taken into account:
 # 1) Project name is assumed to be the first field in the metadata filename
 # 2) Sample alias is assumed to be the first three fields in the sample filename
+# 3) The file pattern for forward reads must contain just one "1"
 
 # ---------------------------------------------------------------------------- #
 
