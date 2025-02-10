@@ -11,9 +11,9 @@
 # 2.1. Parse the receipt after sample registration
 # 2.2. Register the experiments according to that information
 
-# 3. Run registration
-# 3.1 iterate through sample directories for computing checksums
-# 3.2 Register the runs according to the information
+# 3. Experiment and run registration
+# 3.1 Iterate through sample directories for computing checksums
+# 3.2 Register the experiments and runs according to that information
 
 # ---------------------------------------------------------------------------- #
 
