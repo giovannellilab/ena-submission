@@ -30,17 +30,17 @@ def register_objects(
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
-    run_path = os.path.join(
-        metadata_dir,
-        f"{project_name}_ena_run_{experiment_type}.xml"
+    submission_path = os.path.join(
+        template_dir,
+        "submission.xml"
     )
     experiment_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_experiment_{experiment_type}.xml"
     )
-    submission_path = os.path.join(
-        template_dir,
-        "submission.xml"
+    run_path = os.path.join(
+        metadata_dir,
+        f"{project_name}_ena_run_{experiment_type}.xml"
     )
     output_path = os.path.join(
         metadata_dir,
@@ -48,7 +48,7 @@ def register_objects(
     )
 
     # Check all files exist beforehand
-    for path in (run_path, experiment_path, submission_path):
+    for path in (submission_path, experiment_path, run_path):
         if not os.path.exists(path):
             raise FileNotFoundError(path)
 
