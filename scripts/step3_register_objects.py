@@ -64,7 +64,7 @@ def register_objects(
         "-F", f"EXPERIMENT=@{experiment_path}",
         "-F", f"RUN=@{run_path}",
         "-o", output_path,
-        "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
+        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
     # # Execute the command
@@ -76,6 +76,7 @@ def register_objects(
     #     print(f"[!] Error:", {e.stderr})
 
     return output_path
+
 
 def mapping(
         d1: dict,
@@ -109,6 +110,7 @@ def flatten_object(
                     string_elements.append(v)
     print(string_elements)
     return string_elements
+
 
 
 
@@ -208,7 +210,11 @@ def to_sheet(
         metadata_path: str,
         template_dir: str,
         experiment_type:str,
-):
+)-> str:
+    
+    ## MIGHT directly compile to the google sheet
+    ## Here i am just creating a new file
+
     cols = ['Experiment_title','Sample_alias','Experiment_accession',
             'Run_accession','Run_title','Forward_file',
             'Forward_md5','Reverse_file','Reverse_md5']
@@ -220,8 +226,8 @@ def to_sheet(
             f'{project_name}_details_{experiment_type}.csv')
 
     dataframe.to_csv(output_path, index = False) 
-    print(f'Details stored to:{output_path}')
 
+    return output_path
 
 
 if __name__ == "__main__":
@@ -255,17 +261,19 @@ if __name__ == "__main__":
         experiment_type=args.experiment_type,
         user_password=args.user_password
     )
+    print(f"[STEP3][1] Experiments and runs info saved to {final_receipt_path}")
+   
     lista = metadata_upload(
         metadata_path = args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type,
     )
 
-    to_sheet(
+    details_submission = to_sheet(
         lista = lista,
         metadata_path = args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type
     )
 
-    print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
+    print(f"[STEP3][2] Metadata written to {details_submission}")
