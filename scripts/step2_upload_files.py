@@ -65,13 +65,6 @@ def main(
          #sample_path = '/media/edotacca/Thor/raw_sequences/HYD22/Metagenomes'
         forward_pattern="*_1.fq.gz"
 
-       
-    # Example HYD22-Sample_alias-experiment_type
-
-    df = pd.DataFrame(columns=['sample_alias','sample_accession','experiment_name','uploaded file 1','uploaded file 2','checksum_file_1','checksum_file_2'])
-
-    cols =['experiment_alias','forward_r1_fastq','reverse_r2_fastq','forward_r1_md5sum','reverse_r2_md5sum']
-
 
     all_files = []
     sample_path = os.path.join(samples_dir,experiment_type)
@@ -80,8 +73,9 @@ def main(
     for filename_for in glob.glob(pattern_for, recursive=True):
 
         # Avoid raw reads
-        # if "raw" in filename_for:
-        #      continue
+        name = filename_for.split('/')[-1]
+        if "raw" in name:
+             continue
 
         # Get reverse file from forward one
         # WARNING: may generate errors there are multiple "1" in the pattern
