@@ -64,7 +64,7 @@ def register_objects(
         "-F", f"EXPERIMENT=@{experiment_path}",
         "-F", f"RUN=@{run_path}",
         "-o", output_path,
-        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
     # # Execute the command
@@ -94,8 +94,7 @@ def mapping(
 
 def flatten_object(
     lista: list
-
-)-> str:
+)-> list:
     
     string_elements = []
     for item in lista:
@@ -126,6 +125,7 @@ def metadata_upload(
 
     project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_path = os.path.dirname(metadata_path)
+
     run_path = os.path.join(metadata_path,
                     f"{project_name}_ena_run_{experiment_type}.xml"
                     )
@@ -135,7 +135,7 @@ def metadata_upload(
     object_receipt_path = os.path.join(metadata_path,
                      f"{project_name}_ena_object_receipt.xml"                  
                     )
-    # RETRIEVING METADATA
+    # RETRIEVING METADATA from Object-registration.xml file
 
     with open(object_receipt_path, mode="r") as handle:
         xml_data = bs.BeautifulSoup(handle, "xml")
@@ -151,13 +151,12 @@ def metadata_upload(
         run_accession = run.get("accession")
         runs[alias_run] = run_accession
 
-
     object_receipt = mapping(runs,exps)
                 
-    print(object_receipt)
-    print(len(object_receipt.keys()))
+    # print(object_receipt)
+    # print(len(object_receipt.keys()))
     
-    # RETRIEVING METADATA
+    # RETRIEVING METADATA from experiment.xml AND run.xml
 
     with open(run_path, mode="r") as read1, open(experiment_path, mode="r") as read2:
         xml_run = bs.BeautifulSoup(read1, "xml")
@@ -185,10 +184,6 @@ def metadata_upload(
             sample_accession = descriptor.get("accession")
             exp_meta[exp_ref] = sample_accession
 
-    print(exp_meta)
-    #print(next(iter(run_meta.items())))
-    print(run_meta)
-        #MAPPING RELATIONSHIPS
     listone = []
     # THIS THING IS AN ABOMINUM
     for key,value in object_receipt.items():
@@ -219,13 +214,13 @@ def to_sheet(
             'Forward_md5','Reverse_file','Reverse_md5']
     dataframe = pd.DataFrame(columns=cols,data=lista)
 
+    project_name = os.path.basename(metadata_path).split("_")[0]
+    output_dir = os.path.dirname(metadata_path)
+    output_path = os.path.join(output_dir,
+            f'{project_name}_details_{experiment_type}.csv')
 
-    print(dataframe)
-
-
-#    goolge_sheet = pd.read_csv(os.path.join(
-#        template_dir, ))
-
+    dataframe.to_csv(output_path, index = False) 
+    print(f'Details stored to:{output_path}')
 
 
 
@@ -274,7 +269,3 @@ if __name__ == "__main__":
     )
 
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
-
-    # for n,item in enumerate(lista):
-    #     print(f"{n} : {lista}")
-
