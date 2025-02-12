@@ -283,7 +283,7 @@ def create_run(
 
     template_path = os.path.join(
         template_dir,
-        f"run_{experiment_type}.xml"
+        f"run_16S.xml"
     )
 
     run_xml = []
@@ -291,9 +291,9 @@ def create_run(
     pattern_for = f"{samples_dir}/**/{forward_pattern}"
 
     for filename_for in glob.glob(pattern_for, recursive=True):
-
+        
         # Avoid raw reads
-        if "raw" in filename_for:
+        if "raw" in os.path.basename(filename_for):
             continue
 
         # Get reverse file from forward one
@@ -309,9 +309,19 @@ def create_run(
         if not os.path.exists(filename_rev):
             raise ValueError(f"[!] Reverse file not found: {filename_rev}")
 
-        # Compute the checksum (MD5)
-        hash_for = hashlib.md5(open(filename_for, mode="rb").read()).hexdigest()
-        hash_rev = hashlib.md5(open(filename_rev, mode="rb").read()).hexdigest()
+        if experiment_type == 'WGS':
+            # retrieve checksum (MD5.txt) 
+                current_dir = os.path.dirname(filename_for)    # taking file dir
+                file_name = os.path.join(current_dir,'MD5.txt') 
+
+                with open(file_name,'r') as reader:
+                    lines = reader.readlines()
+                    hash_for = lines[0].split(' ')[0]   # assuming for is in 1st line
+                    hash_rev = lines[1].split(' ')[0]   # assuming rev is in 2nd line
+        else:
+            # Compute the checksum (MD5)
+            hash_for = hashlib.md5(open(filename_for, mode="rb").read()).hexdigest()
+            hash_rev = hashlib.md5(open(filename_rev, mode="rb").read()).hexdigest()
 
         with open(template_path, mode="r") as handle:
             template_xml = handle.read()
@@ -339,7 +349,7 @@ def create_run(
         "<RUN_SET>" + "\n" + \
         "\n".join(run_xml) + "\n" + \
         "</RUN_SET>" + "\n"
-
+    
     output_path = os.path.join(
         os.path.dirname(metadata_path),
         f"{project_name}_ena_run_{experiment_type}.xml"
