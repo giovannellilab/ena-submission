@@ -108,7 +108,6 @@ def flatten_object(
                 if isinstance(v, str) and isinstance(k,str):
                     string_elements.append(k)
                     string_elements.append(v)
-    print(string_elements)
     return string_elements
 
 
@@ -137,8 +136,23 @@ def metadata_upload(
     object_receipt_path = os.path.join(metadata_path,
                      f"{project_name}_ena_object_receipt.xml"                  
                     )
-    # RETRIEVING METADATA from Object-registration.xml file
+    sample_receipt_path = os.path.join(metadata_path,
+                     f"{project_name}_ena_samples_receipt.xml"                  
+                    )
+    # RETRIEVING METADATA from sample_receipt.xml file
+    with open(sample_receipt_path, mode="r") as handle:
+        xml_data = bs.BeautifulSoup(handle, "xml")
 
+        samples =  {}
+        for sample in xml_data.find_all("SAMPLE"):
+            accession = sample.get('accession')   #ERS10
+            glab_accession = sample.get('alias')  #oURS
+            get = sample.find('EXT_ID')           
+            samea_accession = get.get('accession') # SAMEA10
+            samples[accession] = [glab_accession,samea_accession]
+        print(f'Samples:{next(iter(samples.items()))}')
+
+    # RETRIEVING METADATA from Object-registration-receipt.xml file
     with open(object_receipt_path, mode="r") as handle:
         xml_data = bs.BeautifulSoup(handle, "xml")
 
@@ -154,9 +168,7 @@ def metadata_upload(
         runs[alias_run] = run_accession
 
     object_receipt = mapping(runs,exps)
-                
-    # print(object_receipt)
-    # print(len(object_receipt.keys()))
+    print(f'Onject:{next(iter(object_receipt.items()))}')
     
     # RETRIEVING METADATA from experiment.xml AND run.xml
 
@@ -186,6 +198,10 @@ def metadata_upload(
             sample_accession = descriptor.get("accession")
             exp_meta[exp_ref] = sample_accession
 
+    print(f'run_meta:{next(iter(run_meta.items()))}')
+    print(f'exp_meta:{next(iter(exp_meta.items()))}')
+
+        #mapp key in exp_meta ()
     listone = []
     # THIS THING IS AN ABOMINUM
     for key,value in object_receipt.items():
@@ -199,6 +215,11 @@ def metadata_upload(
         listone.append(object_relation)
 
     output_list = []
+
+    # dic = {}
+    # for k,v in samples.items():
+    #     if k in exp_meta.values():
+    #         dic[]
     for item in listone:
         s = flatten_object(item)
         output_list.append(s)
@@ -214,11 +235,31 @@ def to_sheet(
     
     ## MIGHT directly compile to the google sheet
     ## Here i am just creating a new file
-
-    cols = ['Experiment_title','Sample_alias','Experiment_accession',
-            'Run_accession','Run_title','Forward_file',
-            'Forward_md5','Reverse_file','Reverse_md5']
+    cols_study = ['expID','study_accession']
+    study_data = ['HYD22','PRJEB67767']
+    
+    cols = ['experiment_title',
+            'sample_alias','experiment_accession',
+            'run_accession','run_title','forward_file',
+            'forward_md5','reverse_file','reverse_md5'
+            ]
+    
+    cols_ngs = ['sequencing_platform','sequencing_instrument','library_source',
+            'library_selection','library_strategy']
+    if experiment_type == '16S':
+        ngs_data = ['ILLUMINA','Illumina Miseq','METAGENOMIC','PCR','AMPLICON']
+    else:
+        ngs_data = ['ILLUMINA','Illumina NovaSeq 6000','GENOMIC','RANDOM','WGS']
+    
     dataframe = pd.DataFrame(columns=cols,data=lista)
+
+    for col,value in zip(cols_study,study_data):
+        dataframe[col] = value
+    for col, value in zip(cols_ngs, ngs_data):
+        dataframe[col] = value
+    
+    #re-ordering the columns
+    dataframe = dataframe[cols_study + dataframe.columns.drop(cols_study).tolist()]
 
     project_name = os.path.basename(metadata_path).split("_")[0]
     output_dir = os.path.dirname(metadata_path)
