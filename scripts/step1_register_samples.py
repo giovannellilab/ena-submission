@@ -456,6 +456,8 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
 
+    print(f"[INFO] Using 16S forward pattern {args.forward_pattern_16s}")
+    print(f"[INFO] Using WGS forward pattern {args.forward_pattern_wgs}")
     forward_pattern_dict = {
         "16S": args.forward_pattern_16s,
         "WGS": args.forward_pattern_wgs
