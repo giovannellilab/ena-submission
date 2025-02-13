@@ -1,4 +1,3 @@
-
 import re
 
 import os
@@ -13,20 +12,17 @@ import subprocess
 
 
 def uploader(
-        file_list: list ,
-        interactive: bool = False
-
+    file_list: list ,
+    interactive: bool = False
 )-> None:
 
-    #NOTA: ftp will ask for each file confirmation, to disable interactive mode, issue the prompt command or
-    # OR use -i flag in ftp command
-    #save credentials in netrc file 
+    # NOTE: ftp will ask for each file confirmation, to disable interactive
+    # mode, issue the prompt command or use -i flag in ftp command. Save
+    # credentials in netrc file
     if interactive:
         mput_command =  "mput "+ " ".join(file_list) + "; bye"
 
     else:
-
-        #mput_command = "set cmd:interactive no; mput " + " ".join(file_list) + "; bye"
         mput_command = "mput -c " + " ".join(file_list) + "; bye"
 
     ftp_connection = [
@@ -34,30 +30,26 @@ def uploader(
         "webin2.ebi.ac.uk",
         "-e", mput_command
     ]
-    
+
     try:
         subprocess.run(ftp_connection, check=True, text=True)
         print(f"First commmand run")
 
     except subprocess.CalledProcessError as e:
         print(f"Error:", {e.stderr})
-    
+
     return None
 
 
-
-
 def main(
-        samples_dir: str,
-        experiment_type: str,
-        forward_pattern: str
-
+    samples_dir: str,
+    experiment_type: str,
+    forward_pattern: str
 )-> list:
 
     if not os.path.exists(samples_dir):
         print(f'Error {samples_dir} not correctly inputed')
         return 
-
 
     if experiment_type == 'WGS':
         sample_path = os.path.join(samples_dir,'Metagenomes')
@@ -95,12 +87,9 @@ def main(
         print(f" - {filename_for} ---- ({size_for:.2f} MB)")
         print(f" - {filename_rev} ---- ({size_rev:.2f} MB)")
 
-
     return all_files
 
 
-
-        
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Uploading raw sequences")
@@ -129,7 +118,6 @@ if __name__ == "__main__":
         help = "Directory containing sample subdirectories for the submisssion",
         type=str
     )
-
     parser.add_argument(
         "-f", "--forward_pattern",
         help="Pattern followed in naming the forward sequence files.",
@@ -146,7 +134,4 @@ if __name__ == "__main__":
         forward_pattern=args.forward_pattern
     )
 
-    uploader(
-            file_list = files
-    )
-    
+    uploader(file_list=files)
