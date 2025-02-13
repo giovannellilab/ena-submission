@@ -12,7 +12,6 @@ import glob
 import subprocess
 
 
-
 def uploader(
         file_list: list ,
         interactive: bool = False
@@ -36,12 +35,12 @@ def uploader(
         "-e", mput_command
     ]
     
-    # try:
-    #     subprocess.run(ftp_connection, check=True, text=True)
-    #     print(f"First commmand run")
+    try:
+        subprocess.run(ftp_connection, check=True, text=True)
+        print(f"First commmand run")
 
-    # except subprocess.CalledProcessError as e:
-    #     print(f"Error:", {e.stderr})
+    except subprocess.CalledProcessError as e:
+        print(f"Error:", {e.stderr})
     
     return None
 
