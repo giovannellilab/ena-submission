@@ -1,0 +1,11 @@
+    <RUN alias="run_$$$EXPERIMENT_ALIAS$$$" center_name="">
+        <EXPERIMENT_REF refname="$$$EXPERIMENT_ALIAS$$$"/>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE filename="$$$FORWARD_R1_FASTQ$$$" filetype="fastq"
+                    checksum_method="MD5" checksum="$$$FORWARD_R1_MD5SUM$$$"/>
+                <FILE filename="$$$REVERSE_R2_FASTQ$$$" filetype="fastq"
+                    checksum_method="MD5" checksum="$$$REVERSE_R2_MD5SUM$$$"/>
+            </FILES>
+        </DATA_BLOCK>
+    </RUN>
