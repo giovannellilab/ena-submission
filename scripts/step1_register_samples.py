@@ -212,41 +212,68 @@ def parse_samples_receipt(
 def create_experiment(
     samples_receipt_path: str,
     metadata_path: str,
-    template_dir: str,
-    experiment_type: str
+    samples_dir: str,
+    forward_pattern: str,
+    template_dir: str
 ) -> str:
 
     # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
 
-    template_path = os.path.join(
-        template_dir,
-        f"experiment_{experiment_type}.xml"
-    )
-
-    receipt_df = parse_samples_receipt(
-        samples_receipt_path=samples_receipt_path,
-        metadata_path=metadata_path
-    )
-
     experiment_xml = []
 
-    for _, row in receipt_df.iterrows():
-        row = row.astype(str)
+    for experiment_type in ["WGS"]:   #re add '16S'
 
-        with open(template_path, mode="r") as handle:
-            template_xml = handle.read()
+        template_path = os.path.join(
+            template_dir,
+            f"experiment_{experiment_type}.xml"
+        )
 
-        exp_alias = f"{project_name}-{row['sample_alias']}-{experiment_type}"
+        receipt_df = parse_samples_receipt(
+            samples_receipt_path=samples_receipt_path,
+            metadata_path=metadata_path
+        )
 
-        template_xml = template_xml\
-            .replace("$$$STUDY_ID$$$", row["project_id"])\
-            .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
-            .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
-            .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
-            .replace("$$$YEAR$$$", str(datetime.now().year))
+        for _, row in receipt_df.iterrows():
+            row = row.astype(str)
 
-        experiment_xml += [template_xml]
+            with open(template_path, mode="r") as handle:
+                template_xml = handle.read()
+
+            sample_alias = row['sample_alias']
+
+            #this is a temporary fix
+            if experiment_type == '16S':
+                sample_alias = sample_alias + '_EU'
+            elif experiment_type == 'WGS':
+                sample_alias = sample_alias + '_EW'
+
+            print(sample_alias)
+
+            sample_pattern = os.path.join(
+                samples_dir,
+                "Metagenomes",
+                f"{sample_alias}/{sample_alias}{forward_pattern}"
+            )
+
+            print(sample_pattern)
+            sample_files = glob.glob(sample_pattern, recursive=False)
+            print(sample_files)
+
+            if not len(sample_files):
+                print(f"[WARNING] Sample {sample_alias} not found!")
+                continue
+
+            exp_alias = f"{project_name}-{row['sample_alias']}-{experiment_type}"
+
+            template_xml = template_xml\
+                .replace("$$$STUDY_ID$$$", row["project_id"])\
+                .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
+                .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
+                .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
+                .replace("$$$YEAR$$$", str(datetime.now().year))
+
+            experiment_xml += [template_xml]
 
     experiment_xml = \
         '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
@@ -283,7 +310,7 @@ def create_run(
 
     template_path = os.path.join(
         template_dir,
-        f"run_16S.xml"
+        f"run.xml"
     )
 
     run_xml = []
@@ -412,8 +439,9 @@ if __name__ == "__main__":
     experiment_path = create_experiment(
         samples_receipt_path=samples_receipt_path,
         metadata_path=args.metadata_path,
+        samples_dir=args.samples_dir,
         template_dir=args.template_dir,
-        experiment_type=args.experiment_type
+        forward_pattern=args.forward_pattern
     )
 
     run_path = create_run(
