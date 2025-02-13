@@ -1,0 +1,29 @@
+    <EXPERIMENT alias="$$$EXPERIMENT_ALIAS$$$">
+       <TITLE>$$$EXPERIMENT_TITLE$$$</TITLE>
+       <STUDY_REF accession="$$$STUDY_ID$$$"/>
+       <DESIGN>
+           <DESIGN_DESCRIPTION/>
+           <SAMPLE_DESCRIPTOR accession="$$$SAMPLE_ACCESSION$$$"/>
+           <LIBRARY_DESCRIPTOR>
+               <LIBRARY_NAME/>
+               <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+               <LIBRARY_SOURCE>METAGENOMIC</LIBRARY_SOURCE>
+               <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+               <LIBRARY_LAYOUT>
+                   <PAIRED NOMINAL_LENGTH="150"/> 
+               </LIBRARY_LAYOUT>
+               <LIBRARY_CONSTRUCTION_PROTOCOL>DNA is randomly shared into short fragments, end repaired A-tailed and then ligated with Illumina adapters using the Novogene NGS DNA Library Prep Set (Cat No.PT004). Fragments with adapters are size selected, PCR amplified and purified. The library was checked with Qubit and real-time PCR for quantification and bioanalyzer for size distribution detection. Quantified libraries will be pooled and sequenced on Illumina platforms, according to effective library concentration and data amount required.</LIBRARY_CONSTRUCTION_PROTOCOL>      
+            </LIBRARY_DESCRIPTOR>
+       </DESIGN>
+       <PLATFORM>
+           <ILLUMINA>
+               <INSTRUMENT_MODEL>Illumina NovaSeq 6000</INSTRUMENT_MODEL>
+           </ILLUMINA>
+       </PLATFORM>
+       <EXPERIMENT_ATTRIBUTES>
+           <EXPERIMENT_ATTRIBUTE>
+               <TAG>library preparation date</TAG>
+               <VALUE>$$$YEAR$$$</VALUE>
+           </EXPERIMENT_ATTRIBUTE>
+       </EXPERIMENT_ATTRIBUTES>
+   </EXPERIMENT>
