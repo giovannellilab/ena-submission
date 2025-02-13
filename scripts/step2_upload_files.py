@@ -48,7 +48,8 @@ def uploader(
 
 def main(
         samples_dir: str,
-        experiment_type: str
+        experiment_type: str,
+        forward_pattern: str
 
 )-> list:
 
@@ -56,18 +57,13 @@ def main(
         print(f'Error {samples_dir} not correctly inputed')
         return 
 
-    if experiment_type == '16S' or experiment_type == '16_S':
-        #sample_path = os.path.join(samples_dir,'16_S')
-        forward_pattern="*_1.fastq.gz"
 
-    if experiment_type == 'Metagenomes' or experiment_type == 'metagenomes':
-        #sample_path = os.path.join(samples_dir,'Metagenomes')
-         #sample_path = '/media/edotacca/Thor/raw_sequences/HYD22/Metagenomes'
-        forward_pattern="*_1.fq.gz"
-
+    if experiment_type == 'WGS':
+        sample_path = os.path.join(samples_dir,'Metagenomes')
+    else:
+        sample_path = os.path.join(samples_dir,experiment_type)
 
     all_files = []
-    sample_path = os.path.join(samples_dir,experiment_type)
     pattern_for = f"{sample_path}/**/{forward_pattern}"
 
     for filename_for in glob.glob(pattern_for, recursive=True):
@@ -137,16 +133,18 @@ if __name__ == "__main__":
         "-f", "--forward_pattern",
         help="Pattern followed in naming the forward sequence files.",
         type=str,
-        default="*_1.fastq.gz"
+        default="*_1.fq.gz"
     )
-    
+
     args = parser.parse_args()
 
 
     files = main(
         samples_dir = args.sample_dir,
-        experiment_type =args.experiment_type
+        experiment_type =args.experiment_type,
+        forward_pattern=args.forward_pattern
     )
+
     uploader(
             file_list = files
     )
