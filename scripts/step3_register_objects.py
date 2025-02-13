@@ -49,7 +49,7 @@ def register_objects(
     )
     output_path = os.path.join(
         metadata_dir,
-        f"{project_name}_ena_object_receipt.xml"
+        f"{project_name}_ena_object_receipt_{experiment_type}.xml"
     )
 
     # Check all files exist beforehand
@@ -93,25 +93,6 @@ def mapping(
     return d3
 
 
-def flatten_object(
-    lista: list
-)-> list:
-    
-    string_elements = []
-    for item in lista:
-        if isinstance(item, str):  # Direct string elements
-            string_elements.append(item)
-        elif isinstance(item, list):  # Flatten nested lists
-            string_elements.extend([x for x in item if isinstance(x, str)])
-        elif isinstance(item, dict):  # Extract values from dictionaries
-            for k,v in item.items():
-                if isinstance(v, str) and isinstance(k,str):
-                    string_elements.append(k)
-                    string_elements.append(v)
-    return string_elements
-
-
-
 
 def metadata_upload(
     metadata_path: str,
@@ -134,7 +115,7 @@ def metadata_upload(
                     f"{project_name}_ena_experiment_{experiment_type}.xml"
                     )
     object_receipt_path = os.path.join(metadata_path,
-                     f"{project_name}_ena_object_receipt.xml"                  
+                     f"{project_name}_ena_object_receipt_{experiment_type}.xml"                  
                     )
     sample_receipt_path = os.path.join(metadata_path,
                      f"{project_name}_ena_samples_receipt.xml"                  
@@ -203,30 +184,6 @@ def metadata_upload(
     print(f'run_meta:{next(iter(run_meta.items()))}')
     print(f'exp_meta:{next(iter(exp_meta.items()))}')
 
-    #mapp key in exp_meta ()
-    '''
-    listone = []
-    # THIS THING IS AN ABOMINUM
-    for key,value in object_receipt.items():
-        object_relation = []
-        if key in run_meta and key in exp_meta:
-            object_relation.append(key) # EXP ref
-            object_relation.append(exp_meta[key]) # sample accession
-            object_relation.append(value) #exp and run accession numbers
-            object_relation.append(run_meta[key]) # run files names and checksum
-
-        listone.append(object_relation)
-
-    output_list = []
-
-    # dic = {}
-    # for k,v in samples.items():
-    #     if k in exp_meta.values():
-    #         dic[]
-    for item in listone:
-        s = flatten_object(item)
-        output_list.append(s)
-    '''
     WGS_df = []
     Amplicon_df  = []
     # 1) iterate over samples (ERS)
@@ -264,33 +221,8 @@ def metadata_upload(
                 elif exp_ref.split('-')[-1] == '16S':
                     Amplicon_df.append(row)
 
-    return pd.concat(Amplicon_df)
+    return pd.concat(WGS_df)
 
-        
-                
-    '''
-    listone = []
-    # THIS THING IS AN ABOMINUM
-    for key,value in object_receipt.items():
-        object_relation = []
-        if key in run_meta and key in exp_meta:
-            object_relation.append(key) # EXP ref
-            object_relation.append(exp_meta[key]) # sample accession
-            object_relation.append(value) #exp and run accession numbers
-            object_relation.append(run_meta[key]) # run files names and checksum
-
-        listone.append(object_relation)
-
-    output_list = []
-
-    # dic = {}
-    # for k,v in samples.items():
-    #     if k in exp_meta.values():
-    #         dic[]
-    for item in listone:
-        s = flatten_object(item)
-        output_list.append(s)
-    '''
 
 def to_sheet(
         dataframe: pd.DataFrame,
@@ -298,41 +230,32 @@ def to_sheet(
         template_dir: str,
         experiment_type:str,
 )-> str:
-    '''
-    ## MIGHT directly compile to the google sheet
-    ## Here i am just creating a new file
-    cols_study = ['expID','study_accession']
-    study_data = ['HYD22','PRJEB67767']
     
-    cols = ['experiment_title',
-            'sample_alias','experiment_accession',
-            'run_accession','run_title','forward_file',
-            'forward_md5','reverse_file','reverse_md5'
-            ]
-    
-    cols_ngs = ['sequencing_platform','sequencing_instrument','library_source',
-            'library_selection','library_strategy']
-    if experiment_type == '16S':
-        ngs_data = ['ILLUMINA','Illumina Miseq','METAGENOMIC','PCR','AMPLICON']
-    else:
-        ngs_data = ['ILLUMINA','Illumina NovaSeq 6000','GENOMIC','RANDOM','WGS']
-    
-    dataframe = pd.DataFrame(columns=cols,data=lista)
-
-    for col,value in zip(cols_study,study_data):
-        dataframe[col] = value
-    for col, value in zip(cols_ngs, ngs_data):
-        dataframe[col] = value
-    
-    #re-ordering the columns
-    dataframe = dataframe[cols_study + dataframe.columns.drop(cols_study).tolist()]
-    '''
-
+    print(dataframe)
     project_name = os.path.basename(metadata_path).split("_")[0]
+
     output_dir = os.path.dirname(metadata_path)
     output_path = os.path.join(output_dir,
             f'{project_name}_details_{experiment_type}.csv')
 
+
+    cols_study = ['expID','study_accession']
+    study_data = [project_name,'PRJEB67767']
+
+    cols_ngs = ['sequencing_platform','sequencing_instrument','library_source',
+            'library_selection','library_strategy']
+    if experiment_type == '16S':
+        ngs_data = ['ILLUMINA',' Illumina NovaSeq 6000','METAGENOMIC','PCR','AMPLICON']
+    else:
+        ngs_data = ['ILLUMINA','Illumina NovaSeq 6000','GENOMIC','RANDOM','WGS']
+    
+    for col,value in zip(cols_study,study_data):
+        dataframe[col] = value
+    for col, value in zip(cols_ngs, ngs_data):
+        dataframe[col] = value
+
+    #re-ordering the columns
+    dataframe = dataframe[cols_study + dataframe.columns.drop(cols_study).tolist()]
     dataframe.to_csv(output_path, index = False) 
 
     return output_path
@@ -370,18 +293,21 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
     print(f"[STEP3][1] Experiments and runs info saved to {final_receipt_path}")
-   
-    df_amplicon = metadata_upload(
+    
+    df_wgs = metadata_upload(
         metadata_path = args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type,
     )
-    print(df_amplicon.head())
-    # details_submission = to_sheet(
-    #     lista = lista,
-    #     metadata_path = args.metadata_path,
-    #     template_dir=args.template_dir,
-    #     experiment_type=args.experiment_type
-    # )
 
-    #print(f"[STEP3][2] Metadata written to {details_submission}")
+    sheets = [('WGS',df_wgs)]
+    for exp in sheets:
+
+        details_submission = to_sheet(
+            dataframe=exp[1],
+            metadata_path = args.metadata_path,
+            template_dir=args.template_dir,
+            experiment_type=exp[0]
+        )
+
+    print(f"[STEP3][2] Metadata written to {details_submission}")
