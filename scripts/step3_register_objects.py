@@ -184,12 +184,14 @@ def metadata_upload(
             names_files = files.find_all("FILE")
 
             run_object = {}
+            run_file = []
             for file in names_files:
                 f = file.get("filename")
                 md5 = file.get("checksum")
-                run_object[f] = md5
+                run_file.append(f)
+                run_file.append(md5)
 
-            run_meta[name_exp] = run_object
+            run_meta[name_exp] = run_file
 
         exp_meta = {}
         for exp in xml_exp.find_all("EXPERIMENT"):
@@ -201,7 +203,8 @@ def metadata_upload(
     print(f'run_meta:{next(iter(run_meta.items()))}')
     print(f'exp_meta:{next(iter(exp_meta.items()))}')
 
-        #mapp key in exp_meta ()
+    #mapp key in exp_meta ()
+    '''
     listone = []
     # THIS THING IS AN ABOMINUM
     for key,value in object_receipt.items():
@@ -223,16 +226,79 @@ def metadata_upload(
     for item in listone:
         s = flatten_object(item)
         output_list.append(s)
+    '''
+    WGS_df = []
+    Amplicon_df  = []
+    # 1) iterate over samples (ERS)
+    for k,values in samples.items():
+        # 2) retrieve experiments (16S or WGS or both) from XML (using ERS)
+        if k in exp_meta.values():
 
-    return  output_list
+            exp_aliases = [key for key,val in exp_meta.items() if val == k]  #if there are going to be at max two keys with same value
+            # 3) iterate over experiments
+            for exp_alias in exp_aliases:
+                
+                # 4) retrieve runs from XML (using ERX)
+                if exp_alias in run_meta.keys():
+                    run_info = run_meta[exp_ref]
+                    print(run_info)
+                if exp_alias in object_receipt.keys():
+                    receipt = object_receipt[exp_ref]
+
+                row = pd.Series({
+                        "sample_alias": values[0],#Glab
+                        "sample_accession": values[1], #SAmea
+                        "experiment_alias": exp_ref,
+                        "alternative_accession":k,
+                        "experiment_ref":receipt[0],
+                        "run_ref": receipt[1],
+                        "run_alias":receipt[2],
+                        "forward_file":run_info[0],
+                        "reverse_file":run_info[2],
+                        "forward_checksum":run_info[1],
+                        "reverse_checksum":run_info[3]
+                    }).to_frame().T
+
+                if exp_ref.split('-')[-1] == 'WGS':
+                    WGS_df.append(row)
+                elif exp_ref.split('-')[-1] == '16S':
+                    Amplicon_df.append(row)
+
+    return pd.concat(Amplicon_df)
+
+        
+                
+    '''
+    listone = []
+    # THIS THING IS AN ABOMINUM
+    for key,value in object_receipt.items():
+        object_relation = []
+        if key in run_meta and key in exp_meta:
+            object_relation.append(key) # EXP ref
+            object_relation.append(exp_meta[key]) # sample accession
+            object_relation.append(value) #exp and run accession numbers
+            object_relation.append(run_meta[key]) # run files names and checksum
+
+        listone.append(object_relation)
+
+    output_list = []
+
+    # dic = {}
+    # for k,v in samples.items():
+    #     if k in exp_meta.values():
+    #         dic[]
+    for item in listone:
+        s = flatten_object(item)
+        output_list.append(s)
+    '''
 
 def to_sheet(
-        lista: list,
+        dataframe: pd.DataFrame,
         metadata_path: str,
         template_dir: str,
         experiment_type:str,
 )-> str:
-    
+    '''
     ## MIGHT directly compile to the google sheet
     ## Here i am just creating a new file
     cols_study = ['expID','study_accession']
@@ -260,6 +326,7 @@ def to_sheet(
     
     #re-ordering the columns
     dataframe = dataframe[cols_study + dataframe.columns.drop(cols_study).tolist()]
+    '''
 
     project_name = os.path.basename(metadata_path).split("_")[0]
     output_dir = os.path.dirname(metadata_path)
@@ -304,17 +371,17 @@ if __name__ == "__main__":
     )
     print(f"[STEP3][1] Experiments and runs info saved to {final_receipt_path}")
    
-    lista = metadata_upload(
+    df_amplicon = metadata_upload(
         metadata_path = args.metadata_path,
         template_dir=args.template_dir,
         experiment_type=args.experiment_type,
     )
+    print(df_amplicon.head())
+    # details_submission = to_sheet(
+    #     lista = lista,
+    #     metadata_path = args.metadata_path,
+    #     template_dir=args.template_dir,
+    #     experiment_type=args.experiment_type
+    # )
 
-    details_submission = to_sheet(
-        lista = lista,
-        metadata_path = args.metadata_path,
-        template_dir=args.template_dir,
-        experiment_type=args.experiment_type
-    )
-
-    print(f"[STEP3][2] Metadata written to {details_submission}")
+    #print(f"[STEP3][2] Metadata written to {details_submission}")
