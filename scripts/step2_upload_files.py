@@ -24,7 +24,7 @@ import glob
 import subprocess
 
 
-def uploader(
+def upload_files(
     file_list: list ,
     interactive: bool = False
 )-> None:
@@ -137,14 +137,15 @@ if __name__ == "__main__":
         type=str,
         default="*_1.fq.gz"
     )
-
     args = parser.parse_args()
 
-
-    files = main(
-        samples_dir = args.sample_dir,
-        experiment_type =args.experiment_type,
+    file_list = main(
+        samples_dir=args.sample_dir,
+        experiment_type=args.experiment_type,
         forward_pattern=args.forward_pattern
     )
 
-    uploader(file_list=files)
+    upload_files(
+        file_list=file_list,
+        interactive=False
+    )
