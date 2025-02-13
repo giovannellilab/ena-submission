@@ -79,24 +79,25 @@ def register_objects(
 
 
 def mapping(
-    d1: dict,
-    d2: dict
+    runs: dict,
+    exps: dict
 ) -> dict:
-    d3 = {}
-    for k, v in d1.items():
+    results_dict = {}
+    for k, v in runs.items():
         alias = k[4:]
 
-        if alias in d2.keys():
-            d3[alias] = [d2[alias], v, k] # In order: EXP, RUN, RUN_alias
+        if alias in exps.keys():
+            # In order: EXP, RUN, RUN_alias
+            results_dict[alias] = [exps[alias], v, k]
 
-    return d3
+    return results_dict
 
 
 def get_metadata(
     metadata_path: str,
     template_dir: str,
     experiment_type: str
-) -> dict:
+) -> pd.DataFrame:
 
     # Associate:
     # - SAMPLE accession: ERS00000000 and SAMEA
@@ -138,8 +139,6 @@ def get_metadata(
             get = sample.find("EXT_ID")
             samples[accession] = [custom_accession, samea_accession]
 
-        print(f"Samples:{next(iter(samples.items()))}")
-
     # ------------------------------------------------------------------------ #
 
     # RETRIEVING METADATA from Object-registration-receipt.xml file
@@ -158,8 +157,10 @@ def get_metadata(
         run_accession = run.get("accession")
         runs[alias_run] = run_accession
 
-    object_receipt = mapping(runs,exps)
-    print(f"Onject:{next(iter(object_receipt.items()))}")
+    object_receipt = mapping(
+        runs=runs,
+        exps=exps
+    )
 
     # ------------------------------------------------------------------------ #
 
@@ -182,7 +183,6 @@ def get_metadata(
             files = run.find("FILES")
             names_files = files.find_all("FILE")
 
-            run_object = {}
             run_file = []
             for file in names_files:
                 f = file.get("filename")
@@ -192,13 +192,9 @@ def get_metadata(
 
             run_meta[name_exp] = run_file
 
-    print(f"run_meta:{next(iter(run_meta.items()))}")
-    print(f"exp_meta:{next(iter(exp_meta.items()))}")
-
     # ------------------------------------------------------------------------ #
 
-    wgs_df = []
-    amplicon_df  = []
+    results_df  = []
 
     # 1) iterate over samples (ERS)
     for k, values in samples.items():
@@ -214,15 +210,14 @@ def get_metadata(
 
                 # 4) retrieve runs from XML (using ERX)
                 if exp_alias in run_meta.keys():
-                    run_info = run_meta[exp_ref]
-                    print("run_info", run_info)
+                    run_info = run_meta[exp_alias]
                 if exp_alias in object_receipt.keys():
-                    receipt = object_receipt[exp_ref]
+                    receipt = object_receipt[exp_alias]
 
                 row = pd.Series({
                     "sample_alias": values[0],     # Custom
                     "sample_accession": values[1], # SAMEA
-                    "experiment_alias": exp_ref,
+                    "experiment_alias": exp_alias,
                     "alternative_accession": k,
                     "experiment_ref": receipt[0],
                     "run_ref": receipt[1],
@@ -233,25 +228,19 @@ def get_metadata(
                     "reverse_checksum": run_info[3]
                 }).to_frame().T
 
-                if exp_ref.split("-")[-1] == "WGS":
-                    wgs_df.append(row)
-                elif exp_ref.split("-")[-1] == "16S":
-                    amplicon_df.append(row)
+                results_df.append(row)
 
-    return {
-        "WGS": pd.concat(WGS_df),
-        "16S": pd.concat(amplicon_df)
-    }
+    return pd.concat(results_df)
 
 
-def to_sheet(
+def format_metadata(
     dataframe: pd.DataFrame,
     metadata_path: str,
     template_dir: str,
-    experiment_type:str,
+    experiment_type: str,
 )-> str:
 
-    print(dataframe)
+    # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
 
     output_dir = os.path.dirname(metadata_path)
@@ -263,21 +252,44 @@ def to_sheet(
     cols_study = ["expID", "study_accession"]
     study_data = [project_name, "PRJEB67767"]
 
-    cols_ngs = ["sequencing_platform","sequencing_instrument","library_source",
-            "library_selection","library_strategy"]
+    cols_ngs = [
+        "sequencing_platform",
+        "sequencing_instrument",
+        "library_source",
+        "library_selection",
+        "library_strategy"
+    ]
     if experiment_type == "16S":
-        ngs_data = ["ILLUMINA"," Illumina NovaSeq 6000","METAGENOMIC","PCR","AMPLICON"]
+        ngs_data = [
+            "ILLUMINA",
+            "Illumina NovaSeq 6000",
+            "METAGENOMIC",
+            "PCR",
+            "AMPLICON"
+        ]
     else:
-        ngs_data = ["ILLUMINA","Illumina NovaSeq 6000","GENOMIC","RANDOM","WGS"]
+        ngs_data = [
+            "ILLUMINA",
+            "Illumina NovaSeq 6000",
+            "GENOMIC",
+            "RANDOM",
+            "WGS"
+        ]
     
-    for col,value in zip(cols_study,study_data):
+    for col, value in zip(cols_study, study_data):
         dataframe[col] = value
     for col, value in zip(cols_ngs, ngs_data):
         dataframe[col] = value
 
-    #re-ordering the columns
-    dataframe = dataframe[cols_study + dataframe.columns.drop(cols_study).tolist()]
-    dataframe.to_csv(output_path, index = False) 
+    # Re-order the columns
+    dataframe = dataframe[
+        cols_study + dataframe.columns.drop(cols_study).tolist()
+    ]
+    dataframe.to_csv(
+        output_path,
+        index=False,
+        sep=","
+    )
 
     return output_path
 
@@ -315,20 +327,18 @@ if __name__ == "__main__":
     )
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
 
-    metadata_dict = get_metadata(
-        metadata_path = args.metadata_path,
-        template_dir=args.template_dir,
-        experiment_type=args.experiment_types,
-    )
-
-    sheets = [("WGS", metadata_dict["WGS"])]
-
-    for exp in sheets:
-        details_submission = to_sheet(
-            dataframe=exp[1],
+    for experiment_type in args.experiment_types:
+        metadata_df = get_metadata(
             metadata_path = args.metadata_path,
             template_dir=args.template_dir,
-            experiment_type=exp[0]
+            experiment_type=experiment_type,
         )
 
-    print(f"[STEP3][+] Metadata written to {details_submission}")
+        details_submission = format_metadata(
+            dataframe=metadata_df,
+            metadata_path=args.metadata_path,
+            template_dir=args.template_dir,
+            experiment_type=experiment_type
+        )
+
+        print(f"[STEP3][+] Metadata written to {details_submission}")
