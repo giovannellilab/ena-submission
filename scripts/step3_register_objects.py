@@ -24,10 +24,10 @@ import bs4 as bs
 
 import pandas as pd
 
+
 def register_objects(
     metadata_path: str,
     template_dir: str,
-    experiment_type: str,
     user_password: str
 ) -> str:
 
@@ -41,15 +41,15 @@ def register_objects(
     )
     experiment_path = os.path.join(
         metadata_dir,
-        f"{project_name}_ena_experiment_{experiment_type}.xml"
+        f"{project_name}_ena_experiment.xml"
     )
     run_path = os.path.join(
         metadata_dir,
-        f"{project_name}_ena_run_{experiment_type}.xml"
+        f"{project_name}_ena_run.xml"
     )
     output_path = os.path.join(
         metadata_dir,
-        f"{project_name}_ena_object_receipt_{experiment_type}.xml"
+        f"{project_name}_ena_object_receipt.xml"
     )
 
     # Check all files exist beforehand
@@ -79,59 +79,68 @@ def register_objects(
 
 
 def mapping(
-        d1: dict,
-        d2: dict
-    )-> dict:
-        
+    d1: dict,
+    d2: dict
+) -> dict:
     d3 = {}
-    for k,v in d1.items():
+    for k, v in d1.items():
         alias = k[4:]
 
         if alias in d2.keys():
-            d3[alias] = [d2[alias],v,k] #In order: EXP,RUN,RUN_alias
-        
+            d3[alias] = [d2[alias], v, k] # In order: EXP, RUN, RUN_alias
+
     return d3
 
 
-
-def metadata_upload(
+def get_metadata(
     metadata_path: str,
     template_dir: str,
     experiment_type: str
+) -> dict:
 
-)-> list:
-    
-    # associate 
-    # - EXP accession: ERX13763087
-    # - RUN accession: ERR14361731
+    # Associate:
+    # - SAMPLE accession: ERS00000000 and SAMEA
+    # - EXP accession:    ERX00000000
+    # - RUN accession:    ERR00000000
 
+    # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
-    metadata_path = os.path.dirname(metadata_path)
+    metadata_dir = os.path.dirname(metadata_path)
 
-    run_path = os.path.join(metadata_path,
-                    f"{project_name}_ena_run_{experiment_type}.xml"
-                    )
-    experiment_path = os.path.join(metadata_path,
-                    f"{project_name}_ena_experiment_{experiment_type}.xml"
-                    )
-    object_receipt_path = os.path.join(metadata_path,
-                     f"{project_name}_ena_object_receipt_{experiment_type}.xml"                  
-                    )
-    sample_receipt_path = os.path.join(metadata_path,
-                     f"{project_name}_ena_samples_receipt.xml"                  
-                    )
-    # RETRIEVING METADATA from sample_receipt.xml file
+    sample_receipt_path = os.path.join(
+        metadata_dir,
+        f"{project_name}_ena_samples_receipt.xml"
+    )
+    experiment_path = os.path.join(
+        metadata_dir,
+        f"{project_name}_ena_experiment.xml"
+    )
+    run_path = os.path.join(
+        metadata_dir,
+        f"{project_name}_ena_run.xml"
+    )
+    object_receipt_path = os.path.join(
+        metadata_dir,
+        f"{project_name}_ena_object_receipt.xml"
+    )
+
+    # ------------------------------------------------------------------------ #
+
+    # RETRIEVING METADATA from samples_receipt.xml file
     with open(sample_receipt_path, mode="r") as handle:
         xml_data = bs.BeautifulSoup(handle, "xml")
 
-        samples =  {}
+        samples = {}
         for sample in xml_data.find_all("SAMPLE"):
-            accession = sample.get('accession')   #ERS10
-            glab_accession = sample.get('alias')  #oURS
-            get = sample.find('EXT_ID')           
-            samea_accession = get.get('accession') # SAMEA10
-            samples[accession] = [glab_accession,samea_accession]
-        print(f'Samples:{next(iter(samples.items()))}')
+            accession = sample.get("accession")    # ERS
+            samea_accession = sample.get("accession") # SAMEA
+            custom_accession = sample.get("alias") # Custom
+            get = sample.find("EXT_ID")
+            samples[accession] = [custom_accession, samea_accession]
+
+        print(f"Samples:{next(iter(samples.items()))}")
+
+    # ------------------------------------------------------------------------ #
 
     # RETRIEVING METADATA from Object-registration-receipt.xml file
     with open(object_receipt_path, mode="r") as handle:
@@ -142,6 +151,7 @@ def metadata_upload(
         alias_exp = exp.get("alias")
         exp_accession = exp.get("accession")
         exps[alias_exp] = exp_accession
+
     runs = {}
     for run in xml_data.find_all("RUN"):
         alias_run = run.get("alias")
@@ -149,13 +159,21 @@ def metadata_upload(
         runs[alias_run] = run_accession
 
     object_receipt = mapping(runs,exps)
-    print(f'Onject:{next(iter(object_receipt.items()))}')
-    
-    # RETRIEVING METADATA from experiment.xml AND run.xml
+    print(f"Onject:{next(iter(object_receipt.items()))}")
 
-    with open(run_path, mode="r") as read1, open(experiment_path, mode="r") as read2:
-        xml_run = bs.BeautifulSoup(read1, "xml")
-        xml_exp = bs.BeautifulSoup(read2, "xml")
+    # ------------------------------------------------------------------------ #
+
+    # RETRIEVING METADATA from experiment.xml AND run.xml
+    with open(experiment_path, mode="r") as ef, open(run_path, mode="r") as rf:
+        xml_exp = bs.BeautifulSoup(ef, "xml")
+        xml_run = bs.BeautifulSoup(rf, "xml")
+
+        exp_meta = {}
+        for exp in xml_exp.find_all("EXPERIMENT"):
+            exp_ref = exp.get("alias")
+            descriptor = exp.find("SAMPLE_DESCRIPTOR")
+            sample_accession = descriptor.get("accession")
+            exp_meta[exp_ref] = sample_accession
 
         run_meta = {}
         for run in xml_run.find_all("RUN"):
@@ -174,80 +192,83 @@ def metadata_upload(
 
             run_meta[name_exp] = run_file
 
-        exp_meta = {}
-        for exp in xml_exp.find_all("EXPERIMENT"):
-            exp_ref = exp.get("alias")
-            descriptor = exp.find("SAMPLE_DESCRIPTOR")
-            sample_accession = descriptor.get("accession")
-            exp_meta[exp_ref] = sample_accession
+    print(f"run_meta:{next(iter(run_meta.items()))}")
+    print(f"exp_meta:{next(iter(exp_meta.items()))}")
 
-    print(f'run_meta:{next(iter(run_meta.items()))}')
-    print(f'exp_meta:{next(iter(exp_meta.items()))}')
+    # ------------------------------------------------------------------------ #
 
-    WGS_df = []
-    Amplicon_df  = []
+    wgs_df = []
+    amplicon_df  = []
+
     # 1) iterate over samples (ERS)
-    for k,values in samples.items():
+    for k, values in samples.items():
+
         # 2) retrieve experiments (16S or WGS or both) from XML (using ERS)
         if k in exp_meta.values():
+            # There are at max two keys with same value: one experiment for 16S
+            # and another one for WGS
+            exp_aliases = [key for key, val in exp_meta.items() if val == k]
 
-            exp_aliases = [key for key,val in exp_meta.items() if val == k]  #if there are going to be at max two keys with same value
             # 3) iterate over experiments
             for exp_alias in exp_aliases:
-                
+
                 # 4) retrieve runs from XML (using ERX)
                 if exp_alias in run_meta.keys():
                     run_info = run_meta[exp_ref]
-                    print(run_info)
+                    print("run_info", run_info)
                 if exp_alias in object_receipt.keys():
                     receipt = object_receipt[exp_ref]
 
                 row = pd.Series({
-                        "sample_alias": values[0],#Glab
-                        "sample_accession": values[1], #SAmea
-                        "experiment_alias": exp_ref,
-                        "alternative_accession":k,
-                        "experiment_ref":receipt[0],
-                        "run_ref": receipt[1],
-                        "run_alias":receipt[2],
-                        "forward_file":run_info[0],
-                        "reverse_file":run_info[2],
-                        "forward_checksum":run_info[1],
-                        "reverse_checksum":run_info[3]
-                    }).to_frame().T
+                    "sample_alias": values[0],     # Custom
+                    "sample_accession": values[1], # SAMEA
+                    "experiment_alias": exp_ref,
+                    "alternative_accession": k,
+                    "experiment_ref": receipt[0],
+                    "run_ref": receipt[1],
+                    "run_alias": receipt[2],
+                    "forward_file": run_info[0],
+                    "reverse_file": run_info[2],
+                    "forward_checksum": run_info[1],
+                    "reverse_checksum": run_info[3]
+                }).to_frame().T
 
-                if exp_ref.split('-')[-1] == 'WGS':
-                    WGS_df.append(row)
-                elif exp_ref.split('-')[-1] == '16S':
-                    Amplicon_df.append(row)
+                if exp_ref.split("-")[-1] == "WGS":
+                    wgs_df.append(row)
+                elif exp_ref.split("-")[-1] == "16S":
+                    amplicon_df.append(row)
 
-    return pd.concat(WGS_df)
+    return {
+        "WGS": pd.concat(WGS_df),
+        "16S": pd.concat(amplicon_df)
+    }
 
 
 def to_sheet(
-        dataframe: pd.DataFrame,
-        metadata_path: str,
-        template_dir: str,
-        experiment_type:str,
+    dataframe: pd.DataFrame,
+    metadata_path: str,
+    template_dir: str,
+    experiment_type:str,
 )-> str:
-    
+
     print(dataframe)
     project_name = os.path.basename(metadata_path).split("_")[0]
 
     output_dir = os.path.dirname(metadata_path)
-    output_path = os.path.join(output_dir,
-            f'{project_name}_details_{experiment_type}.csv')
+    output_path = os.path.join(
+        output_dir,
+        f"{project_name}_details_{experiment_type}.csv"
+    )
 
+    cols_study = ["expID", "study_accession"]
+    study_data = [project_name, "PRJEB67767"]
 
-    cols_study = ['expID','study_accession']
-    study_data = [project_name,'PRJEB67767']
-
-    cols_ngs = ['sequencing_platform','sequencing_instrument','library_source',
-            'library_selection','library_strategy']
-    if experiment_type == '16S':
-        ngs_data = ['ILLUMINA',' Illumina NovaSeq 6000','METAGENOMIC','PCR','AMPLICON']
+    cols_ngs = ["sequencing_platform","sequencing_instrument","library_source",
+            "library_selection","library_strategy"]
+    if experiment_type == "16S":
+        ngs_data = ["ILLUMINA"," Illumina NovaSeq 6000","METAGENOMIC","PCR","AMPLICON"]
     else:
-        ngs_data = ['ILLUMINA','Illumina NovaSeq 6000','GENOMIC','RANDOM','WGS']
+        ngs_data = ["ILLUMINA","Illumina NovaSeq 6000","GENOMIC","RANDOM","WGS"]
     
     for col,value in zip(cols_study,study_data):
         dataframe[col] = value
@@ -275,9 +296,10 @@ if __name__ == "__main__":
         type=str
     )
     parser.add_argument(
-        "-e", "--experiment_type",
-        help="Either 16S or metagenomics.",
-        type=str
+        "-e", "--experiment_types",
+        help="String defining either 16S, WGS or both.",
+        type=lambda t: [s.strip() for s in t.split(",")],
+        default="16S,WGS"
     )
     parser.add_argument(
         "-u", "--user_password",
@@ -289,20 +311,19 @@ if __name__ == "__main__":
     final_receipt_path = register_objects(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
-        experiment_type=args.experiment_type,
         user_password=args.user_password
     )
-    print(f"[STEP3][1] Experiments and runs info saved to {final_receipt_path}")
-    
-    df_wgs = metadata_upload(
+    print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
+
+    metadata_dict = get_metadata(
         metadata_path = args.metadata_path,
         template_dir=args.template_dir,
-        experiment_type=args.experiment_type,
+        experiment_type=args.experiment_types,
     )
 
-    sheets = [('WGS',df_wgs)]
-    for exp in sheets:
+    sheets = [("WGS", metadata_dict["WGS"])]
 
+    for exp in sheets:
         details_submission = to_sheet(
             dataframe=exp[1],
             metadata_path = args.metadata_path,
@@ -310,4 +331,4 @@ if __name__ == "__main__":
             experiment_type=exp[0]
         )
 
-    print(f"[STEP3][2] Metadata written to {details_submission}")
+    print(f"[STEP3][+] Metadata written to {details_submission}")
