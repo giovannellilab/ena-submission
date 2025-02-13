@@ -222,7 +222,7 @@ def create_experiment(
 
     experiment_xml = []
 
-    for experiment_type in ["WGS"]:   #re add '16S'
+    for experiment_type in ("16S", "WGS"):
 
         template_path = os.path.join(
             template_dir,
@@ -240,7 +240,7 @@ def create_experiment(
             with open(template_path, mode="r") as handle:
                 template_xml = handle.read()
 
-            sample_alias = row['sample_alias']
+            sample_alias = row["sample_alias"]
 
             #this is a temporary fix
             if experiment_type == '16S':
@@ -261,10 +261,10 @@ def create_experiment(
             print(sample_files)
 
             if not len(sample_files):
-                print(f"[WARNING] Sample {sample_alias} not found!")
+                print(f"[WARNING] Sample file for {sample_alias} not found!")
                 continue
 
-            exp_alias = f"{project_name}-{row['sample_alias']}-{experiment_type}"
+            exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
 
             template_xml = template_xml\
                 .replace("$$$STUDY_ID$$$", row["project_id"])\
@@ -283,7 +283,7 @@ def create_experiment(
 
     output_path = os.path.join(
         os.path.dirname(metadata_path),
-        f"{project_name}_ena_experiment_{experiment_type}.xml"
+        f"{project_name}_ena_experiment.xml"
     )
     with open(output_path, mode="w") as handle:
         handle.write(experiment_xml)
@@ -318,7 +318,7 @@ def create_run(
     pattern_for = f"{samples_dir}/**/{forward_pattern}"
 
     for filename_for in glob.glob(pattern_for, recursive=True):
-        
+
         # Avoid raw reads
         if "raw" in os.path.basename(filename_for):
             continue
@@ -332,23 +332,34 @@ def create_run(
             reverse_pattern
         )
 
-        # Raise error when there is not exactly one reverse file
+        # Raise error when reverse file does not exist
         if not os.path.exists(filename_rev):
             raise ValueError(f"[!] Reverse file not found: {filename_rev}")
 
-        if experiment_type == 'WGS':
-            # retrieve checksum (MD5.txt) 
-                current_dir = os.path.dirname(filename_for)    # taking file dir
-                file_name = os.path.join(current_dir,'MD5.txt') 
+        if experiment_type == "WGS":
+            # Retrieve checksum (MD5.txt)
+            checksum_path = os.path.join(
+                os.path.dirname(filename_for),
+                "MD5.txt"
+            )
 
-                with open(file_name,'r') as reader:
-                    lines = reader.readlines()
-                    hash_for = lines[0].split(' ')[0]   # assuming for is in 1st line
-                    hash_rev = lines[1].split(' ')[0]   # assuming rev is in 2nd line
-        else:
+            with open(checksum_path, mode="r") as reader:
+                lines = reader.readlines()
+                # WARNING: assuming for and rev are in the 1st and 2nd lines
+                hash_for = lines[0].split(" ")[0]
+                hash_rev = lines[1].split(" ")[0]
+
+        elif experiment_type == "16S":
             # Compute the checksum (MD5)
-            hash_for = hashlib.md5(open(filename_for, mode="rb").read()).hexdigest()
-            hash_rev = hashlib.md5(open(filename_rev, mode="rb").read()).hexdigest()
+            hash_for = hashlib.md5(open(filename_for, mode="rb").read())\
+                .hexdigest()
+            hash_rev = hashlib.md5(open(filename_rev, mode="rb").read())\
+                .hexdigest()
+
+        else:
+            raise NotImplementedError(
+                f"[ERROR] Experiment {experiment_type} is not supported!"
+            )
 
         with open(template_path, mode="r") as handle:
             template_xml = handle.read()
