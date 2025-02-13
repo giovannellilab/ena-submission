@@ -137,6 +137,12 @@ if __name__ == "__main__":
         type=str,
         default="*_1.fq.gz"
     )
+    parser.add_argument(
+        "-a", "--interactive",
+        help="Whether to perform the upload in interactive mode.",
+        type=bool,
+        default=False
+    )
     args = parser.parse_args()
 
     file_list = main(
@@ -147,5 +153,5 @@ if __name__ == "__main__":
 
     upload_files(
         file_list=file_list,
-        interactive=False
+        interactive=args.interactive
     )
