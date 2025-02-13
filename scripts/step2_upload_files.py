@@ -73,8 +73,7 @@ def main(
     for filename_for in glob.glob(pattern_for, recursive=True):
 
         # Avoid raw reads
-        name = filename_for.split('/')[-1]
-        if "raw" in name:
+        if "raw" in os.path.basename(filename_for):
              continue
 
         # Get reverse file from forward one
@@ -133,6 +132,14 @@ if __name__ == "__main__":
         help = "Directory containing sample subdirectories for the submisssion",
         type=str
     )
+
+    parser.add_argument(
+        "-f", "--forward_pattern",
+        help="Pattern followed in naming the forward sequence files.",
+        type=str,
+        default="*_1.fastq.gz"
+    )
+    
     args = parser.parse_args()
 
 
