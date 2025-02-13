@@ -17,7 +17,7 @@
        </DESIGN>
        <PLATFORM>
            <ILLUMINA>
-               <INSTRUMENT_MODEL>Illumina MiSeq</INSTRUMENT_MODEL>
+               <INSTRUMENT_MODEL>Illumina NovaSeq 6000</INSTRUMENT_MODEL>
            </ILLUMINA>
        </PLATFORM>
        <EXPERIMENT_ATTRIBUTES>
