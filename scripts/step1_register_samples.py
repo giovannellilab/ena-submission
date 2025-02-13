@@ -22,6 +22,8 @@
 
 # ---------------------------------------------------------------------------- #
 
+from typing import List
+
 import os
 
 import glob
@@ -213,8 +215,9 @@ def create_experiment(
     samples_receipt_path: str,
     metadata_path: str,
     samples_dir: str,
-    forward_pattern: str,
-    template_dir: str
+    template_dir: str,
+    forward_pattern_dict: dict,
+    experiment_types: List[str]
 ) -> str:
 
     # WARNING: project name is assumed to be in the first field of the path
@@ -222,7 +225,7 @@ def create_experiment(
 
     experiment_xml = []
 
-    for experiment_type in ("16S", "WGS"):
+    for experiment_type in experiment_types:
 
         template_path = os.path.join(
             template_dir,
@@ -242,23 +245,20 @@ def create_experiment(
 
             sample_alias = row["sample_alias"]
 
-            #this is a temporary fix
-            if experiment_type == '16S':
-                sample_alias = sample_alias + '_EU'
-            elif experiment_type == 'WGS':
-                sample_alias = sample_alias + '_EW'
+            # Modify since WGS folders are named Metagenomes
+            if experiment_type == "16S":
+                experiment_dir = "16S"
+            elif experiment_type == "WGS":
+                experiment_dir = "Metagenomes"
 
-            print(sample_alias)
+            forward_pattern = forward_pattern_dict[experiment_type]
 
             sample_pattern = os.path.join(
                 samples_dir,
-                "Metagenomes",
+                experiment_dir,
                 f"{sample_alias}/{sample_alias}{forward_pattern}"
             )
-
-            print(sample_pattern)
             sample_files = glob.glob(sample_pattern, recursive=False)
-            print(sample_files)
 
             if not len(sample_files):
                 print(f"[WARNING] Sample file for {sample_alias} not found!")
@@ -294,11 +294,11 @@ def create_experiment(
 
 
 def create_run(
-    samples_dir: str,
     metadata_path: str,
+    samples_dir: str,
     template_dir: str,
-    experiment_type: str,
-    forward_pattern: str
+    forward_pattern_dict: dict,
+    experiment_types: List[str]
 ) -> str:
 
     # Raise error if samples directory does not exist
@@ -315,72 +315,74 @@ def create_run(
 
     run_xml = []
 
-    pattern_for = f"{samples_dir}/**/{forward_pattern}"
+    for experiment_type in experiment_types:
+        forward_pattern = forward_pattern_dict[experiment_type]
+        pattern_for = f"{samples_dir}/**/{forward_pattern}"
 
-    for filename_for in glob.glob(pattern_for, recursive=True):
+        for filename_for in glob.glob(pattern_for, recursive=True):
 
-        # Avoid raw reads
-        if "raw" in os.path.basename(filename_for):
-            continue
+            # Avoid raw reads
+            if "raw" in os.path.basename(filename_for):
+                continue
 
-        # Get reverse file from forward one
-        # WARNING: may generate errors there are multiple "1" in the pattern
-        forward_pattern = forward_pattern.replace("*", "")
-        reverse_pattern = forward_pattern.replace("1", "2")
-        filename_rev = filename_for.replace(
-            forward_pattern,
-            reverse_pattern
-        )
-
-        # Raise error when reverse file does not exist
-        if not os.path.exists(filename_rev):
-            raise ValueError(f"[!] Reverse file not found: {filename_rev}")
-
-        if experiment_type == "WGS":
-            # Retrieve checksum (MD5.txt)
-            checksum_path = os.path.join(
-                os.path.dirname(filename_for),
-                "MD5.txt"
+            # Get reverse file from forward one
+            # WARNING: may generate errors there are multiple "1" in the pattern
+            forward_pattern = forward_pattern.replace("*", "")
+            reverse_pattern = forward_pattern.replace("1", "2")
+            filename_rev = filename_for.replace(
+                forward_pattern,
+                reverse_pattern
             )
 
-            with open(checksum_path, mode="r") as reader:
-                lines = reader.readlines()
-                # WARNING: assuming for and rev are in the 1st and 2nd lines
-                hash_for = lines[0].split(" ")[0]
-                hash_rev = lines[1].split(" ")[0]
+            # Raise error when reverse file does not exist
+            if not os.path.exists(filename_rev):
+                raise ValueError(f"[!] Reverse file not found: {filename_rev}")
 
-        elif experiment_type == "16S":
-            # Compute the checksum (MD5)
-            hash_for = hashlib.md5(open(filename_for, mode="rb").read())\
-                .hexdigest()
-            hash_rev = hashlib.md5(open(filename_rev, mode="rb").read())\
-                .hexdigest()
+            if experiment_type == "WGS":
+                # Retrieve checksum (MD5.txt)
+                checksum_path = os.path.join(
+                    os.path.dirname(filename_for),
+                    "MD5.txt"
+                )
 
-        else:
-            raise NotImplementedError(
-                f"[ERROR] Experiment {experiment_type} is not supported!"
-            )
+                with open(checksum_path, mode="r") as reader:
+                    lines = reader.readlines()
+                    # WARNING: assuming for and rev are in the 1st and 2nd lines
+                    hash_for = lines[0].split(" ")[0]
+                    hash_rev = lines[1].split(" ")[0]
 
-        with open(template_path, mode="r") as handle:
-            template_xml = handle.read()
+            elif experiment_type == "16S":
+                # Compute the checksum (MD5)
+                hash_for = hashlib.md5(open(filename_for, mode="rb").read())\
+                    .hexdigest()
+                hash_rev = hashlib.md5(open(filename_rev, mode="rb").read())\
+                    .hexdigest()
 
-        # WARNING: sample alias is assumed to be the first three fields
-        sample_alias = os.path.basename(filename_for)
-        sample_alias = "_".join(sample_alias.split("_")[:3])
-        exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
+            else:
+                raise NotImplementedError(
+                    f"[ERROR] Experiment {experiment_type} is not supported!"
+                )
 
-        # Add only the filename instead of the whole path
-        filename_for = os.path.basename(filename_for)
-        filename_rev = os.path.basename(filename_rev)
+            with open(template_path, mode="r") as handle:
+                template_xml = handle.read()
 
-        template_xml = template_xml\
-            .replace("$$$EXPERIMENT_ALIAS$$$",  exp_alias)\
-            .replace("$$$FORWARD_R1_FASTQ$$$",  filename_for)\
-            .replace("$$$FORWARD_R1_MD5SUM$$$", hash_for)\
-            .replace("$$$REVERSE_R2_FASTQ$$$",  filename_rev)\
-            .replace("$$$REVERSE_R2_MD5SUM$$$", hash_rev)
+            # WARNING: sample alias is assumed to be the first three fields
+            sample_alias = os.path.basename(filename_for)
+            sample_alias = "_".join(sample_alias.split("_")[:3])
+            exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
 
-        run_xml += [template_xml]
+            # Add only the filename instead of the whole path
+            filename_for = os.path.basename(filename_for)
+            filename_rev = os.path.basename(filename_rev)
+
+            template_xml = template_xml\
+                .replace("$$$EXPERIMENT_ALIAS$$$",  exp_alias)\
+                .replace("$$$FORWARD_R1_FASTQ$$$",  filename_for)\
+                .replace("$$$FORWARD_R1_MD5SUM$$$", hash_for)\
+                .replace("$$$REVERSE_R2_FASTQ$$$",  filename_rev)\
+                .replace("$$$REVERSE_R2_MD5SUM$$$", hash_rev)
+
+            run_xml += [template_xml]
 
     run_xml = \
         '<?xml version="1.0" encoding="UTF-8"?>' + "\n" + \
@@ -390,7 +392,7 @@ def create_run(
     
     output_path = os.path.join(
         os.path.dirname(metadata_path),
-        f"{project_name}_ena_run_{experiment_type}.xml"
+        f"{project_name}_ena_run.xml"
     )
     with open(output_path, mode="w") as handle:
         handle.write(run_xml)
@@ -419,20 +421,27 @@ if __name__ == "__main__":
         type=str
     )
     parser.add_argument(
-        "-e", "--experiment_type",
-        help="Either 16S or metagenomics.",
-        type=str
+        "-f", "--forward_pattern_16s",
+        help="Pattern followed in naming the forward sequence files (16S).",
+        type=str,
+        default="*_1.fastq.gz"
+    )
+    parser.add_argument(
+        "-w", "--forward_pattern_wgs",
+        help="Pattern followed in naming the forward sequence files (WGS).",
+        type=str,
+        default="*_1.fq.gz"
+    )
+    parser.add_argument(
+        "-e", "--experiment_types",
+        help="String defining either 16S, WGS or both.",
+        type=lambda t: [s.strip() for s in t.split(",")],
+        default="16S,WGS"
     )
     parser.add_argument(
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
         type=str
-    )
-    parser.add_argument(
-        "-f", "--forward_pattern",
-        help="Pattern followed in naming the forward sequence files.",
-        type=str,
-        default="*_1.fastq.gz"
     )
     args = parser.parse_args()
 
@@ -447,18 +456,24 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
 
+    forward_pattern_dict = {
+        "16S": args.forward_pattern_16s,
+        "WGS": args.forward_pattern_wgs
+    }
+
     experiment_path = create_experiment(
         samples_receipt_path=samples_receipt_path,
         metadata_path=args.metadata_path,
         samples_dir=args.samples_dir,
         template_dir=args.template_dir,
-        forward_pattern=args.forward_pattern
+        forward_pattern_dict=forward_pattern_dict,
+        experiment_types=args.experiment_types
     )
 
     run_path = create_run(
-        samples_dir=args.samples_dir,
         metadata_path=args.metadata_path,
+        samples_dir=args.samples_dir,
         template_dir=args.template_dir,
-        experiment_type=args.experiment_type,
-        forward_pattern=args.forward_pattern
+        forward_pattern_dict=forward_pattern_dict,
+        experiment_types=args.experiment_types
     )
