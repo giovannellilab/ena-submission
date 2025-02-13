@@ -1,6 +1,19 @@
-import re
+# ENA submission: STEP 2
+
+# This script performs the following steps programmatically:
+
+# 1. Sample files upload
+
+# ---------------------------------------------------------------------------- #
+
+# IMPORTANT! Some considerations must be taken into account:
+# 1) The file pattern for forward reads must contain just one "1"
+
+# ---------------------------------------------------------------------------- #
 
 import os
+
+import re
 
 import argparse
 
