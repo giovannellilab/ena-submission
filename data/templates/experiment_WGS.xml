@@ -12,7 +12,7 @@
                <LIBRARY_LAYOUT>
                    <PAIRED NOMINAL_LENGTH="150"/> 
                </LIBRARY_LAYOUT>
-               <LIBRARY_CONSTRUCTION_PROTOCOL>DNA is randomly shared into short fragments, end repaired A-tailed and then ligated with Illumina adapters using the Novogene NGS DNA Library Prep Set (Cat No.PT004). Fragments with adapters are size selected, PCR amplified and purified. The library was checked with Qubit and real-time PCR for quantification and bioanalyzer for size distribution detection. Quantified libraries will be pooled and sequenced on Illumina platforms, according to effective library concentration and data amount required.</LIBRARY_CONSTRUCTION_PROTOCOL>      
+               <LIBRARY_CONSTRUCTION_PROTOCOL>DNA is randomly shared into short fragments, end repaired, A-tailed and then ligated with Illumina adapters using the Novogene NGS DNA Library Prep Set (Cat No.PT004). Fragments with adapters are size selected, PCR amplified and purified. The library was checked with Qubit and real-time PCR for quantification and bioanalyzer for size distribution detection. Quantified libraries will be pooled and sequenced on Illumina platforms, according to effective library concentration and data amount required.</LIBRARY_CONSTRUCTION_PROTOCOL>      
             </LIBRARY_DESCRIPTOR>
        </DESIGN>
        <PLATFORM>
