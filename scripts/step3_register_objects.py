@@ -150,7 +150,6 @@ def get_metadata(
         alias_exp = exp.get("alias")
         exp_accession = exp.get("accession")
         exps[alias_exp] = exp_accession
-
     runs = {}
     for run in xml_data.find_all("RUN"):
         alias_run = run.get("alias")
@@ -195,15 +194,18 @@ def get_metadata(
     # ------------------------------------------------------------------------ #
 
     results_df  = []
-
+    #print(run_meta)
+    print(object_receipt)
     # 1) iterate over samples (ERS)
     for k, values in samples.items():
 
         # 2) retrieve experiments (16S or WGS or both) from XML (using ERS)
         if k in exp_meta.values():
             # There are at max two keys with same value: one experiment for 16S
-            # and another one for WGS
-            exp_aliases = [key for key, val in exp_meta.items() if val == k]
+            # and another one for WGS, 
+            # need to inlucde ONLY the one we are passing in the loop when call function
+
+            exp_aliases = [key for key, val in exp_meta.items() if val == k and key.split('-')[-1] == experiment_type]
 
             # 3) iterate over experiments
             for exp_alias in exp_aliases:
