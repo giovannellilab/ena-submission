@@ -93,7 +93,7 @@ def mapping(
     return results_dict
 
 
-def get_metadata(
+def parse_objects_receipts(
     metadata_path: str,
     template_dir: str,
     experiment_type: str
@@ -330,14 +330,14 @@ if __name__ == "__main__":
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
 
     for experiment_type in args.experiment_types:
-        metadata_df = get_metadata(
+        receipt_df = parse_objects_receipts(
             metadata_path = args.metadata_path,
             template_dir=args.template_dir,
             experiment_type=experiment_type,
         )
 
         details_path = save_results_metadata(
-            dataframe=metadata_df,
+            dataframe=receipt_df,
             metadata_path=args.metadata_path,
             template_dir=args.template_dir,
             experiment_type=experiment_type
