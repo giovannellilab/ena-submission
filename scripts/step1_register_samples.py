@@ -248,24 +248,24 @@ def create_experiment(
             # Modify since WGS folders are named Metagenomes
             if experiment_type == "16S":
                 experiment_dir = "16S"
-                sample_alias = sample_alias + '_EU'
+                sample_alias_dir = sample_alias + '_EU'
             elif experiment_type == "WGS":
                 experiment_dir = "Metagenomes"
-                sample_alias = sample_alias + '_EW'
-
+                sample_alias_dir = sample_alias + '_EW'
+      
             forward_pattern = forward_pattern_dict[experiment_type]
 
             sample_pattern = os.path.join(
                 samples_dir,
                 experiment_dir,
-                f"{sample_alias}/{sample_alias}{forward_pattern}"
+                f"{sample_alias_dir}/{sample_alias_dir}{forward_pattern}"
             )
             sample_files = glob.glob(sample_pattern, recursive=False)
 
             if not len(sample_files):
-                print(f"[WARNING] Sample file for {sample_alias} not found!")
+                print(f"[WARNING] Sample file for {sample_alias_dir} not found!")
                 continue
-
+            
             exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
 
             template_xml = template_xml\
