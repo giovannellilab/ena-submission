@@ -194,25 +194,27 @@ def parse_objects_receipts(
     # ------------------------------------------------------------------------ #
 
     results_df  = []
-    #print(run_meta)
-    print(object_receipt)
-    # 1) iterate over samples (ERS)
+
+    # 1) Iterate over samples (ERS)
     for k, values in samples.items():
 
-        # 2) retrieve experiments (16S or WGS or both) from XML (using ERS)
+        # 2) Retrieve experiments (16S or WGS or both) from XML (using ERS)
         if k in exp_meta.values():
             # There are at max two keys with same value: one experiment for 16S
-            # and another one for WGS, 
-            # need to inlucde ONLY the one we are passing in the loop when call function
+            # and another one for WGS, need to inlucde ONLY the one we are
+            # passing in the loop when we call function
+            exp_aliases = [
+                key for key, val in exp_meta.items()
+                if val == k and key.split("-")[-1] == experiment_type
+            ]
 
-            exp_aliases = [key for key, val in exp_meta.items() if val == k and key.split('-')[-1] == experiment_type]
-
-            # 3) iterate over experiments
+            # 3) Iterate over experiments
             for exp_alias in exp_aliases:
 
-                # 4) retrieve runs from XML (using ERX)
+                # 4) Retrieve runs from XML (using ERX)
                 if exp_alias in run_meta.keys():
                     run_info = run_meta[exp_alias]
+
                 if exp_alias in object_receipt.keys():
                     receipt = object_receipt[exp_alias]
 
@@ -277,7 +279,7 @@ def save_results_metadata(
             "RANDOM",
             "WGS"
         ]
-    
+
     for col, value in zip(cols_study, study_data):
         dataframe[col] = value
     for col, value in zip(cols_ngs, ngs_data):
