@@ -133,10 +133,9 @@ def parse_objects_receipts(
 
         samples = {}
         for sample in xml_data.find_all("SAMPLE"):
-            accession = sample.get("accession")    # ERS
-            samea_accession = sample.get("accession") # SAMEA
-            custom_accession = sample.get("alias") # Custom
-            get = sample.find("EXT_ID")
+            accession = sample.get("accession")                      # ERS
+            samea_accession = sample.find("EXT_ID").get("accession") # SAMEA
+            custom_accession = sample.get("alias")                   # Custom
             samples[accession] = [custom_accession, samea_accession]
 
     # ------------------------------------------------------------------------ #
