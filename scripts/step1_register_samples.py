@@ -248,8 +248,10 @@ def create_experiment(
             # Modify since WGS folders are named Metagenomes
             if experiment_type == "16S":
                 experiment_dir = "16S"
+                sample_alias = sample_alias + '_EU'
             elif experiment_type == "WGS":
                 experiment_dir = "Metagenomes"
+                sample_alias = sample_alias + '_EW'
 
             forward_pattern = forward_pattern_dict[experiment_type]
 
