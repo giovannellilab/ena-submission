@@ -235,7 +235,7 @@ def get_metadata(
     return pd.concat(results_df)
 
 
-def format_metadata(
+def save_results_metadata(
     dataframe: pd.DataFrame,
     metadata_path: str,
     template_dir: str,
@@ -336,11 +336,11 @@ if __name__ == "__main__":
             experiment_type=experiment_type,
         )
 
-        details_submission = format_metadata(
+        details_path = save_results_metadata(
             dataframe=metadata_df,
             metadata_path=args.metadata_path,
             template_dir=args.template_dir,
             experiment_type=experiment_type
         )
 
-        print(f"[STEP3][+] Metadata written to {details_submission}")
+        print(f"[STEP3][+] Metadata written to {details_path}")
