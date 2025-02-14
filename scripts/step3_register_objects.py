@@ -218,12 +218,12 @@ def get_metadata(
 
                 row = pd.Series({
                     "sample_alias": values[0],     # Custom
-                    "sample_accession": values[1], # SAMEA
+                    "sample_id_paper": values[1],  # SAMEA
+                    "sample_accession": k,
                     "experiment_alias": exp_alias,
-                    "alternative_accession": k,
-                    "experiment_ref": receipt[0],
-                    "run_ref": receipt[1],
+                    "experiment_accession": receipt[0],
                     "run_alias": receipt[2],
+                    "run_accession": receipt[1],
                     "forward_file": run_info[0],
                     "reverse_file": run_info[2],
                     "forward_checksum": run_info[1],
