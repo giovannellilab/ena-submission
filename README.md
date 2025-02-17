@@ -44,20 +44,29 @@ Once the RUN and EXPERIMENT .xml files are created, we can register the previous
 ## Workflow
 
 1) Registering smaples
+'''python
 
-python ena_submission.py 
+python step1_register_samples.py
 
+'''
     - Register Samples --> sample receipt
     - Outputs -->
 
 2) Uploading raw reads files
+'''python
 
-python data_upload.py
+python step2_upload_files.py
+
+'''
+
     - Uploads 16_S forward/reverse.fastq.gz
     - Uploads Metagenomes forward/reverse.fastq.gz
 
 3) Registering Experiments-Runs Objects
+'''python
 
+python step3_register_objects.py 
 
+'''
 
 ----------
