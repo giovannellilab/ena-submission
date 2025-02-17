@@ -44,16 +44,16 @@ Once the RUN and EXPERIMENT .xml files are created, we can register the previous
 ## Workflow
 
 1) Registering smaples
-'''python
+'''bash
 
-python step1_register_samples.py
+python step1_register_samples.py -i data/HYD22/HYD22_ena_submission.xlsx -t data/templates/ -u User:password
 
 '''
     - Register Samples --> sample receipt
     - Outputs -->
 
 2) Uploading raw reads files
-'''python
+'''bash
 
 python step2_upload_files.py
 
@@ -63,9 +63,9 @@ python step2_upload_files.py
     - Uploads Metagenomes forward/reverse.fastq.gz
 
 3) Registering Experiments-Runs Objects
-'''python
+'''bash
 
-python step3_register_objects.py 
+python step3_register_objects.py -s /media/edotacca/Thor/raw_sequences/HYD22 -i data/HYD22/HYD22_ena_submission.xlsx -t data/templates/ -u User:password
 
 '''
 
