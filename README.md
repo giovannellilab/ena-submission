@@ -41,7 +41,39 @@ Moreover, an Experiemtn could have more than one run associated to it, referring
 In our case, we will have just one run for experiment.
 Once the RUN and EXPERIMENT .xml files are created, we can register the previously uploaded files permanently.
 
-## Workflow
+## Pre-processing
+
+1) Preparing samples and directories
+
+Before start ensures that samples directory names and file names match with the sample_alias provided in the google sheet template.
+This will be helpful in retrieving files and their experiment from ENA  in the future. 
+Most of the times smaples are named as G* followed by [0-9] such as G129, G230, G23 ecc. In this case, provide a tsv file (E.G map_samples_campaign.tsv ) specifying the
+old/current direcotry and files names and new ones:
+
+Current	New
+G68	KJ_230721_F
+G69	SJ_230730_F
+G70	NR_230731_F
+G71	TR_230731_F
+G72	KJ_230721_S
+G73	SJ_230730_S
+G74	NR_230731_S
+G75	TR_230731_S
+G76	GRP_230724_S
+G77	KJ_230721_BG
+G78	SJ_230730_BG
+G79	NR_230731_BG
+G80	TR_230731_BG
+
+The follwoing script will take care of this not so nice procedure:
+
+```bash
+
+python  pre-processing-dir.py -s /media/edotacca/Thor/raw_sequences/HYD22 -e 16S OR WGS -f data/HYD22/map_samples_HYD22 .tsv
+
+```
+
+## ENA - workflow
 
 1) Registering smaples
 
