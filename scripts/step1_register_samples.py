@@ -158,16 +158,16 @@ def register_samples(
         "-F", f"SAMPLE=@{samples_xml_path}",
         "-F", "LAUNCH=YES",
         "-o", output_path,
-        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
     # # Execute the command
-    # try:
-    #     subprocess.run(command, check=True, text=True)
-    #     print(f"[+] Samples receipt XML created: {output_path}")
+    try:
+        subprocess.run(command, check=True, text=True)
+        print(f"[+] Samples receipt XML created: {output_path}")
 
-    # except subprocess.CalledProcessError as e:
-    #     print(f"[!] Error:", {e.stderr})
+    except subprocess.CalledProcessError as e:
+        print(f"[!] Error:", {e.stderr})
 
     print(f"[STEP1][+] Samples receipt saved to: {output_path}")
 
@@ -194,7 +194,6 @@ def parse_samples_receipt(
         title = sample.get("accession")
         ext_id_element = sample.find("EXT_ID")
         ext_id = ext_id_element.get("accession")
-
         study_id = metadata_df[metadata_df["sample_alias"] == alias]\
             ["project name"]\
             .values[0]
@@ -236,7 +235,7 @@ def create_experiment(
             samples_receipt_path=samples_receipt_path,
             metadata_path=metadata_path
         )
-
+        print(receipt_df)
         for _, row in receipt_df.iterrows():
             row = row.astype(str)
 
@@ -247,11 +246,15 @@ def create_experiment(
 
             # Modify since WGS folders are named Metagenomes
             if experiment_type == "16S":
-                experiment_dir = "16S"
-                sample_alias_dir = sample_alias + '_EU'
+                experiment_dir = "16_S"
+                sample_alias_dir = sample_alias
+                #forward_pattern = "*_1.fastq.gz"
+
             elif experiment_type == "WGS":
                 experiment_dir = "Metagenomes"
-                sample_alias_dir = sample_alias + '_EW'
+                #sample_alias_dir = sample_alias
+                sample_alias_dir = sample_alias
+                #forward_pattern = "*_1.fq.gz"
       
             forward_pattern = forward_pattern_dict[experiment_type]
 
@@ -260,10 +263,13 @@ def create_experiment(
                 experiment_dir,
                 f"{sample_alias_dir}/{sample_alias_dir}{forward_pattern}"
             )
+            print('Check:',sample_pattern)
             sample_files = glob.glob(sample_pattern, recursive=False)
+            print(sample_files)
 
             if not len(sample_files):
                 print(f"[WARNING] Sample file for {sample_alias_dir} not found!")
+                print(sample_files)
                 continue
             
             exp_alias = f"{project_name}-{sample_alias}-{experiment_type}"
@@ -318,10 +324,22 @@ def create_run(
     run_xml = []
 
     for experiment_type in experiment_types:
+
+        if experiment_type == '16S':
+            exp_dir = '16_S'
+        elif experiment_type == 'WGS':
+            exp_dir = 'Metagenomes'
+
         forward_pattern = forward_pattern_dict[experiment_type]
-        pattern_for = f"{samples_dir}/**/{forward_pattern}"
+        pattern_for = f"{samples_dir}{exp_dir}/**/{forward_pattern}"
+
+        exclude_dirs = ['BP2_220829_F_EW_lanes','BS_220902_F_EW_lanes']
 
         for filename_for in glob.glob(pattern_for, recursive=True):
+            print(filename_for)
+
+            if any(excluded in filename_for for excluded in exclude_dirs):
+                continue
 
             # Avoid raw reads
             if "raw" in os.path.basename(filename_for):
@@ -349,6 +367,7 @@ def create_run(
 
                 with open(checksum_path, mode="r") as reader:
                     lines = reader.readlines()
+                    print(lines)
                     # WARNING: assuming for and rev are in the 1st and 2nd lines
                     hash_for = lines[0].split(" ")[0]
                     hash_rev = lines[1].split(" ")[0]
@@ -438,8 +457,9 @@ if __name__ == "__main__":
         "-e", "--experiment_types",
         help="String defining either 16S, WGS or both.",
         type=lambda t: [s.strip() for s in t.split(",")],
-        default="16S,WGS"
-    )
+        default=["16S", "WGS"]    
+        )
+
     parser.add_argument(
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",

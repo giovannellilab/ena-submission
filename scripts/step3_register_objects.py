@@ -16,6 +16,8 @@
 
 import os
 
+import csv
+
 import argparse
 
 import subprocess
@@ -24,6 +26,7 @@ import bs4 as bs
 
 import pandas as pd
 
+# from mapper import mapp
 
 def register_objects(
     metadata_path: str,
@@ -108,6 +111,7 @@ def parse_objects_receipts(
     project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
+    sample_fix_path = os.path.join(metadata_dir,f'{project_name}_sample_receipt.csv')
     sample_receipt_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_samples_receipt.xml"
@@ -137,7 +141,7 @@ def parse_objects_receipts(
             samea_accession = sample.find("EXT_ID").get("accession") # SAMEA
             custom_accession = sample.get("alias")                   # Custom
             samples[accession] = [custom_accession, samea_accession]
-
+            
     # ------------------------------------------------------------------------ #
 
     # RETRIEVING METADATA from Object-registration-receipt.xml file
@@ -245,6 +249,20 @@ def save_results_metadata(
 
     # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
+    # project ACCESSION such : PRJEB67767
+    metadata_dir = os.path.dirname(metadata_path)
+    sample_xml_file = f'{project_name}_ena_samples.xml'
+    
+    with open(os.path.join(metadata_dir,sample_xml_file), mode="r") as handle:
+        xml_sample = bs.BeautifulSoup(handle, "xml")
+
+        for attr in xml_sample.find_all("SAMPLE_ATTRIBUTE"):
+            tag = attr.find("TAG")
+            value = attr.find("VALUE")
+
+            if tag and tag.text.strip() == "project name" and value:
+                project_accession = value.text.strip()
+                break  
 
     output_dir = os.path.dirname(metadata_path)
     output_path = os.path.join(
@@ -253,7 +271,7 @@ def save_results_metadata(
     )
 
     cols_study = ["expID", "study_accession"]
-    study_data = [project_name, "PRJEB67767"]
+    study_data = [project_name, project_accession]
 
     cols_ngs = [
         "sequencing_platform",
@@ -314,7 +332,7 @@ if __name__ == "__main__":
         "-e", "--experiment_types",
         help="String defining either 16S, WGS or both.",
         type=lambda t: [s.strip() for s in t.split(",")],
-        default="16S,WGS"
+        default=["16S", "WGS"]
     )
     parser.add_argument(
         "-u", "--user_password",
@@ -329,7 +347,7 @@ if __name__ == "__main__":
         user_password=args.user_password
     )
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
-
+    
     for experiment_type in args.experiment_types:
         receipt_df = parse_objects_receipts(
             metadata_path = args.metadata_path,

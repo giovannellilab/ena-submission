@@ -12,6 +12,8 @@ import shutil
 
 import sys
 
+import re
+
 
 # # DAMGER: 
 # THIS SCRIPT RENAMES DIRECTORIES AND THEIR CONTENT
@@ -21,17 +23,28 @@ import sys
 def check_sanity(
     tsv_file : str,
     target_dir : str,
-    experiment_type : str  
-
 ):
+    
+    template_dir = os.path.dirname(tsv_file)
 
+    available_files = [f for f in os.listdir(template_dir) 
+                       if os.path.isfile(os.path.join(template_dir, f))
+                        ]
+    
     if not os.path.exists(tsv_file):
-        print(f"❌ Error: TSV file '{tsv_file}' not found.")
+        print(f"Error: TSV file '{tsv_file}' not found.")
+
+        if available_files:
+            print("Did you mean one of these files?")
+            for file in sorted(available_files):
+                print(f"  - {file}")
+        else:
+            print("No files found in the target directory.")
+
         sys.exit(1)
 
-    # Ensure the main target directory exists
     if not os.path.exists(target_dir):
-        print(f"❌ Error: Target directory '{target_dir}' not found.")
+        print(f"Error: Target directory '{target_dir}' not found.")
         sys.exit(1)
 
 
@@ -49,19 +62,30 @@ def first_function(
 
     main_dir = os.path.join(target_dir,experiment_type)
     if not os.path.exists(main_dir):
-        print(f"⚠️ Warning: Experiment subdirectory '{main_dir}' does not exist. Skipping...")
+        print(f"Warning: Experiment subdirectory '{main_dir}' does not exist. Skipping...")
         return target_dir
     
-
+    
     with open(tsv_file,'r') as file:
 
         mapping = {}
         for line in file:
             current, new = line.strip().split('\t')
             mapping[current] = new
+        print(mapping)
+    
+
+    sample_dirs = glob.glob(os.path.join(main_dir, 'G*'))
 
 
-    sample_dirs = glob.glob(os.path.join(main_dir, "G*"))
+    # sample_dirs = glob.glob(os.path.join(main_dir, '*'))  # Get all files and directories
+    # regex_pattern =  r'^[A-Z]+\d{6}_([A-Z]+)$'
+
+    # Filter the directories using regex
+    #matching_dirs = [d for d in sample_dirs if os.path.isdir(d) and re.match(regex_pattern, os.path.basename(d))]
+
+
+    used_keys = set()
 
     for old_sample_path in sample_dirs:
         old_sample_name = os.path.basename(old_sample_path)
@@ -74,6 +98,7 @@ def first_function(
             shutil.move(old_sample_path, new_sample_path)
             print(f"Renamed directory: {old_sample_name} -> {new_sample_name}")
 
+            used_keys.add(old_sample_name)  # Tracking used keys
 
             for old_file_path in glob.glob(os.path.join(new_sample_path, f"{old_sample_name}*")):
 
@@ -83,6 +108,13 @@ def first_function(
 
                 shutil.move(old_file_path, new_file_path)
                 print(f"Renamed file: {old_file_name} -> {new_file_name}")
+
+
+    unused_keys = set(mapping.keys()) - used_keys
+    if unused_keys:
+        print("Warning: The following mappings were not used (directories not found):")
+        for unused_key in unused_keys:
+            print(f"  - {unused_key}")
                       
     return target_dir
 
@@ -121,6 +153,11 @@ if __name__ == '__main__':
         type = str
     )
     args = parser.parse_args()
+
+    check_sanity(
+        tsv_file = args.file_path,
+        target_dir = args.sample_dir,
+    )
 
     sample_dir = first_function(
         tsv_file = args.file_path,

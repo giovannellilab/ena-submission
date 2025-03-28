@@ -69,7 +69,7 @@ The follwoing script will take care of this not so nice procedure:
 
 ```bash
 
-python  pre-processing-dir.py -s /media/edotacca/Thor/raw_sequences/HYD22 -e 16S OR WGS -f data/HYD22/map_samples_HYD22 .tsv
+python  pre-processing-dir.py -s /media/edotacca/Thor/raw_sequences/HYD22 -e 16S OR WGS -f data/HYD22/map_samples_HYD22.tsv
 
 ```
 

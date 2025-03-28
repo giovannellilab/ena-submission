@@ -23,6 +23,7 @@ import glob
 
 import subprocess
 
+import time
 
 def upload_files(
     file_list: list ,
@@ -43,6 +44,8 @@ def upload_files(
         "webin2.ebi.ac.uk",
         "-e", mput_command
     ]
+    
+    start_time = time.time() 
 
     try:
         subprocess.run(ftp_connection, check=True, text=True)
@@ -50,6 +53,13 @@ def upload_files(
 
     except subprocess.CalledProcessError as e:
         print(f"Error:", {e.stderr})
+
+    end_time = time.time()  # Record end time
+    elapsed_time = end_time - start_time  # Compute duration
+
+    print(f"Start Time: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
+    print(f"End Time: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
+    print(f"Total Duration: {elapsed_time:.2f} seconds")
 
     return None
 
@@ -66,15 +76,20 @@ def main(
 
     if experiment_type == 'WGS':
         sample_path = os.path.join(samples_dir,'Metagenomes')
+        forward_pattern = "*_1.fq.gz"
     else:
-        sample_path = os.path.join(samples_dir,experiment_type)
+        sample_path = os.path.join(samples_dir,'16_S')
+        forward_pattern = "*_1.fastq.gz"
 
     all_files = []
     pattern_for = f"{sample_path}/**/{forward_pattern}"
 
-    for filename_for in glob.glob(pattern_for, recursive=True):
+    exclude_dirs = ['None']
 
-        # Avoid raw reads
+    for i,filename_for in enumerate(glob.glob(pattern_for, recursive=True)):
+        
+        if any(excluded in filename_for for excluded in exclude_dirs):
+            continue                # Avoid raw reads
         if "raw" in os.path.basename(filename_for):
              continue
 
@@ -97,8 +112,8 @@ def main(
         size_for = os.path.getsize(filename_for) / (1024 * 1024)
         size_rev = os.path.getsize(filename_rev) / (1024 * 1024)
 
-        print(f" - {filename_for} ---- ({size_for:.2f} MB)")
-        print(f" - {filename_rev} ---- ({size_rev:.2f} MB)")
+        print(f"- {filename_for} ---- ({size_for:.2f} MB)")
+        print(f"- {filename_rev} ---- ({size_rev:.2f} MB)")
 
     return all_files
 
