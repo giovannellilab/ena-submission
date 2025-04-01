@@ -132,13 +132,14 @@ def retrieve_sample_alias(
     # # get unique sample alias from 16S and WGS:
     e16s = []
     for sample in os.path.join(e16s_dir,'*'):
-        e16s.append(sample)
+        samples_alias = "_".join(sample.split("_")[:3]) 
+        e16s.append(samples_alias)
     set_16s = set(e16s)
 
     ewgs_dir = os.path.join(target_dir,'Metagenomes')
     ewgs = []
     for sample in os.path.join(ewgs_dir,'*'):
-
+        samples_alias = "_".join(sample.split("_")[:3]) 
         ewgs.append(sample)
     set_wgs = set(ewgs)
     #  create a set for each list
