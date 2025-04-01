@@ -14,6 +14,8 @@ import sys
 
 import re
 
+import pandas as pd
+
 
 # # DAMGER: 
 # THIS SCRIPT RENAMES DIRECTORIES AND THEIR CONTENT
@@ -118,6 +120,20 @@ def first_function(
                       
     return target_dir
 
+
+
+def save_to_csv(output_file:str,
+                unique_names: list):
+    # Convert set to DataFrame
+    df = pd.DataFrame({'Sample_Alias': list(unique_names)})
+
+    # Save DataFrame to CSV
+    smaples_aliases = os.path.join(output_file,'sample_aliases.csv')
+    df.to_csv(smaples_aliases, index=False)
+
+    return smaples_aliases
+
+
 # # major problem:
 # #  Samples are UNIQUE, can be either obtaiend from S or F or BG,
 # #  BUT they are considered as a UNIQUE UNIT of biological data
@@ -128,19 +144,21 @@ def retrieve_sample_alias(
         target_dir : str
                         ): 
     
-    e16s_dir = os.path.join(target_dir,'16_S')
+    e16s_dirs = glob.glob(os.path.join(target_dir,'16_S','*'))
     # # get unique sample alias from 16S and WGS:
     e16s = []
-    for sample in os.path.join(e16s_dir,'*'):
+    for sample in e16s_dirs:
+        sample = os.path.basename(sample)
         samples_alias = "_".join(sample.split("_")[:3]) 
         e16s.append(samples_alias)
     set_16s = set(e16s)
 
-    ewgs_dir = os.path.join(target_dir,'Metagenomes')
+    ewgs_dirs = glob.glob(os.path.join(target_dir,'Metagenomes','*'))
     ewgs = []
-    for sample in os.path.join(ewgs_dir,'*'):
+    for sample in ewgs_dirs:
+        sample = os.path.basename(sample)
         samples_alias = "_".join(sample.split("_")[:3]) 
-        ewgs.append(sample)
+        ewgs.append(samples_alias)
     set_wgs = set(ewgs)
     #  create a set for each list
 
@@ -148,8 +166,13 @@ def retrieve_sample_alias(
     union = set_16s.union(set_wgs)
     # Do intersection
     intersection = set_16s.intersection(set_wgs)
+    all_samp = list(union)
+    print(len(list(union)))
 
-
+    save_to_csv(output_file=args.file_path,
+                unique_names = all_samp
+                )
+    
     return list(union), list(intersection)
 
 
@@ -182,23 +205,23 @@ if __name__ == '__main__':
         help="Directory containing samples for the submission.",
         type=str
     )
-    parser.add_argument(
-        "-e", "--experiment_type",
-        help="String defining either 16S or WGS ",
-        type = str
-    )
+    # parser.add_argument(
+    #     "-e", "--experiment_type",
+    #     help="String defining either 16S or WGS ",
+    #     type = str
+    # )
     args = parser.parse_args()
 
-    check_sanity(
-        tsv_file = args.file_path,
-        target_dir = args.sample_dir,
-    )
+    # check_sanity(
+    #     tsv_file = args.file_path,
+    #     target_dir = args.sample_dir,
+    # )
 
-    sample_dir = first_function(
-        tsv_file = args.file_path,
-        target_dir = args.sample_dir,
-        experiment_type  = args.experiment_type
-        )
+    # sample_dir = first_function(
+    #     tsv_file = args.file_path,
+    #     target_dir = args.sample_dir,
+    #     experiment_type  = args.experiment_type
+    #     )
 
     all,common = retrieve_sample_alias(
         target_dir = args.sample_dir
