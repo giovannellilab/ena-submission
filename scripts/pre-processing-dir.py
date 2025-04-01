@@ -118,6 +118,40 @@ def first_function(
                       
     return target_dir
 
+# # major problem:
+# #  Samples are UNIQUE, can be either obtaiend from S or F or BG,
+# #  BUT they are considered as a UNIQUE UNIT of biological data
+# # Could occur that a sample fails to have a 16S experiment BUT
+# # To have WGS data
+
+def retrieve_sample_alias(
+        target_dir : str
+                        ): 
+    
+    e16s_dir = os.path.join(target_dir,'16_S')
+    # # get unique sample alias from 16S and WGS:
+    e16s = []
+    for sample in os.path.join(e16s_dir,'*'):
+        e16s.append(sample)
+    set_16s = set(e16s)
+
+    ewgs_dir = os.path.join(target_dir,'Metagenomes')
+    ewgs = []
+    for sample in os.path.join(ewgs_dir,'*'):
+
+        ewgs.append(sample)
+    set_wgs = set(ewgs)
+    #  create a set for each list
+
+    # Do a union
+    union = set_16s.union(set_wgs)
+    # Do intersection
+    intersection = set_16s.intersection(set_wgs)
+
+
+    return list(union), list(intersection)
+
+
 
 
 def walk_dir( 
@@ -165,6 +199,9 @@ if __name__ == '__main__':
         experiment_type  = args.experiment_type
         )
 
+    all,common = retrieve_sample_alias(
+        target_dir = args.sample_dir
+    )
 
     # walk_dir(
     #     target_dir=args.sample_dir
