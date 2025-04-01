@@ -158,7 +158,7 @@ def register_samples(
         "-F", f"SAMPLE=@{samples_xml_path}",
         "-F", "LAUNCH=YES",
         "-o", output_path,
-        "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
+        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
     ]
 
     # # Execute the command
