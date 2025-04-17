@@ -30,6 +30,8 @@ import glob
 
 import hashlib
 
+import sys
+
 import argparse
 
 from datetime import datetime
@@ -132,7 +134,8 @@ def create_samples_file(
 def register_samples(
     samples_xml_path: str,
     template_dir: str,
-    user_password: str
+    user_password: str,
+    submission_type: str
 ) -> str:
 
     # Define input XML files
@@ -150,6 +153,21 @@ def register_samples(
 
     print(f"[STEP1][+] Registering samples...")
 
+
+    if submission_type in ['y','Yes','yes']:
+        url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
+        print('[STEP1][+] Submitting to Permanent partition ..')
+
+    if submission_type in ['n','No','no']:
+        url_ebi_ac_uk = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        print('[STEP1][+] Submitted to TEST partition ..')
+
+    else:
+        print("[!] Invalid value for --submission_type \n " \
+        "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
+        "--> Use 'n','No','no' for temporary (Test) submission")
+        sys.exit(1)
+
     # Build the command
     command = [
         "curl",
@@ -158,7 +176,7 @@ def register_samples(
         "-F", f"SAMPLE=@{samples_xml_path}",
         "-F", "LAUNCH=YES",
         "-o", output_path,
-        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        url_ebi_ac_uk
     ]
 
     # # Execute the command
@@ -221,7 +239,7 @@ def create_experiment(
 
     # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(metadata_path).split("_")[0]
-
+    
     experiment_xml = []
 
     for experiment_type in experiment_types:
@@ -235,26 +253,22 @@ def create_experiment(
             samples_receipt_path=samples_receipt_path,
             metadata_path=metadata_path
         )
+
         print(receipt_df)
         for _, row in receipt_df.iterrows():
             row = row.astype(str)
-
             with open(template_path, mode="r") as handle:
                 template_xml = handle.read()
 
-            sample_alias = row["sample_alias"]
-
+            sample_alias = row["sample_alias"]            
             # Modify since WGS folders are named Metagenomes
             if experiment_type == "16S":
                 experiment_dir = "16_S"
                 sample_alias_dir = sample_alias
-                #forward_pattern = "*_1.fastq.gz"
 
             elif experiment_type == "WGS":
                 experiment_dir = "Metagenomes"
-                #sample_alias_dir = sample_alias
                 sample_alias_dir = sample_alias
-                #forward_pattern = "*_1.fq.gz"
       
             forward_pattern = forward_pattern_dict[experiment_type]
 
@@ -329,14 +343,15 @@ def create_run(
             exp_dir = '16_S'
         elif experiment_type == 'WGS':
             exp_dir = 'Metagenomes'
-
+        
         forward_pattern = forward_pattern_dict[experiment_type]
         pattern_for = f"{samples_dir}{exp_dir}/**/{forward_pattern}"
 
-        exclude_dirs = ['BP2_220829_F_EW_lanes','BS_220902_F_EW_lanes']
+        exclude_dirs = ['weak_failed']
+        print(f'----- Experiment type: {experiment_type} ------')
 
         for filename_for in glob.glob(pattern_for, recursive=True):
-            print(filename_for)
+            name = '_'.join(os.path.basename(filename_for).strip().split('_')[:3])
 
             if any(excluded in filename_for for excluded in exclude_dirs):
                 continue
@@ -357,20 +372,41 @@ def create_run(
             # Raise error when reverse file does not exist
             if not os.path.exists(filename_rev):
                 raise ValueError(f"[!] Reverse file not found: {filename_rev}")
+            else:
+                print(filename_for)
 
             if experiment_type == "WGS":
                 # Retrieve checksum (MD5.txt)
                 checksum_path = os.path.join(
                     os.path.dirname(filename_for),
-                    "MD5.txt"
+                    f"MD5.txt"
                 )
+                try:
+                    if checksum_path:
+                        
+                        with open(checksum_path, mode="r") as reader:
+                            lines = reader.readlines()
+                            print(lines)
+                            # WARNING: assuming for and rev are in the 1st and 2nd lines
+                            hash_for = lines[0].split(" ")[0]
+                            hash_rev = lines[1].split(" ")[0]
+                    else:
+                        raise FileNotFoundError
 
-                with open(checksum_path, mode="r") as reader:
-                    lines = reader.readlines()
-                    print(lines)
-                    # WARNING: assuming for and rev are in the 1st and 2nd lines
-                    hash_for = lines[0].split(" ")[0]
-                    hash_rev = lines[1].split(" ")[0]
+                except (FileNotFoundError):
+
+                    hash_for = hashlib.md5(open(filename_for, mode="rb").read())\
+                        .hexdigest()
+                    hash_rev = hashlib.md5(open(filename_rev, mode="rb").read())\
+                        .hexdigest()
+                    checksum_file = os.path.join(
+                        os.path.dirname(filename_for),
+                        f'MD5.txt'
+                        )
+                    with open(checksum_file, mode='w') as writer:
+                        writer.write(f"{hash_for} {os.path.basename(filename_for)}\n")
+                        writer.write(f"{hash_rev} {os.path.basename(filename_rev)}\n")
+
 
             elif experiment_type == "16S":
                 # Compute the checksum (MD5)
@@ -445,13 +481,13 @@ if __name__ == "__main__":
         "-f", "--forward_pattern_16s",
         help="Pattern followed in naming the forward sequence files (16S).",
         type=str,
-        default="*_1.fastq.gz"
+        default="*fastq.gz"
     )
     parser.add_argument(
         "-w", "--forward_pattern_wgs",
         help="Pattern followed in naming the forward sequence files (WGS).",
         type=str,
-        default="*_1.fq.gz"
+        default="*1.fq.gz"
     )
     parser.add_argument(
         "-e", "--experiment_types",
@@ -459,7 +495,12 @@ if __name__ == "__main__":
         type=lambda t: [s.strip() for s in t.split(",")],
         default=["16S", "WGS"]    
         )
-
+    parser.add_argument(
+        "-x", "--submission_type",
+        help="Choose between Test submission or Permanent",
+        type=str,
+        default=' '
+    )
     parser.add_argument(
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
@@ -475,9 +516,9 @@ if __name__ == "__main__":
     samples_receipt_path = register_samples(
         samples_xml_path=samples_xml_path,
         template_dir=args.template_dir,
-        user_password=args.user_password
+        user_password=args.user_password,
+        submission_type=args.submission_type
     )
-
     print(f"[INFO] Using 16S forward pattern {args.forward_pattern_16s}")
     print(f"[INFO] Using WGS forward pattern {args.forward_pattern_wgs}")
     forward_pattern_dict = {
