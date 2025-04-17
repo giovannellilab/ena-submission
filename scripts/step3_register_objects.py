@@ -24,6 +24,8 @@ import subprocess
 
 import bs4 as bs
 
+import sys 
+
 import pandas as pd
 
 # from mapper import mapp
@@ -31,7 +33,8 @@ import pandas as pd
 def register_objects(
     metadata_path: str,
     template_dir: str,
-    user_password: str
+    user_password: str,
+    submission_type: str
 ) -> str:
 
     project_name = os.path.basename(metadata_path).split("_")[0]
@@ -60,6 +63,20 @@ def register_objects(
         if not os.path.exists(path):
             raise FileNotFoundError(path)
 
+    if submission_type in ['y','Yes','yes']:
+        url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
+        print('[STEP0][+] Submitting to Permanent partition ..')
+
+    if submission_type in ['n','No','no']:
+        url_ebi_ac_uk = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        print('[STEP0][+] Submitted to TEST partition ..')
+
+    else:
+        print("[!] Invalid value for --submission_type \n " \
+        "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
+        "--> Use 'n','No','no' for temporary (Test) submission")
+        sys.exit(1)
+
     command = [
         "curl",
         "-u", user_password,
@@ -67,16 +84,15 @@ def register_objects(
         "-F", f"EXPERIMENT=@{experiment_path}",
         "-F", f"RUN=@{run_path}",
         "-o", output_path,
-        "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
+        url_ebi_ac_uk
     ]
-
     # # Execute the command
-    # try:
-    #     subprocess.run(command, check=True, text=True)
-    #     print(f"[+] Objects receipt XML created: {output_path}")
+    try:
+        subprocess.run(command, check=True, text=True)
+        print(f"[+] Objects receipt XML created: {output_path}")
 
-    # except subprocess.CalledProcessError as e:
-    #     print(f"[!] Error:", {e.stderr})
+    except subprocess.CalledProcessError as e:
+        print(f"[!] Error:", {e.stderr})
 
     return output_path
 
@@ -111,7 +127,6 @@ def parse_objects_receipts(
     project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
-    sample_fix_path = os.path.join(metadata_dir,f'{project_name}_sample_receipt.csv')
     sample_receipt_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_samples_receipt.xml"
@@ -141,7 +156,6 @@ def parse_objects_receipts(
             samea_accession = sample.find("EXT_ID").get("accession") # SAMEA
             custom_accession = sample.get("alias")                   # Custom
             samples[accession] = [custom_accession, samea_accession]
-            
     # ------------------------------------------------------------------------ #
 
     # RETRIEVING METADATA from Object-registration-receipt.xml file
@@ -332,22 +346,30 @@ if __name__ == "__main__":
         "-e", "--experiment_types",
         help="String defining either 16S, WGS or both.",
         type=lambda t: [s.strip() for s in t.split(",")],
-        default=["16S", "WGS"]
+        default=["16S","WGS"]
     )
     parser.add_argument(
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
         type=str
     )
+    parser.add_argument(
+        "-x", "--submission_type",
+        help="Choose between Test submission or Permanent",
+        type=str,
+        default=' '
+    )
     args = parser.parse_args()
 
     final_receipt_path = register_objects(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
-        user_password=args.user_password
+        user_password=args.user_password,
+        perm=args.permanent
     )
+
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
-    
+
     for experiment_type in args.experiment_types:
         receipt_df = parse_objects_receipts(
             metadata_path = args.metadata_path,
