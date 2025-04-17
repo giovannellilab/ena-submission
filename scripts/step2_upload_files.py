@@ -25,6 +25,30 @@ import subprocess
 
 import time
 
+
+def exclude_samples(
+   metadata_path: str,
+   file: str
+)-> list:
+
+    exclusion_file = os.path.join(
+        os.path.dirname(metadata_path),
+        file
+        )
+
+    if not os.path.exists(exclusion_file):
+        print(f'Error {exclusion_file} does not exist')
+        return 
+
+    exclude_list = []
+    with open(exclusion_file,'r') as reader:
+        for line in reader:
+            line = line.strip('\n')
+            exclude_list.append(line)
+    
+    return exclude_list
+
+
 def upload_files(
     file_list: list ,
     interactive: bool = False
@@ -48,6 +72,7 @@ def upload_files(
     start_time = time.time() 
 
     try:
+        print('Uploading ...')
         subprocess.run(ftp_connection, check=True, text=True)
         print(f"First commmand run")
 
@@ -70,6 +95,7 @@ def upload_files(
 
 def main(
     samples_dir: str,
+    metadata_path: str,
     experiment_type: str,
     forward_pattern_dict: dict
 )-> list:
@@ -79,7 +105,7 @@ def main(
         return 
 
     if experiment_type == 'WGS':
-        sample_path = os.path.join(samples_dir,'Metagenomes')
+        sample_path = os.path.join(samples_dir,'CN5_23')
     elif experiment_type == '16S':
         sample_path = os.path.join(samples_dir,'16_S')
 
@@ -90,15 +116,16 @@ def main(
 
 
     # # # provding a list of directories to be excluded
-    # # # would be better to provide a file with the directories or the files to be excluded
+    # # # from a text file
+    
+    exclude_dirs = exclude_samples(
+        metadata_path=metadata_path,
+        file=args.exclude_dirs
+        )
 
-    exclude_dirs = ['weak_failed','Blank','SF2C_230609_B_EW_lanes','SF1D13_230728_F_EW_lanes']
-
+    excluded = []
     for i,filename_for in enumerate(glob.glob(pattern_for, recursive=True)):
-        print(filename_for)
         
-        if any(excluded in filename_for for excluded in exclude_dirs):
-            continue                
         # Avoid raw reads
         if "raw" in os.path.basename(filename_for):
              continue
@@ -111,6 +138,11 @@ def main(
             forward_pattern,
             reverse_pattern
         )
+        # excluding specifc samples and files
+        if any(excluded in filename_for for excluded in exclude_dirs):
+            excluded.append(filename_for)
+            excluded.append(filename_rev)
+            continue 
 
         # Raise error when there is not exactly one reverse file
         if not os.path.exists(filename_rev):
@@ -122,8 +154,14 @@ def main(
         size_for = os.path.getsize(filename_for) / (1024 * 1024)
         size_rev = os.path.getsize(filename_rev) / (1024 * 1024)
 
+
         print(f"- {filename_for} ---- ({size_for:.2f} MB)")
         print(f"- {filename_rev} ---- ({size_rev:.2f} MB)")
+
+    if excluded:
+        print(f'\n ----Excluded files----')
+        print('\n'.join(f'{ex} -- excluded' for ex in excluded))
+        print('\n')
 
     return all_files
 
@@ -160,13 +198,13 @@ if __name__ == "__main__":
         "-f", "--forward_pattern_16s",
         help="Pattern followed in naming the forward sequence files (16S).",
         type=str,
-        default="*fastq.gz"
+        default="*1.fastq.gz"
     )
     parser.add_argument(
         "-w", "--forward_pattern_wgs",
         help="Pattern followed in naming the forward sequence files (WGS).",
         type=str,
-        default="*fq.gz"
+        default="*1.fq.gz"
     )
     parser.add_argument(
         "-a", "--interactive",
@@ -189,6 +227,7 @@ if __name__ == "__main__":
     }
     file_list = main(
         samples_dir=args.sample_dir,
+        metadata_path=args.metadata_path,
         experiment_type=args.experiment_type,
         forward_pattern_dict=forward_pattern_dict
     )
