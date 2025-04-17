@@ -16,6 +16,7 @@ import re
 
 import pandas as pd
 
+import csv
 
 # # DAMGER: 
 # THIS SCRIPT RENAMES DIRECTORIES AND THEIR CONTENT
@@ -48,6 +49,57 @@ def check_sanity(
     if not os.path.exists(target_dir):
         print(f"Error: Target directory '{target_dir}' not found.")
         sys.exit(1)
+
+
+# # provde a csv file with three columns:
+# # new_prefix,R1_filename,R2_filename
+# # the script renames the 
+def renaming_from_csv(
+        tsv_file : str,
+        target_dir : str,
+        experiment_type : str
+        ):
+    if experiment_type == '16S':
+            experiment_type = '16_S'
+    elif experiment_type == 'WGS':
+            experiment_type = 'Metagenomes'
+
+
+    main_dir = os.path.join(target_dir,experiment_type)
+    if not os.path.exists(main_dir):
+            print(f"Warning: Experiment subdirectory '{main_dir}' does not exist. Skipping...")
+            return target_dir
+    
+    template_dir = os.path.dirname(tsv_file)
+    csv_file = os.path.join(template_dir,'map_samples_WGS_correct.csv')
+    reader = pd.read_csv(csv_file)
+
+    for _, row in reader.iterrows():
+            row = row.astype(str)
+
+            new_prefix = row['new_prefix'].strip()
+            forward_old = row['R1_filename'].strip()
+            reverse_old = row['R2_filename'].strip()
+            old_files = [forward_old,reverse_old]
+
+            if old_files:
+                print('----------------------------')
+                for old_file in old_files:
+                    old_file_path = os.path.join(target_dir,experiment_type,old_file)
+
+                    if os.path.exists(old_file_path):
+                            suffix = "_".join(old_file.split("_")[2:])  # Get 'L001_R1_001.fastq.gz'
+                            new_name = f"{new_prefix}_{suffix}"
+
+                            new_file_path = os.path.join(os.path.dirname(old_file_path), new_name)
+                            shutil.move(old_file_path, new_file_path)
+                            print(f"Renamed file: {old_file_path} -> {new_file_path}")
+                    else:
+                            print(f"File not found: {old_file_path}")
+            else:
+                 continue
+                    
+    return None
 
 
 def first_function(
@@ -205,12 +257,18 @@ if __name__ == '__main__':
         help="Directory containing samples for the submission.",
         type=str
     )
-    # parser.add_argument(
-    #     "-e", "--experiment_type",
-    #     help="String defining either 16S or WGS ",
-    #     type = str
-    # )
+    parser.add_argument(
+        "-e", "--experiment_type",
+        help="String defining either 16S or WGS ",
+        type = str
+    )
     args = parser.parse_args()
+
+    renaming_from_csv(
+        tsv_file = args.file_path,
+        target_dir = args.sample_dir,
+        experiment_type  = args.experiment_type
+        )
 
     # check_sanity(
     #     tsv_file = args.file_path,
@@ -223,9 +281,9 @@ if __name__ == '__main__':
     #     experiment_type  = args.experiment_type
     #     )
 
-    all,common = retrieve_sample_alias(
-        target_dir = args.sample_dir
-    )
+    # all,common = retrieve_sample_alias(
+    #     target_dir = args.sample_dir
+    # )
 
     # walk_dir(
     #     target_dir=args.sample_dir
