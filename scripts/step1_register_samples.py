@@ -186,22 +186,34 @@ def register_samples(
         f"{project_name}_ena_samples_receipt.xml"
     )
 
-    print(f"[STEP1][+] Registering samples...")
+    # --- Preview-only mode ---
+    if not submission_type:
+        print("[INFO] submission_type is empty. Dry-run mode: returning output path only.")
+        return output_path
+    
+    # --- Validate submission type ---
+    normalized = submission_type.lower()
+    if normalized in ['y', 'yes']:
 
-
-    if submission_type in ['y','Yes','yes']:
         url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
-        print('[STEP1][+] Submitting to Permanent partition ..')
+        print('[STEP0][+] Submitting to Permanent partition ..')
+        permanent = True
 
-    if submission_type in ['n','No','no']:
+    elif normalized in ['n','no']:
+
         url_ebi_ac_uk = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
-        print('[STEP1][+] Submitted to TEST partition ..')
+        print('[STEP0][+] Submitted to TEST partition ..')
+        permanent = False
 
     else:
         print("[!] Invalid value for --submission_type \n " \
         "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
         "--> Use 'n','No','no' for temporary (Test) submission")
         sys.exit(1)
+
+    # Check all files exist beforehand
+    if not os.path.exists(submission_path):
+        raise FileNotFoundError(f"Required file not found: {submission_path}")
 
     # Build the command
     command = [
@@ -214,24 +226,28 @@ def register_samples(
         url_ebi_ac_uk
     ]
 
-    # # Execute the command
-    # try:
-    #     subprocess.run(command, check=True, text=True)
-    #     print(f"[+] Samples receipt XML created: {output_path}")
+    # Execute the command
+    try:
+        subprocess.run(command, check=True, text=True)
+        print(f"[+] Samples receipt XML created: {output_path}")
 
-    # except subprocess.CalledProcessError as e:
-    #     print(f"[!] Error:", {e.stderr})
+    except subprocess.CalledProcessError as e:
+        print(f"[!] Error:", {e.stderr})
 
     message = receipt_output_handling(output_path)
 
     if message['success']:
-
         print(f"[STEP1][+] Samples receipt saved to: {output_path}")
+
+        if permanent:
+            print(f"[STEP1][+] Samples registered Permanently")
+        else:
+            print(f"[STEP1][+] Samples registered Temporarily")
     else:
-            
         print('\n'.join(f'[!] {k} --> {v}' for k, v in message.items()))
         print('Exiting....')
         sys.exit(1)
+
 
 
     return output_path
@@ -542,9 +558,10 @@ if __name__ == "__main__":
         )
     parser.add_argument(
         "-x", "--submission_type",
-        help="Choose between Test submission or Permanent",
+        help="Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
         type=str,
-        default=' '
+        default=None,
+        choices=['y', 'yes', 'n', 'no', None]  # Accept only known values
     )
     parser.add_argument(
         "-u", "--user_password",
