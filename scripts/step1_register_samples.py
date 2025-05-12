@@ -64,6 +64,41 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
     return metadata_df
 
+def receipt_output_handling(receipt_path: str)-> dict:
+    """
+    Parses a BioSamples receipt XML file using BeautifulSoup and returns a status summary.
+    Args:
+        file_path (str): Path to the XML file.
+    Returns:
+        dict: A dictionary with keys:
+            - 'success' (bool)
+            - 'message' (str)
+            - 'errors' (list of str)
+            - 'info' (list of str)
+    """
+    with open(receipt_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    
+    soup = bs.BeautifulSoup(content, 'xml')
+    receipt = soup.find('RECEIPT')
+    success = receipt.get('success', 'false').lower() == 'true'
+
+    errors = [err.text for err in soup.find_all('ERROR')]
+    info = [inf.text for inf in soup.find_all('INFO')]
+
+    if success:
+        message = "Submission successful. No errors reported."
+    else:
+        message = "Submission failed. See error messages." if errors else "Submission failed. No specific errors reported."
+
+    info_submission = {
+        'success': success,
+        'message': message,
+        'errors': errors,
+        'info': info
+    }
+
+    return info_submission
 
 def create_samples_file(
     metadata_path: str,
@@ -180,14 +215,24 @@ def register_samples(
     ]
 
     # # Execute the command
-    try:
-        subprocess.run(command, check=True, text=True)
-        print(f"[+] Samples receipt XML created: {output_path}")
+    # try:
+    #     subprocess.run(command, check=True, text=True)
+    #     print(f"[+] Samples receipt XML created: {output_path}")
 
-    except subprocess.CalledProcessError as e:
-        print(f"[!] Error:", {e.stderr})
+    # except subprocess.CalledProcessError as e:
+    #     print(f"[!] Error:", {e.stderr})
 
-    print(f"[STEP1][+] Samples receipt saved to: {output_path}")
+    message = receipt_output_handling(output_path)
+
+    if message['success']:
+
+        print(f"[STEP1][+] Samples receipt saved to: {output_path}")
+    else:
+            
+        print('\n'.join(f'[!] {k} --> {v}' for k, v in message.items()))
+        print('Exiting....')
+        sys.exit(1)
+
 
     return output_path
 
@@ -345,14 +390,14 @@ def create_run(
             exp_dir = 'Metagenomes'
         
         forward_pattern = forward_pattern_dict[experiment_type]
-        pattern_for = f"{samples_dir}{exp_dir}/**/{forward_pattern}"
+        pattern_for = f"{samples_dir}/{exp_dir}/**/{forward_pattern}"
 
-        exclude_dirs = ['weak_failed']
+        exclude_dirs = ['weak_failed','ANT23_raw_sequences']
         print(f'----- Experiment type: {experiment_type} ------')
 
         for filename_for in glob.glob(pattern_for, recursive=True):
+            
             name = '_'.join(os.path.basename(filename_for).strip().split('_')[:3])
-
             if any(excluded in filename_for for excluded in exclude_dirs):
                 continue
 
@@ -481,7 +526,7 @@ if __name__ == "__main__":
         "-f", "--forward_pattern_16s",
         help="Pattern followed in naming the forward sequence files (16S).",
         type=str,
-        default="*fastq.gz"
+        default="*1.fastq.gz"
     )
     parser.add_argument(
         "-w", "--forward_pattern_wgs",
