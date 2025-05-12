@@ -30,6 +30,42 @@ import pandas as pd
 
 # from mapper import mapp
 
+def receipt_output_handling(receipt_path: str)-> dict:
+    """
+    Parses a BioSamples receipt XML file using BeautifulSoup and returns a status summary.
+    Args:
+        file_path (str): Path to the XML file.
+    Returns:
+        dict: A dictionary with keys:
+            - 'success' (bool)
+            - 'message' (str)
+            - 'errors' (list of str)
+            - 'info' (list of str)
+    """
+    with open(receipt_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    
+    soup = bs.BeautifulSoup(content, 'xml')
+    receipt = soup.find('RECEIPT')
+    success = receipt.get('success').lower() == 'true'
+
+    errors = [err.text for err in soup.find_all('ERROR')]
+    info = [inf.text for inf in soup.find_all('INFO')]
+
+    if success:
+        message = "Submission successful. No errors reported."
+    else:
+        message = "Submission failed. See error messages." if errors else "Submission failed. No specific errors reported."
+
+    info_submission = {
+        'success': success,
+        'message': message,
+        'errors': errors,
+        'info': info
+    }
+
+    return info_submission
+
 def register_objects(
     metadata_path: str,
     template_dir: str,
@@ -58,24 +94,35 @@ def register_objects(
         f"{project_name}_ena_object_receipt.xml"
     )
 
-    # Check all files exist beforehand
-    for path in (submission_path, experiment_path, run_path):
-        if not os.path.exists(path):
-            raise FileNotFoundError(path)
+    # --- Preview-only mode ---
+    if not submission_type:
+        print("[INFO] submission_type is empty. Dry-run mode: returning output path only.")
+        return output_path
+    
+    # --- Validate submission type ---
+    normalized = submission_type.lower()
+    if normalized in ['y', 'yes']:
 
-    if submission_type in ['y','Yes','yes']:
         url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
         print('[STEP0][+] Submitting to Permanent partition ..')
+        permanent = True
 
-    if submission_type in ['n','No','no']:
+    elif normalized in ['n','no']:
+
         url_ebi_ac_uk = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
         print('[STEP0][+] Submitted to TEST partition ..')
+        permanent = False
 
     else:
         print("[!] Invalid value for --submission_type \n " \
         "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
         "--> Use 'n','No','no' for temporary (Test) submission")
         sys.exit(1)
+
+    # Check all files exist beforehand
+    for path in (submission_path, experiment_path, run_path):
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Required file not found: {path}")
 
     command = [
         "curl",
@@ -93,6 +140,19 @@ def register_objects(
 
     except subprocess.CalledProcessError as e:
         print(f"[!] Error:", {e.stderr})
+    
+    message = receipt_output_handling(output_path)
+    
+    if message['success']:
+        print(f"[STEP3][+]  Object receipt saved to: {output_path}")
+        if permanent:
+            print(f"[STEP3][+] Objects registered Permanently")
+        else:
+            print(f"[STEP3][+] Objects registered Temporarily")
+    else:
+        print('\n'.join(f'[!] {k} --> {v}' for k, v in message.items()))
+        print('Exiting....')
+        sys.exit(1)
 
     return output_path
 
@@ -355,9 +415,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-x", "--submission_type",
-        help="Choose between Test submission or Permanent",
+        help="Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
         type=str,
-        default=' '
+        default=None,
+        choices=['y', 'yes', 'n', 'no', None]  # Accept only known values
     )
     args = parser.parse_args()
 
@@ -365,7 +426,7 @@ if __name__ == "__main__":
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         user_password=args.user_password,
-        perm=args.permanent
+        submission_type=args.submission_type
     )
 
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
