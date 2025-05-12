@@ -18,7 +18,14 @@ import pandas as pd
 
 import csv
 
-# # DAMGER: 
+
+ # #  python scripts/pre-processing-dir.py 
+ # -f data/ANT23/map_samples_ANT23.tsv 
+ # -e 16S 
+ # -s /media/edotacca/Loki1/sequencing_data/ANT23
+
+
+# # DANGER: 
 # THIS SCRIPT RENAMES DIRECTORIES AND THEIR CONTENT
 # BE SURE THAT FILE: map_samples.tsv CONTAINS CORRECT INFO
 
@@ -54,6 +61,7 @@ def check_sanity(
 # # provde a csv file with three columns:
 # # new_prefix,R1_filename,R2_filename
 # # the script renames the 
+
 def renaming_from_csv(
         tsv_file : str,
         target_dir : str,
@@ -102,7 +110,10 @@ def renaming_from_csv(
     return None
 
 
-def first_function(
+# renames samples dirs and paretn sample dir and files, using a TSV file
+# current  -->  new 
+
+def renaming_samples(
     tsv_file : str,
     target_dir : str,
     experiment_type : str
@@ -128,7 +139,7 @@ def first_function(
             mapping[current] = new
         print(mapping)
     
-
+     # list all samples dirs absolute paths
     sample_dirs = glob.glob(os.path.join(main_dir, 'G*'))
 
 
@@ -264,22 +275,22 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    renaming_from_csv(
-        tsv_file = args.file_path,
-        target_dir = args.sample_dir,
-        experiment_type  = args.experiment_type
-        )
-
-    # check_sanity(
-    #     tsv_file = args.file_path,
-    #     target_dir = args.sample_dir,
-    # )
-
-    # sample_dir = first_function(
+    # renaming_from_csv(
     #     tsv_file = args.file_path,
     #     target_dir = args.sample_dir,
     #     experiment_type  = args.experiment_type
     #     )
+
+    check_sanity(
+        tsv_file = args.file_path,
+        target_dir = args.sample_dir,
+    )
+
+    sample_dir = renaming_samples(
+        tsv_file = args.file_path,
+        target_dir = args.sample_dir,
+        experiment_type  = args.experiment_type
+        )
 
     # all,common = retrieve_sample_alias(
     #     target_dir = args.sample_dir
