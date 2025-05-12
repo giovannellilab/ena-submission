@@ -25,6 +25,36 @@ import subprocess
 
 import time
 
+import sys
+
+def check_sanity(
+    tsv_file : str,
+    target_dir : str,
+):
+    
+    template_dir = os.path.dirname(tsv_file)
+
+    available_files = [f for f in os.listdir(template_dir) 
+                       if os.path.isfile(os.path.join(template_dir, f))
+                        ]
+    
+    if not os.path.exists(tsv_file):
+        print(f"Error: TSV file '{tsv_file}' not found.")
+
+        if available_files:
+            print("Did you mean one of these files?")
+            for file in sorted(available_files):
+                print(f"  - {file}")
+        else:
+            print("No files found in the target directory.")
+
+        sys.exit(1)
+
+    if not os.path.exists(target_dir):
+        print(f"Error: Target directory '{target_dir}' not found.")
+        sys.exit(1)
+
+
 
 def exclude_samples(
    metadata_path: str,
@@ -35,12 +65,13 @@ def exclude_samples(
         os.path.dirname(metadata_path),
         file
         )
-
-    if not os.path.exists(exclusion_file):
-        print(f'Error {exclusion_file} does not exist')
-        return 
-
+    
     exclude_list = []
+    if not os.path.exists(exclusion_file):
+        print(f'Error {exclusion_file} does not exist \n \
+              no sample will be excluded')
+        return exclude_list
+
     with open(exclusion_file,'r') as reader:
         for line in reader:
             line = line.strip('\n')
@@ -105,7 +136,7 @@ def main(
         return 
 
     if experiment_type == 'WGS':
-        sample_path = os.path.join(samples_dir,'CN5_23')
+        sample_path = os.path.join(samples_dir,'Metagenomes')
     elif experiment_type == '16S':
         sample_path = os.path.join(samples_dir,'16_S')
 
@@ -122,7 +153,8 @@ def main(
         metadata_path=metadata_path,
         file=args.exclude_dirs
         )
-
+    
+    exclude_dirs = []
     excluded = []
     for i,filename_for in enumerate(glob.glob(pattern_for, recursive=True)):
         
