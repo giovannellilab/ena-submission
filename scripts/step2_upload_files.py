@@ -60,22 +60,29 @@ def exclude_samples(
    metadata_path: str,
    file: str
 )-> list:
-
-    exclusion_file = os.path.join(
-        os.path.dirname(metadata_path),
-        file
-        )
     
     exclude_list = []
-    if not os.path.exists(exclusion_file):
-        print(f'Error {exclusion_file} does not exist \n \
-              no sample will be excluded')
-        return exclude_list
 
-    with open(exclusion_file,'r') as reader:
-        for line in reader:
-            line = line.strip('\n')
-            exclude_list.append(line)
+    if not file:
+        print('No metadata')
+        return exclude_list
+    
+    else:
+        exclusion_file = os.path.join(
+            os.path.dirname(metadata_path),
+            file
+            )
+    
+        if not os.path.exists(exclusion_file):
+            print(f'Error {exclusion_file} does not exist \n \
+                no sample will be excluded')
+            return exclude_list
+        else:
+
+            with open(exclusion_file,'r') as reader:
+                for line in reader:
+                    line = line.strip('\n')
+                    exclude_list.append(line)
     
     return exclude_list
 
@@ -153,8 +160,7 @@ def main(
         metadata_path=metadata_path,
         file=args.exclude_dirs
         )
-    
-    exclude_dirs = []
+    exclude_dirs = ['unmerged_lanes']
     excluded = []
     for i,filename_for in enumerate(glob.glob(pattern_for, recursive=True)):
         

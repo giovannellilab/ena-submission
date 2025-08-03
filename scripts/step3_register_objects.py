@@ -136,7 +136,7 @@ def register_objects(
     # # Execute the command
     try:
         subprocess.run(command, check=True, text=True)
-        print(f"[+] Objects receipt XML created: {output_path}")
+        print(f"[+] Objects receipt XML created: {os.path.basename(output_path)}")
 
     except subprocess.CalledProcessError as e:
         print(f"[!] Error:", {e.stderr})

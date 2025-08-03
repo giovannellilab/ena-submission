@@ -309,7 +309,13 @@ def create_experiment(
             template_dir,
             f"experiment_{experiment_type}.xml"
         )
+        #rmeove it after MILOS 
 
+        # template_path = os.path.join(
+        #     template_dir,
+        #     f"experiment_milos_{experiment_type}.xml"
+        # )
+        # # # # # # # # # # # # # # # # # 
         receipt_df = parse_samples_receipt(
             samples_receipt_path=samples_receipt_path,
             metadata_path=metadata_path
@@ -395,7 +401,12 @@ def create_run(
         template_dir,
         f"run.xml"
     )
-
+    
+    # template_path = os.path.join(
+    #     template_dir,
+    #     f"run_milos.xml"
+    # )
+    
     run_xml = []
 
     for experiment_type in experiment_types:
@@ -408,7 +419,7 @@ def create_run(
         forward_pattern = forward_pattern_dict[experiment_type]
         pattern_for = f"{samples_dir}/{exp_dir}/**/{forward_pattern}"
 
-        exclude_dirs = ['weak_failed','ANT23_raw_sequences']
+        exclude_dirs = ['weak_failed','unmerged_lanes','ANT23_raw_sequences']
         print(f'----- Experiment type: {experiment_type} ------')
 
         for filename_for in glob.glob(pattern_for, recursive=True):
@@ -459,7 +470,7 @@ def create_run(
                     hash_for = hashlib.md5(open(filename_for, mode="rb").read())\
                         .hexdigest()
                     hash_rev = hashlib.md5(open(filename_rev, mode="rb").read())\
-                        .hexdigest()
+                         .hexdigest()
                     checksum_file = os.path.join(
                         os.path.dirname(filename_for),
                         f'MD5.txt'
@@ -587,7 +598,7 @@ if __name__ == "__main__":
         "16S": args.forward_pattern_16s,
         "WGS": args.forward_pattern_wgs
     }
-
+    
     experiment_path = create_experiment(
         samples_receipt_path=samples_receipt_path,
         metadata_path=args.metadata_path,

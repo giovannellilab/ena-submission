@@ -7,11 +7,8 @@ Compilation of utilities for the ENA submission
 
 ```bash
 # Create and activate environment
-conda create -n ena -y
+conda env create -f environment.yml
 conda activate ena
-
-# Install dependencies
-conda install bs4 openpyxl -y
 ```
 
 
