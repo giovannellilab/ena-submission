@@ -77,13 +77,32 @@ python step1_register_samples.py -i data/HYD22/HYD22_ena_submission.xlsx -t data
 
 ```
 
-2) Uploading file reads
+2) Upoading file reads
 ENA requires the raw read files to be trimmed/clean prior upload. IN our case we are going to use clean data
 already pre-processed by the sequencing company.
 Moreover, for each file .fastq.gz, an MD5 checksum must be computed and saved for the next step
-With this procedure, data are submitted in the 'ENA upload area', where can stay up to 2 months prior deletion.
-Therefore, we must 'push' these files from this stage area to a permament storage by registering the relationship between these files
-and the experiments to which are associated and their MD5 checksums.
+With this procedure, data are uploaded in the 'ENA upload area' or 'BAY area', where can stay up to 2 months prior deletion.
+Therefore, we must 'push' these files from this stage area to a permament storage by registering the relationship between these files, their checksums
+and the experiments and samples to which they are associated.
+
+***ERRORS**
+[Common-run-submission errors](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#common-run-submission-errors)
+
+Among the most common errors while uploading your data is the [Invalid File Checksum](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#error-invalid-file-checksum). Which occurs when the checksum provide by you while creating the run object in the STEP1 does not match with the checksum computed by ENA. In this case i suggest you re-compute the checksum of the file in question and compare it with the one provided by you on the ***run.xml*** file. If it match:
+- Remove the faulty sequence in the BAY area by:
+```bash
+
+lftp webin2.ebi.ac.uk <user:password> 
+
+```
+
+```bash
+rm BS_231222_F_FGTH22_R1.fastq.gz
+```
+And reupload the single one with: 
+```bash
+mput '/absolute_path/BS_231222_F_FGTH22_R1.fastq.g'
+```
 
 
 
