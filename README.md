@@ -5,7 +5,7 @@ Compilation of utilities for the programmatic ENA submission of RAW sequenced da
 You have just received your newly sequenced biological material and you are scared to loose you precious and expensive data by a faulty hard disk or crippled PC'
 That is quite a hot potato to handle but luckily for you and me there is the ENA or Europena Nucleotide Archive, which is the answer you were looking for! 
 Long storage, geographically redundant and FREE! In other words, your data are secured forever, in most of the chances.
-
+  
 More info at [ENA:guidelines](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html)
 
 
@@ -18,27 +18,27 @@ conda activate ena
 ```
 ## Concepts
 
-Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards.
+Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards.  
 
 [lin image]
 
-The above image represents simplified diagram of the objects's relationship that need to be satisfied by yor data, in order to be secured in the ENA database.
+The above image represents simplified diagram of the objects's relationship your data needs to satisfy in order to be secured in the ENA database.  
 
 ### Biological sample
 The Giovannelli Lab, works prominently with environemntal microbial data, therefore we assign to the label biological sample any DNA that is extracted from it.
 ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as
-standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.
+standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.  
 Visit [ENA:SAMPLE objecte](https://ena-docs.readthedocs.io/en/latest/submit/samples/programmatic.html#the-sample-object) for more information
 
 
-### Experiamntal object
+### Experimental object
 Is the second object, and describes the type of 'sequencing experiment' conducted on your biological samples. It points directly to the sample and says: 'Was it seqeunced for WGS? 16s analysis? ITS or 18S?'. You must append this information, in addition to the machinery and library protocol used.ENA is very strict! Luckily for you, there are already two pre-compiled XML files, with this informations. You are free to modify them according to the specifics of your comapny sequencing platform!
-NOTE: There cane more than one experiemnt object pointing to the same SAMPLE, since in our lab we already do multiple sequencing on the same biological data.
+NOTE: There cane more than one experiemnt object pointing to the same SAMPLE, since in our lab we already do multiple sequencing on the same biological data.  
 Visit [ENA experiemnt object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more information
 
-### RUN object
-The third object is represented by the RUN. this object is strictly related to its experiment and contains infromation solely related to your files (yes your TESSORO ). This contains actual file namings wioth their computed checksum! [link to checksum issues]
-Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more informatio
+### Run object
+The third object is represented by the RUN. this object is strictly related to its experiment and contains infromation solely related to your files (yes your TESSORO ). This contains actual file namings wioth their computed checksum!  
+Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more information
 
 In general, you first register your biological samples enriched with all the information possible
 
@@ -63,7 +63,7 @@ python step1_register_samples.py -i SUBMISSION TABLE -t DIR METADATA -u USER:PAS
 If the SAMPLES registration is succesfull, it will provide a receipt.xml file with very important information regarding your SAMPLE:
 - ENA accession: starting with ERS.. ; its an alternative accession in ENA for mapping purposes.
 - BioSAMPLE accession: Starting with SAMEA.., it is used in journal pubblication
-- sample ALIAS: it is decide by you while compiling the google sheet
+- sample ALIAS: it is an alias recognizable by you and decided while compiling the google sheet
 
 
 
