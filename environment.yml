@@ -1,8 +1,0 @@
-name: ena
-channels:
-  - defaults
-dependencies:
-  - python>=3.11
-  - pandas
-  - beautifulsoup4
-  - openpyxl
