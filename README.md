@@ -13,7 +13,7 @@ More info at [ENA:guidelines](https://ena-docs.readthedocs.io/en/latest/submit/r
 
 ```bash
 # Create and activate environment
-conda env create -f environment.yml
+conda env create -f environment.yaml
 conda activate ena
 ```
 ## Concepts
