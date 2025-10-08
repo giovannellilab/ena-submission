@@ -29,6 +29,8 @@ The Giovannelli Lab, works prominently with environemntal microbial data, theref
 ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as
 standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.  
 Visit [ENA:SAMPLE objecte](https://ena-docs.readthedocs.io/en/latest/submit/samples/programmatic.html#the-sample-object) for more information
+Each sample metadata must conform to the so called 'ENA checklists' of expected metadata values.
+Visit [ENA:Sample Checklist](https://www.ebi.ac.uk/ena/browser/checklists) for choosing the right checklist tht best suits you submission. Moreover, these checlsits are customizable and can be downloaded as a file.tsv from the 'Register sample' window within the ENA account.
 
 
 ### Experimental object
