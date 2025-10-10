@@ -26,14 +26,33 @@ def main():
         samples_xml_path=samples_xml_path,
         template_dir=args.template_dir,
         user_password=args.user_password,
+        submission_type=args.submission_type,
         registration_type=registrationType
     )
 
 
-def register_samples(samples_xml_path: str,template_dir: str,user_password: str,registration_type: str) -> str:
-    # Define input XML files
-    submission_path = os.path.join(template_dir, "submission.xml")
+def register_samples(
+                samples_xml_path: str,
+                template_dir: str,
+                user_password: str,
+                submission_type: int,
+                registration_type: str
+                ) -> str:
 
+    # Define input XML files
+    #set submission type, ADD new metadata (new sample/s), or MODIFY existant metadata (already registered sample/s)
+    if submission_type == 1:
+        print(f'[INFO] Submitting metadata in ADD mode')
+        submission_path = os.path.join(
+            template_dir,
+            "submission_ADD.xml"
+        )
+    elif submission_type == 2:
+        print(f'[INFO] Submitting metadata in MODIFY mode')
+        submission_path = os.path.join(
+            template_dir,
+            "submission_MOD.xml"
+        )
     # WARNING: project name is assumed to be in the first field of the path
     project_name = os.path.basename(samples_xml_path).split("_")[0]
     
@@ -253,6 +272,12 @@ def parse_args():
     #                     type=lambda t: [s.strip() for s in t.split(",")],
     #                     default=["16S", "WGS"]    
     #                     )
+    parser.add_argument("-s", "--submission_type",
+                        help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
+                        type=int,
+                        default=1,
+                        choices=[1,2]  # Accept only known values
+                        )
     parser.add_argument("-x", "--registration_type",
                         help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
                         type=str,
