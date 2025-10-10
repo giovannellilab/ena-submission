@@ -20,17 +20,17 @@ def main():
         template_dir=args.template_dir
     )
 
-    submissionType = None if args.submission_type == "null" else args.submission_type
+    registrationType = None if args.registration_type == "null" else args.registration_type
 
     samples_receipt_path = register_samples(
         samples_xml_path=samples_xml_path,
         template_dir=args.template_dir,
         user_password=args.user_password,
-        submission_type=submissionType
+        registration_type=registrationType
     )
 
 
-def register_samples(samples_xml_path: str,template_dir: str,user_password: str,submission_type: str) -> str:
+def register_samples(samples_xml_path: str,template_dir: str,user_password: str,registration_type: str) -> str:
     # Define input XML files
     submission_path = os.path.join(template_dir, "submission.xml")
 
@@ -44,24 +44,24 @@ def register_samples(samples_xml_path: str,template_dir: str,user_password: str,
         raise FileExistsError(f"Il file '{output_path}' esiste già e non deve essere sovrascritto!")
 
     # --- Preview-only mode ---
-    if not submission_type:
+    if not registration_type:
         print("[INFO] submission_type is empty. Dry-run mode: returning output path only.")
         return output_path
     
     # --- Validate submission type ---
-    normalized = submission_type.lower()
+    normalized = registration_type.lower()
     if normalized in ['y', 'yes']:
         url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
-        print('[STEP0][+] Submitting to Permanent partition ..')
+        print('[STEP0][+] Registering to Permanent partition ..')
         permanent = True
 
     elif normalized in ['n','no']:
         url_ebi_ac_uk = "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/"
-        print('[STEP0][+] Submitted to TEST partition ..')
+        print('[STEP0][+] Registering to TEST partition ..')
         permanent = False
 
     else:
-        print("[!] Invalid value for --submission_type \n " \
+        print("[!] Invalid value for --registration_type \n " \
         "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
         "--> Use 'n','No','no' for temporary (Test) submission")
         sys.exit(1)
@@ -253,8 +253,8 @@ def parse_args():
     #                     type=lambda t: [s.strip() for s in t.split(",")],
     #                     default=["16S", "WGS"]    
     #                     )
-    parser.add_argument("-x", "--submission_type",
-                        help="Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
+    parser.add_argument("-x", "--registration_type",
+                        help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
                         type=str,
                         default="null",
                         choices=['y', 'yes', 'n', 'no', "null"]  # Accept only known values
