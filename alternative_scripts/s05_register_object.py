@@ -12,13 +12,15 @@ import pandas as pd
 def main():
     args = parse_args()
 
-    submissionType = None if args.submission_type == "null" else args.submission_type
+    registrationType = None if args.registration_type == "null" else args.registration_type
 
     final_receipt_path = register_objects(
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         user_password=args.user_password,
-        submission_type=submissionType
+        submission_type=args.submission_type,
+        registration_type=registrationType
+
     )
 
     print(f"[STEP3][+] Experiments and runs info saved to {final_receipt_path}")
@@ -44,17 +46,26 @@ def register_objects(
     metadata_path: str,
     template_dir: str,
     user_password: str,
-    submission_type: str
+    submission_type: str,
+    registration_type: str
 ) -> str:
 
     project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
-    submission_path = os.path.join(
-        template_dir,
-        "submission.xml"
-    )
+   if submission_type == 1:
+        print(f'[INFO] Submitting metadata in ADD mode')
+        submission_path = os.path.join(
+            template_dir,
+            "submission_ADD.xml"
+        )
+    elif submission_type == 2:
+        print(f'[INFO] Submitting metadata in MODIFY mode')
+        submission_path = os.path.join(
+            template_dir,
+            "submission_MOD.xml"
+        )
     experiment_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_experiment.xml"
@@ -72,12 +83,12 @@ def register_objects(
         raise FileExistsError(f"Il file '{output_path}' esiste già e non deve essere sovrascritto!")
 
     # --- Preview-only mode ---
-    if not submission_type:
-        print("[INFO] submission_type is empty. Dry-run mode: returning output path only.")
+    if not registration_type:
+        print("[INFO] Registration_type is empty. Dry-run mode: returning output path only.")
         return output_path
     
     # --- Validate submission type ---
-    normalized = submission_type.lower()
+    normalized = registration_type.lower()
     if normalized in ['y', 'yes']:
 
         url_ebi_ac_uk = "https://www.ebi.ac.uk/ena/submit/drop-box/submit/"
@@ -91,7 +102,7 @@ def register_objects(
         permanent = False
 
     else:
-        print("[!] Invalid value for --submission_type \n " \
+        print("[!] Invalid value for --registration_type \n " \
         "--> Use 'y' or 'Yes' or 'yes' for permanent submission \n " \
         "--> Use 'n','No','no' for temporary (Test) submission")
         sys.exit(1)
@@ -427,8 +438,15 @@ def parse_args():
         type=str
     )
     parser.add_argument(
-        "-x", "--submission_type",
-        help="Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
+        "-s", "--submission_type",
+        help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
+        type=int,
+        default=1,
+        choices=[1,2]  # Accept only known values
+    )
+    parser.add_argument(
+        "-x", "--registration_type",
+        help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
         type=str,
         default="null",
         choices=['y', 'yes', 'n', 'no', 'null']  # Accept only known values
