@@ -250,28 +250,10 @@ def parse_args():
                         help="Excel file containing the metadata for the sequences.",
                         type=str
                         )
-    # parser.add_argument("-s", "--samples_dir",
-    #                     help="Directory containing the sequences to submit.",
-    #                     type=str
-    #                     )
     parser.add_argument("-t", "--template_dir",
                         help="Directory containing the templates for the submission.",
                         type=str
                         )
-    # parser.add_argument("-f", "--forward_pattern_16s",
-    #                     help="Pattern followed in naming the forward sequence files (16S).",
-    #                     type=str,
-    #                     default="*1.fastq.gz")
-    # parser.add_argument("-w", "--forward_pattern_wgs",
-    #                     help="Pattern followed in naming the forward sequence files (WGS).",
-    #                     type=str,
-    #                     default="*1.fq.gz"
-    #                     )
-    # parser.add_argument("-e", "--experiment_types",
-    #                     help="String defining either 16S, WGS or both.",
-    #                     type=lambda t: [s.strip() for s in t.split(",")],
-    #                     default=["16S", "WGS"]    
-    #                     )
     parser.add_argument("-s", "--submission_type",
                         help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
                         type=int,
