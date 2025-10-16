@@ -31,3 +31,4 @@ dependencies:
       - soupsieve==2.8
       - typing-extensions==4.15.0
       - tzdata==2025.2
+      - tqdm==4.67.1
