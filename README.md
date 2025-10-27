@@ -26,8 +26,7 @@ The above image represents simplified diagram of the objects's relationship your
 
 ### Biological sample
 The Giovannelli Lab, works prominently with environemntal microbial data, therefore we assign to the label biological sample any DNA that is extracted from it.
-ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as
-standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.  
+ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.  
 Visit [ENA:SAMPLE objecte](https://ena-docs.readthedocs.io/en/latest/submit/samples/programmatic.html#the-sample-object) for more information
 Each sample metadata must conform to the so called 'ENA checklists' of expected metadata values.
 Visit [ENA:Sample Checklist](https://www.ebi.ac.uk/ena/browser/checklists) for choosing the right checklist tht best suits you submission. Moreover, these checlsits are customizable and can be downloaded as a file.tsv from the 'Register sample' window within the ENA account.
@@ -45,8 +44,27 @@ Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/pr
 In general, you first register your biological samples enriched with all the information possible
 
 ## Workflow
+Before starting, it is assumed that you already compiled the ENA_checklist with all the proper information. MOreover, it is mandatory to compile a further *sample table* (the likes use in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) as tsv or (tab separated format) storing in this order: forward,reverse,samples_alias columns. An example of this is provided:
 
-ENA requires the following workflow to programmatically submit your reads to ENA Archive
+
+In the case your forward and reverse sequence files are nested within each sample's name ( typically in this way ), it is suggested to add a further column namedd 'sample_id' which will securely help to find each files int he correct location.
+
+
+
+The workflow is divided into 5 steps to be executed in numerical order:
+# Creating and registering sample metadata under projectID
+-   STEP-1) Registering samples
+# Create experiment type and associated run metadata for existing files
+-   STEP 2) Create experiments files
+-   STEP 3) Create run files
+# Uploading data files (Can be done indepdenlty BUT always before registering)
+-   STEP 4) Upload files
+# Associating Metadata with sequence files
+-   STEP 5) Register Objects
+
+
+
+STEP-1) Registering samples
 
 1) Registering samples
 
