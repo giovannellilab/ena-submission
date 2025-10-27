@@ -52,14 +52,14 @@ In the case your forward and reverse sequence files are nested within each sampl
 
 
 The workflow is divided into 5 steps to be executed in numerical order:
-# Creating and registering sample metadata under projectID
+### Creating and registering sample metadata under projectID
 -   STEP-1) Registering samples
-# Create experiment type and associated run metadata for existing files
+### Create experiment type and associated run metadata for existing files
 -   STEP 2) Create experiments files
 -   STEP 3) Create run files
-# Uploading data files (Can be done indepdenlty BUT always before registering)
+### Uploading data files (Can be done indepdenlty BUT always before registering)
 -   STEP 4) Upload files
-# Associating Metadata with sequence files
+### Associating Metadata with sequence files
 -   STEP 5) Register Objects
 
 
