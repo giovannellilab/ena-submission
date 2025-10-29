@@ -74,8 +74,11 @@ In the case your forward and reverse sequence files are nested within each sampl
 
 The workflow  is divided into 5 mandatory steps to be executed in numerical order:
 ### Creating and registering sample metadata under projectID
--   STEP-1) Registering samples: This step is executed once to register all your samples metadata to ENA 
-	*NOTE* this step allow the use to choose the registration type via: [-x, --registration_type]
+-   STEP-1) Registering samples: This step is executed once to register all your samples metadata to ENA   
+*NOTE* this step allow the user to choose:  
+- the registration type via: [-x, --registration_type] allowing to choose between a TEST partition for cehcking the results of your submisison  
+AND permanent submission, where your smaple_aliases are registered and assoicated to an internal ID withou possibility to change.
+- the submission type: [-s, --submission_type {1,2}] allowing To *ADD* the metadata (every new submission has this as default) OR *MODIFY* existant metadata;  However, samples_aliases columns cannot be modified! So be aware of this when writing them. 
 
 ```bash
 python s01_create_samples_xml.py -h
@@ -149,8 +152,11 @@ options:
 ```
 ### Associating Metadata Objects with Sequence files
 
--   STEP 5) Register Objects: this step is:
-	*NOTE* this step allow the use to choose the registration type via: [-x, --registration_type]
+-   STEP 5) Register Objects:
+*NOTE* this step allow the user to choose:  
+- the registration type via: [-x, --registration_type] allowing to choose between a TEST partition for cehcking the results of your submisison  
+AND permanent submission, where your experiment_aliases and run_aliases are registered and assoicated to an internal ID, further mapped to the right sample in STEP1) without possibility to change.
+
 ```bash
 python s05_register_object.py -h
 usage: Register objects [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-e EXPERIMENT_TYPES] [-u USER_PASSWORD] [-s {1,2}] [-x {y,yes,n,no,null}]
@@ -172,7 +178,7 @@ options:
 
 
 
-STEP-1) Registering samples
+<!-- STEP-1) Registering samples
 
 1) Registering samples
 
@@ -286,8 +292,8 @@ python  pre-processing-dir.py -s /media/edotacca/Thor/raw_sequences/HYD22 -e 16S
 python step1_register_samples.py -i data/HYD22/HYD22_ena_submission.xlsx -t data/templates/ -u User:password
 
 ```
-    - Register Samples --> sample receipt
-    - Outputs -->
+    - Register Samples -> sample receipt
+    - Outputs ->
 
 2) Uploading raw reads files
 ```bash
@@ -305,4 +311,4 @@ python step3_register_objects.py -i data/HYD22/HYD22_ena_submission.xlsx -t data
 
 ```
 
-----------
+-->
