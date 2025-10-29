@@ -46,23 +46,23 @@ In general, you first register your biological samples enriched with all the inf
 ## Workflow
 Before starting, it is assumed that you already compiled the ENA_checklist with all the proper information. MOreover, it is mandatory to compile a further *sample table* (the likes use in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) as tsv or (tab separated format) storing in this order: forward,reverse,samples_alias columns. An example of this is provided:
 
-| forward | reverse | sample_alias            |
-| ---------------------------------------------
-| G255_1.fastq.gz G255_2.fastq.gz AC_280625_F |
-| G256_1.fastq.gz G256_2.fastq.gz BC_200625_S |
-| G257_1.fastq.gz G257_2.fastq.gz LS_230625_F |
-| G258_1.fastq.gz G258_2.fastq.gz SF_221019_F |
-| G259_1.fastq.gz G259_2.fastq.gz SF_221019_S |
+| forward         | reverse         | sample_alias |
+| ----------------|-----------------|--------------|
+| G255_1.fastq.gz | G255_2.fastq.gz | AC_280625_F  |
+| G256_1.fastq.gz | G256_2.fastq.gz | BC_200625_S  |
+| G257_1.fastq.gz | G257_2.fastq.gz | LS_230625_F  |
+| G258_1.fastq.gz | G258_2.fastq.gz | SF_221019_F  |
+| G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  |
 
 In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from typically in this way ), it is suggested to add a further column namedd 'sample_id' which will help to find each files in the correct location.
 
-| forward | reverse | sample_alias | sample_id     |
-|---------------------------------------------------
-| G255_1.fastq.gz G255_2.fastq.gz AC_280625_F G255 |
-| G256_1.fastq.gz G256_2.fastq.gz BC_200625_S G256 | 
-| G257_1.fastq.gz G257_2.fastq.gz LS_230625_F G257 | 
-| G258_1.fastq.gz G258_2.fastq.gz SF_221019_F G258 | 
-| G259_1.fastq.gz G259_2.fastq.gz SF_221019_S G259 | 
+| forward         | reverse         | sample_alias | sample_id |
+|-----------------|-----------------|--------------|-----------|
+| G255_1.fastq.gz | G255_2.fastq.gz | AC_280625_F  | G255      |
+| G256_1.fastq.gz | G256_2.fastq.gz | BC_200625_S  | G256      | 
+| G257_1.fastq.gz | G257_2.fastq.gz | LS_230625_F  | G257      | 
+| G258_1.fastq.gz | G258_2.fastq.gz | SF_221019_F  | G258      | 
+| G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  | G259      | 
 
 
 The workflow  is divided into 5 steps to be executed in numerical order:
