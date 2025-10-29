@@ -6,14 +6,6 @@ Are you ascared to loose you precious and expensive data by a faulty hard disk o
   
 More info at [ENA:guidelines](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html)
 
-
-## Installation
-
-```bash
-# Create and activate environment
-conda env create -f environment.yaml
-conda activate ena
-```
 ## Concepts
 
 Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards.  
@@ -42,9 +34,17 @@ Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/pr
 In general, you first register your biological samples enriched with all the information possible
 
 ## Getting Started
-Once you have created you PRJEBI Umbrella project in ENA, you will get a PRJID which must be inserted
 
-Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your account and compiled the ENA_checklist with all the proper information.  you can find multiple ENA_submission spreadsheet at the following link: () 
+First of all navigate to:  
+```bash 
+cd ena-submission/data
+```
+create and move all the requested files inside:  
+```bash
+mkdir $campaign_name
+```
+
+Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your [ENA-account](https://www.ebi.ac.uk/ena/submit/webin/login) and compiled the ENA_checklist with all the proper information.  you can find multiple ENA_submission spreadsheet at the following link: () 
 And an real example: ()
 
 
@@ -69,12 +69,15 @@ In the case your forward and reverse sequence files are nested within each sampl
 | G258_1.fastq.gz | G258_2.fastq.gz | SF_221019_F  | G258      | 
 | G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  | G259      | 
 
+*IMPORTANT*
+The table above MUST be created for each different experiment type you are willing to upload! As we usually seqeunce both WGS and 16S biological materials, these tables are requested in 2/5 STEPs below
+
 
 ## Workflow
 
 The workflow  is divided into 5 mandatory steps to be executed in numerical order:
 ### Creating and registering sample metadata under projectID
--   STEP-1) Registering samples: This step is executed once to register all your samples metadata to ENA   
+STEP-1) Registering samples: This step is executed ONLY ONE TIME to register all your samples metadata to ENA   
 *NOTE* this step allow the user to choose:  
 - the registration type via: [-x, --registration_type] allowing to choose between a TEST partition for cehcking the results of your submisison  
 AND permanent submission, where your smaple_aliases are registered and assoicated to an internal ID withou possibility to change.
@@ -99,12 +102,12 @@ options:
 ```
 
 ### Create experiment type and associated run metadata for existing files
-The steps 2) and 3) are executed a number of times N equal to you experiment types. Tipically you will have WGS and 16S seqeunced data, sometimes also 18S and ITS. Thus these steps MUST be repeates for all the experiments you wish to register.
+The steps 2) and 3) are executed a number of times N equal to you experiment types. Tipically you will have WGS and 16S seqeunced data, sometimes also 18S and ITS. Thus these steps MUST be repeates for all the experiments you wish to register. As pointed out above, you will provide a differetn *sample_table.tsv* for tracking each different seqeunced data.
 
--   STEP 2) Create experiments files:
+STEP 2) Create experiments files:
 
 
--   STEP 3) Create run files:
+STEP 3) Create run files:
 ```bash
 python s02_create_experiment_xml.py -h
 
@@ -126,7 +129,7 @@ options:
 
 ### Uploading data files (Can be done indepdenlty BUT always before registering)
 
--   STEP 4) Upload files: is also executed a number of times N equal to your experiment types. Or in alternitive you can compile a comprehensive sample_table.tsv with all the sequences for all the experiemtnal conditions.
+STEP 4) Upload files: is also executed a number of times N equal to your experiment types. Or in alternitive you can compile a comprehensive sample_table.tsv with all the sequences for all the experiemtnal conditions.
 ```bash
 python s04_upload_files.py -h
 
@@ -152,7 +155,7 @@ options:
 ```
 ### Associating Metadata Objects with Sequence files
 
--   STEP 5) Register Objects:
+STEP 5) Register Objects:
 *NOTE* this step allow the user to choose:  
 - the registration type via: [-x, --registration_type] allowing to choose between a TEST partition for cehcking the results of your submisison  
 AND permanent submission, where your experiment_aliases and run_aliases are registered and assoicated to an internal ID, further mapped to the right sample in STEP1) without possibility to change.
