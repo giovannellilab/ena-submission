@@ -2,9 +2,7 @@
 
 Compilation of utilities for the programmatic ENA submission of RAW sequenced data
 
-You have just received your newly sequenced biological material and you are scared to loose you precious and expensive data by a faulty hard disk or crippled PC'
-That is quite a hot potato to handle but luckily for you and me there is the ENA or Europena Nucleotide Archive, which is the answer you were looking for! 
-Long storage, geographically redundant and FREE! In other words, your data are secured forever, in most of the chances.
+Are you ascared to loose you precious and expensive data by a faulty hard disk or crippled PC?. That is quite a hot potato to handle but luckily for you there is the ENA or Europena Nucleotide Archive, Long storage, geographically redundant and FREE! In other words, your data are secured forever, in most of the chances.
   
 More info at [ENA:guidelines](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html)
 
@@ -20,7 +18,7 @@ conda activate ena
 
 Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards.  
 
-[lin image]
+[link image]
 
 The above image represents simplified diagram of the objects's relationship your data needs to satisfy in order to be secured in the ENA database.  
 
@@ -43,8 +41,15 @@ Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/pr
 
 In general, you first register your biological samples enriched with all the information possible
 
-## Workflow
-Before starting, it is assumed that you already compiled the ENA_checklist with all the proper information. MOreover, it is mandatory to compile a further *sample table* (the likes use in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) as tsv or (tab separated format) storing in this order: forward,reverse,samples_alias columns. An example of this is provided:
+## Getting Started
+Once you have created you PRJEBI Umbrella project in ENA, you will get a PRJID which must be inserted
+
+Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your account and compiled the ENA_checklist with all the proper information.  you can find multiple ENA_submission spreadsheet at the following link: () 
+And an real example: ()
+
+
+In addition, you will be asked to compile a mandatory TSV *sample table.tsv* (the likes used in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) (tab separated format) to be sure that the sequences you are about to upload are referenced to the right sample alias in your Ena_submission spreadsheet. To note, this table must be created for each different experiment!
+The namings are stored under the following columns: forward,reverse,samples_alias. An example:
 
 | forward         | reverse         | sample_alias |
 | ----------------|-----------------|--------------|
@@ -54,7 +59,7 @@ Before starting, it is assumed that you already compiled the ENA_checklist with 
 | G258_1.fastq.gz | G258_2.fastq.gz | SF_221019_F  |
 | G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  |
 
-In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from typically in this way ), it is suggested to add a further column namedd 'sample_id' which will help to find each files in the correct location.
+In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from seq company typically in this way ), it is suggested to add a further column namedd 'sample_id' which MUST correspond at the sample directory in your folder.This will help to find each files in the correct location. 
 
 | forward         | reverse         | sample_alias | sample_id |
 |-----------------|-----------------|--------------|-----------|
@@ -65,16 +70,105 @@ In the case your forward and reverse sequence files are nested within each sampl
 | G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  | G259      | 
 
 
-The workflow  is divided into 5 steps to be executed in numerical order:
+## Workflow
+
+The workflow  is divided into 5 mandatory steps to be executed in numerical order:
 ### Creating and registering sample metadata under projectID
--   STEP-1) Registering samples
+-   STEP-1) Registering samples: This step is executed once to register all your samples metadata to ENA 
+	*NOTE* this step allow the use to choose the registration type via: [-x, --registration_type]
+
+```bash
+python s01_create_samples_xml.py -h
+
+usage: preprocess_sequences [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-s {1,2}] [-x {y,yes,n,no,null}] [-u USER_PASSWORD]
+options:
+  -h, --help            show this help message and exit
+  -i, --metadata_path METADATA_PATH
+                        Excel file containing the metadata for the sequences.
+  -t, --template_dir TEMPLATE_DIR
+                        Directory containing the templates for the submission.
+  -s, --submission_type {1,2}
+                        Submission type: -type 1 for ADD mode; -type 2 fpr MODIFY mode
+  -x, --registration_type {y,yes,n,no,null}
+                        Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
+  -u, --user_password USER_PASSWORD
+                        User and password for the submission (e.g. user1:password1234).
+```
+
 ### Create experiment type and associated run metadata for existing files
--   STEP 2) Create experiments files
--   STEP 3) Create run files
+The steps 2) and 3) are executed a number of times N equal to you experiment types. Tipically you will have WGS and 16S seqeunced data, sometimes also 18S and ITS. Thus these steps MUST be repeates for all the experiments you wish to register.
+
+-   STEP 2) Create experiments files:
+
+
+-   STEP 3) Create run files:
+```bash
+python s02_create_experiment_xml.py -h
+
+usage: preprocess_sequences [-h] [-e {16S,WGS,ITS}] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-r RECIPE] [-m MAPPING_WGS] [-k MAPPING_AMP]
+options:
+  -h, --help            show this help message and exit
+  -e, --experiment_type {16S,WGS,ITS}
+                        String defining either 16S, WGS or ITS sequences
+  -i, --metadata_path METADATA_PATH
+                        Excel file containing the metadata for the sequences.
+  -t, --template_dir TEMPLATE_DIR
+                        Directory containing the templates for the submission.
+  -r, --recipe RECIPE   XML File obtained from the s01 script.
+  -m, --mapping_WGS MAPPING_WGS
+                        Table containing rawreads filename (forward and reverse) and sample_alias for WGS
+  -k, --mapping_AMP MAPPING_AMP
+                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
+```
+
 ### Uploading data files (Can be done indepdenlty BUT always before registering)
--   STEP 4) Upload files
-### Associating Metadata with sequence files
--   STEP 5) Register Objects
+
+-   STEP 4) Upload files: is also executed a number of times N equal to your experiment types. Or in alternitive you can compile a comprehensive sample_table.tsv with all the sequences for all the experiemtnal conditions.
+```bash
+python s04_upload_files.py -h
+
+usage: Uploading raw sequences [-h] [-e {WGS,16S}] [-w FILES_SAMPLES_DIR] [-a AMP_SAMPLES_DIR] [-n] [-m MAPPING_WGS] [-k MAPPING_AMP] [-u USERNAME] [-i INTERACTIVE] [--dry_run]
+options:
+  -h, --help            show this help message and exit
+  -e, --experiment_type {WGS,16S}
+                        Either 16S or metagenomics.
+  -w, --files_samples_dir FILES_SAMPLES_DIR
+                        Directory containing the sequences to submit.
+  -a, --AMP_samples_dir AMP_SAMPLES_DIR
+                        Directory containing the 16S sequences to submit.
+  -n, --nested          If sequences files are nested within each corrispective sample dir names
+  -m, --mapping_WGS MAPPING_WGS
+                        Table containing rawreads filename (forward and reverse), sample_alias for your reads AND/or sample_id if nested
+  -k, --mapping_AMP MAPPING_AMP
+                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
+  -u, --username USERNAME
+                        Username for the submission.
+  -i, --interactive INTERACTIVE
+                        Whether to perform the upload in interactive mode.
+  --dry_run             Execute a dry_run with only printing the command
+```
+### Associating Metadata Objects with Sequence files
+
+-   STEP 5) Register Objects: this step is:
+	*NOTE* this step allow the use to choose the registration type via: [-x, --registration_type]
+```bash
+python s05_register_object.py -h
+usage: Register objects [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-e EXPERIMENT_TYPES] [-u USER_PASSWORD] [-s {1,2}] [-x {y,yes,n,no,null}]
+options:
+  -h, --help            show this help message and exit
+  -i, --metadata_path METADATA_PATH
+                        Excel file containing the metadata for the sequences.
+  -t, --template_dir TEMPLATE_DIR
+                        Directory containing the templates for the submission.
+  -e, --experiment_types EXPERIMENT_TYPES
+                        String defining either 16S, WGS or both.
+  -u, --user_password USER_PASSWORD
+                        User and password for the submission (e.g. user1:password1234).
+  -s, --submission_type {1,2}
+                        Submission type: -type 1 for ADD mode; -type 2 fpr MODIFY mode
+  -x, --registration_type {y,yes,n,no,null}
+                        Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
+```
 
 
 
@@ -119,10 +213,10 @@ With this procedure, data are uploaded in the 'ENA upload area' or 'BAY area', w
 Therefore, we must 'push' these files from this stage area to a permament storage by registering the relationship between these files, their checksums
 and the experiments and samples to which they are associated.
 
-***ERRORS**
-[Common-run-submission errors](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#common-run-submission-errors)
+## Handling Errors
+During your submission, many things can go wrong, most of the time erros arise during the STEP3, due to not correct checksums associated with you files. please have a look at ENA website for reference [Common-run-submission errors](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#common-run-submission-errors)
 
-Among the most common errors while uploading your data is the [Invalid File Checksum](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#error-invalid-file-checksum). Which occurs when the checksum provide by you while creating the run object in the STEP1 does not match with the checksum computed by ENA. In this case i suggest you re-compute the checksum of the file in question and compare it with the one provided by you on the ***run.xml*** file. If it match:
+One of the most common errors while uploading your data is the [Invalid File Checksum](https://ena-docs.readthedocs.io/en/latest/faq/runs.html#error-invalid-file-checksum). Which occurs when the checksum provide by you while creating the run object in the STEP1 does not match with the checksum computed by ENA. In this case i suggest you re-compute the checksum of the file in question and compare it with the one provided by you on the ***run.xml*** file. If it match:
 - Remove the faulty sequence in the BAY area by:
 ```bash
 
