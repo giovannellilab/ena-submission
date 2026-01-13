@@ -34,7 +34,10 @@ Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/pr
 In general, you first register your biological samples enriched with all the information possible
 
 ## Getting Started
-
+Create the ena conda env
+```bash
+conda env create -f environment.yaml
+```
 First of all navigate to:  
 ```bash 
 cd ena-submission/data
