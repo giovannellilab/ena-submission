@@ -28,7 +28,7 @@ NOTE: There cane more than one experiemnt object pointing to the same SAMPLE, si
 Visit [ENA experiemnt object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more information
 
 ### Run object
-The third object is represented by the RUN. this object is strictly related to its experiment and contains infromation solely related to your files (yes your TESSORO ). This contains actual file namings wioth their computed checksum!  
+The third object is represented by the RUN. this object is strictly related to its experiment and contains infromation solely related to your files. This contains actual file namings wioth their computed checksum!  
 Visit [ENA run object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more information
 
 In general, you first register your biological samples enriched with all the information possible
@@ -59,7 +59,7 @@ The namings are stored under the following columns: forward,reverse,samples_alia
 | G258_1.fastq.gz | G258_2.fastq.gz | SF_221019_F  |
 | G259_1.fastq.gz | G259_2.fastq.gz | SF_221019_S  |
 
-In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from seq company typically in this way ), it is suggested to add a further column namedd 'sample_id' which MUST correspond at the sample directory in your folder.This will help to find each files in the correct location. 
+In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from seq company typically in this way ), it is suggested to add a further column namedd 'sample_id' which MUST correspond at the sample directory in your folder.This will help to find each files in the correct location. In the case the 'sample_alias' corrsponds to the 'sample_id', copy and paste!
 
 | forward         | reverse         | sample_alias | sample_id |
 |-----------------|-----------------|--------------|-----------|
@@ -105,9 +105,6 @@ options:
 The steps 2) and 3) are executed a number of times N equal to you experiment types. Tipically you will have WGS and 16S seqeunced data, sometimes also 18S and ITS. Thus these steps MUST be repeates for all the experiments you wish to register. As pointed out above, you will provide a differetn *sample_table.tsv* for tracking each different seqeunced data.
 
 STEP 2) Create experiments files:
-
-
-STEP 3) Create run files:
 ```bash
 python s02_create_experiment_xml.py -h
 
@@ -125,6 +122,33 @@ options:
                         Table containing rawreads filename (forward and reverse) and sample_alias for WGS
   -k, --mapping_AMP MAPPING_AMP
                         Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
+```
+
+STEP 3) Create run files:
+
+```bash
+
+python s03_create_run_xml.py -h
+usage: preprocess_sequences [-h] [-i METADATA_PATH] [-w WGS_SAMPLES_DIR] [-a AMP_SAMPLES_DIR] [-m MAPPING_WGS] [-k MAPPING_AMP] [-t TEMPLATE_DIR] [-e {AMP,WGS}] [-n]
+
+options:
+  -h, --help            show this help message and exit
+  -i, --metadata_path METADATA_PATH
+                        Excel file containing the metadata for the sequences.
+  -w, --WGS_samples_dir WGS_SAMPLES_DIR
+                        Directory containing the sequences to submit.
+  -a, --AMP_samples_dir AMP_SAMPLES_DIR
+                        Directory containing the AMPlicon sequences to submit (16S/18S/ITS).
+  -m, --mapping_WGS MAPPING_WGS
+                        Table containing rawreads filename (forward and reverse) and sample_alias for WGS
+  -k, --mapping_AMP MAPPING_AMP
+                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
+  -t, --template_dir TEMPLATE_DIR
+                        Directory containing the templates for the submission.
+  -e, --experiment_types {AMP,WGS}
+                        String defining either 16S or WGS
+  -n, --nested          If sequences files are nested within each corrispective sample dir names
+
 ```
 
 ### Uploading data files (Can be done indepdenlty BUT always before registering)
@@ -178,8 +202,20 @@ options:
   -x, --registration_type {y,yes,n,no,null}
                         Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
 ```
+STEP 6) Parse receipts objects:
+This step allows you to store all the informations for your submission & registrations in tabular data for tracking purposes
+```bash
 
+python s06_gather_receipts.py -h
+usage: Register objects [-h] [-i METADATA_PATH] [-e {16S,WGS} [{16S,WGS} ...]]
 
+options:
+  -h, --help            show this help message and exit
+  -i, --metadata_path METADATA_PATH
+                        Excel file containing the metadata for the sequences.
+  -e, --experiment_types {16S,WGS} [{16S,WGS} ...]
+                        String defining either 16S, WGS or both.
+```
 
 <!-- STEP-1) Registering samples
 
