@@ -42,7 +42,7 @@ create and move all the requested files inside:
 mkdir $project_name
 ```
 
-Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your [ENA-account](https://www.ebi.ac.uk/ena/submit/webin/login) and compiled the ENA_checklist with all the proper information. In our google drive you can find multiple ENA_submission spreadsheet, an example is given by: 
+Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your [ENA-account](https://www.ebi.ac.uk/ena/submit/webin/login) and compiled the ENA_checklist with all the proper information. In our google drive you can find multiple ENA_submission spreadsheet, an example is given by the data/ExpID_ena_submission_ERC000025.xlsx
 
 
 In addition, you will be asked to compile a mandatory TSV *sample table.tsv* (the likes used in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) (tab separated format) to be sure that the sequences you are about to upload are referenced to the right sample alias in your Ena_submission spreadsheet. To note, this table must be created for each different experiment!
