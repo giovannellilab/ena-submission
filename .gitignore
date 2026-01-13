@@ -173,6 +173,7 @@ cython_debug/
 # Data folders
 data/*
 !data/templates/
+!data/ExpID_ena_submission_ERC000025.xlsx
 data/templates/milos
 
 .DS_Store

@@ -8,23 +8,18 @@ More info at [ENA:guidelines](https://ena-docs.readthedocs.io/en/latest/submit/r
 
 ## Concepts
 
-Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards.  
-
-[link image]
-
-The above image represents simplified diagram of the objects's relationship your data needs to satisfy in order to be secured in the ENA database.  
+Before diving further in the technicalities, i would like you to know that ENA implements quite a convoluted relationhsip between different intities that we will define below, which is not trivial at a first glance, but you will understand and appreciate their reasons afterwards. 
 
 ### Biological sample
-The Giovannelli Lab, works prominently with environemntal microbial data, therefore we assign to the label biological sample any DNA that is extracted from it.
-ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.  
-Visit [ENA:SAMPLE objecte](https://ena-docs.readthedocs.io/en/latest/submit/samples/programmatic.html#the-sample-object) for more information
+The Giovannelli Lab, works prominently with environemntal microbial data, therefore we assign to the label biological sample any DNA that is extracted from it.  
+ENA asks you to 'endowe' with information this sample, to better characterize its origin. To this purpose, the SAMPLE object exists. Which can be tought as standalone Object in the ENA database, to which we are going to associate or relate at least other two objects in a moment.   
+Visit [ENA:SAMPLE objecte](https://ena-docs.readthedocs.io/en/latest/submit/samples/programmatic.html#the-sample-object) for more information.  
 Each sample metadata must conform to the so called 'ENA checklists' of expected metadata values.
-Visit [ENA:Sample Checklist](https://www.ebi.ac.uk/ena/browser/checklists) for choosing the right checklist tht best suits you submission. Moreover, these checlsits are customizable and can be downloaded as a file.tsv from the 'Register sample' window within the ENA account.
+Visit [ENA:Sample Checklist](https://www.ebi.ac.uk/ena/browser/checklists) for choosing the right checklist tht best suits you submission. Moreover, these checklist are customizable and can be downloaded as a file.tsv from the 'Register sample' window within the ENA account.  
 
 
 ### Experimental object
-Is the second object, and describes the type of 'sequencing experiment' conducted on your biological samples. It points directly to the sample and says: 'Was it seqeunced for WGS? 16s analysis? ITS or 18S?'. You must append this information, in addition to the machinery and library protocol used.ENA is very strict! Luckily for you, there are already two pre-compiled XML files, with this informations. You are free to modify them according to the specifics of your comapny sequencing platform!
-NOTE: There cane more than one experiemnt object pointing to the same SAMPLE, since in our lab we already do multiple sequencing on the same biological data.  
+Is the second object, and describes the type of 'sequencing experiment' conducted on your biological samples. It points directly to the sample and says: 'Was it seqeunced for WGS? 16s analysis? ITS or 18S?'. You must append this information, in addition to the machinery and library protocol used.ENA is very strict! Luckily for you, there are already two pre-compiled XML files, with this informations. You are free to modify them according to the specifics of your comapny sequencing platform!  NOTE: There cane more than one experiemnt object pointing to the same SAMPLE, since in our lab we already do multiple sequencing on the same biological data.  
 Visit [ENA experiemnt object](https://ena-docs.readthedocs.io/en/latest/submit/reads/programmatic.html#create-the-run-and-experiment-xml) for more information
 
 ### Run object
@@ -44,11 +39,10 @@ cd ena-submission/data
 ```
 create and move all the requested files inside:  
 ```bash
-mkdir $campaign_name
+mkdir $project_name
 ```
 
-Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your [ENA-account](https://www.ebi.ac.uk/ena/submit/webin/login) and compiled the ENA_checklist with all the proper information.  you can find multiple ENA_submission spreadsheet at the following link: () 
-And an real example: ()
+Before starting, it is assumed that you already have created your study in ENA [PRJEBI_Umbrella_project](https://ena-docs.readthedocs.io/en/latest/submit/study/interactive.html) within your [ENA-account](https://www.ebi.ac.uk/ena/submit/webin/login) and compiled the ENA_checklist with all the proper information. In our google drive you can find multiple ENA_submission spreadsheet, an example is given by: 
 
 
 In addition, you will be asked to compile a mandatory TSV *sample table.tsv* (the likes used in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) (tab separated format) to be sure that the sequences you are about to upload are referenced to the right sample alias in your Ena_submission spreadsheet. To note, this table must be created for each different experiment!
