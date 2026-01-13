@@ -1,0 +1,92 @@
+<SAMPLE alias="$$$SAMPLE_ALIAS$$$" center_name="">
+  <TITLE>$$$SAMPLE_TITLE$$$</TITLE>
+  <SAMPLE_NAME>
+    <TAXON_ID>$$$ENV_TAX_ID$$$</TAXON_ID>
+    <SCIENTIFIC_NAME>$$$ENV_SCI_NAME$$$</SCIENTIFIC_NAME>
+    <COMMON_NAME></COMMON_NAME>
+  </SAMPLE_NAME>
+  <SAMPLE_ATTRIBUTES>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>metagenomic source</TAG>
+      <VALUE>$$$METAGENOMIC_SOURCE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>sample derived from</TAG>
+      <VALUE>$$$SAMPLE_DERIVED_FROM$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>project name</TAG>
+      <VALUE>$$$PROJECT_NAME$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>binning software</TAG>
+      <VALUE>$$$BINNING_SOFTWARE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>binning parameters</TAG>
+      <VALUE>$$$BINNING_PARAMETERS$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>isolation source</TAG>
+      <VALUE>$$$ISOLATION_SOURCE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>collection date</TAG>
+      <VALUE>$$$COLLECTION_DATE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>geographic location (country and/or sea)</TAG>
+      <VALUE>$$$LOC$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>geographic location (latitude)</TAG>
+      <VALUE>$$$LATITUDE$$$</VALUE>
+      <UNITS>DD</UNITS>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>geographic location (longitude)</TAG>
+      <VALUE>$$$LONGITUDE$$$</VALUE>
+      <UNITS>DD</UNITS>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>broad-scale environmental context</TAG>
+      <VALUE>$$$ENV_BROAD$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>local environmental context</TAG>
+      <VALUE>$$$ENV_LOCAL$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>environmental medium</TAG>
+      <VALUE>$$$ENV_MEDIUM$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>taxonomic identity marker</TAG>
+      <VALUE>$$$TAXONOMIC_IDENTITY_MARKER$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>assembly software</TAG>
+      <VALUE>$$$ASSEMBLY_SOFTWARE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>completeness score</TAG>
+      <VALUE>$$$COMPLETENESS_SCORE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>completeness software</TAG>
+      <VALUE>$$$COMPLETENESS_SOFTWARE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>contamination score</TAG>
+      <VALUE>$$$CONTAMINATION_SCORE$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>assembly quality</TAG>
+      <VALUE>$$$ASSEMBLY_QUALITY$$$</VALUE>
+    </SAMPLE_ATTRIBUTE>
+    <SAMPLE_ATTRIBUTE>
+      <TAG>ENA-CHECKLIST</TAG>
+      <VALUE>ERC000050</VALUE>
+    </SAMPLE_ATTRIBUTE>
+  </SAMPLE_ATTRIBUTES>
+</SAMPLE>
