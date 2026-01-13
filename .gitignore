@@ -171,5 +171,8 @@ cython_debug/
 .pypirc
 
 # Data folders
-data/
+data/*
+!data/templates/
+data/templates/milos
+
 .DS_Store
