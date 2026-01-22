@@ -115,7 +115,7 @@ def compute_gather(
     if AMP_samples_dir and not os.path.exists(AMP_samples_dir):
         raise FileNotFoundError(f"{AMP_samples_dir} does not exist!")
 
-    if experiment_type == 'AMP':
+    if experiment_type in ['16S','ITS','18S']:
         exp_dir = AMP_samples_dir
         table_mapping = pd.read_csv(mapping_AMP, sep="\t")
     elif experiment_type == 'WGS':
@@ -247,7 +247,7 @@ def create_run(
     
     output_path = os.path.join(
         os.path.dirname(metadata_path),
-        f"{project_name}_ena_run.xml"
+        f"{project_name}_ena_run_{experiment_type}.xml"
     )
     with open(output_path, mode="w") as handle:
         handle.write(run_xml)
@@ -271,8 +271,8 @@ def parse_args():
                         help="Directory containing the AMPlicon sequences to submit (16S/18S/ITS).",
                         type=str
                         )
-    parser.add_argument("-m", "--mapping_WGS",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for WGS",
+    parser.add_argument("-s", "--mapping_WGS",
+                        help="Table containing rawreads filename (forward and reverse) and sample_alias for Shotgun Metagenomics",
                         type=str,)
     parser.add_argument("-k", "--mapping_AMP",
                         help="Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON",
