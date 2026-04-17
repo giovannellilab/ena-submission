@@ -174,6 +174,11 @@ options:
                         Whether to perform the upload in interactive mode.
   --dry_run             Execute a dry_run with only printing the command
 ```
+You can check the presence of your files in the ENA bay area with your user:password by typing:
+```bash
+lftp webin2.ebi.ac.uk  -u Webin-XXXXX:passw
+
+```
 ### Associating Metadata Objects with Sequence files
 
 STEP 5) Register Objects:
@@ -195,7 +200,7 @@ options:
   -u, --user_password USER_PASSWORD
                         User and password for the submission (e.g. user1:password1234).
   -s, --submission_type {1,2}
-                        Submission type: -type 1 for ADD mode; -type 2 fpr MODIFY mode
+                        Submission mode: type 1 for ADD mode; type 2 fpr MODIFY mode
   -x, --registration_type {y,yes,n,no,null}
                         Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
 ```

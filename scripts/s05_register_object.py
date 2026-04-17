@@ -18,7 +18,7 @@ def main():
         metadata_path=args.metadata_path,
         template_dir=args.template_dir,
         user_password=args.user_password,
-        submission_type=args.submission_type,
+        submission_mode=args.submission_mode,
         registration_type=registrationType,
         experiment_type=args.experiment_type
 
@@ -31,7 +31,7 @@ def register_objects(
     metadata_path: str,
     template_dir: str,
     user_password: str,
-    submission_type: str,
+    submission_mode: str,
     registration_type: str,
     experiment_type: str
     ) -> str:
@@ -41,13 +41,13 @@ def register_objects(
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
-    if submission_type == 1:
+    if submission_mode == 1:
         print(f'[INFO] Submitting metadata in ADD mode')
         submission_path = os.path.join(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_type == 2:
+    elif submission_mode == 2:
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
@@ -194,8 +194,8 @@ def parse_args():
         type=str
     )
     parser.add_argument(
-        "-s", "--submission_type",
-        help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
+        "-s", "--submission_mode",
+        help="Submission mode: \n type 1 for ADD mode; \n or type 2 fpr MODIFY mode",
         type=int,
         default=1,
         choices=[1,2]
