@@ -14,7 +14,7 @@ def main():
         experiment_type = args.experiment_type,
         samples_dir = args.files_samples_dir,
         mapping_samples = args.mapping_table,
-        nested_folders = args.nested
+        nested = args.nested
     )
 
     upload_files(
@@ -42,14 +42,14 @@ def gather_files(experiment_type: str,
     table_mapping = pd.read_csv(mapping_samples, sep="\t")
     
 
-    required_cols = ["forward","reverse","sample_alias"]
+    required_cols = ["r1","r2","sample"]
     has_sample_id = "sample_id" in table_mapping.columns
 
     assert all(col in table_mapping.columns for col in required_cols), \
     f"Logic Error: One or more columns from {required_cols} are missing."
 
     if nested and not has_sample_id:
-        raise ValueError("nested_folders=True requires a 'sample_id' column.")
+        raise ValueError("nested_folders=True requires an additional 'sample_id' column.")
     
     if not nested:
         print('\n[INFO] Assuming read files are in the same directory\n')
@@ -135,7 +135,7 @@ def parse_args():
                         type=str
                         )
     parser.add_argument("-m", "--mapping_table",
-                        help="Table containing rawreads filename (forward and reverse), sample_alias for your reads AND/or sample_id if nested",
+                        help="Table containing rawreads filename (forward [r1] and reverse [r2] ), sample_alias [sample] for your reads AND/or [sample_id] if nested",
                         type=str,)
                         
     parser.add_argument("-n", "--nested",
