@@ -26,10 +26,12 @@ def main():
         template_dir = data.get("template_dir")
         submission_type = data.get("submission_type")
         metadata_file = data.get("metadata_file")
+        ena_checklist = data.get("ena_checklist")
 
     samples_xml_path = create_samples_file(
         metadata_path=metadata_file,
-        template_dir=template_dir
+        template_dir=template_dir,
+        ena_checklist=ena_checklist
         
     )
 
@@ -175,14 +177,10 @@ def receipt_output_handling(receipt_path: str)-> dict:
     return info_submission
 
 ### RETRIEVE XML template
-def select_template(template_dir:str, metadata_df:pd.DataFrame)-> tuple[dict, str, str]:
+def select_template(template_dir:str, metadata_df:pd.DataFrame, checklist_code: str)-> tuple[dict, str, str]:
     
     assert not metadata_df.empty, f"Input file at {os.path.join(template_dir)} contains no data rows."
 
-    assert 'ENA_checklist' in metadata_df.columns, \
-    f"Critical Column Missing: 'ENA_checklist'. Available: {list(metadata_df.columns)}"
-
-    checklist_code = metadata_df['ENA_checklist'].iloc[0]
     json_file = os.path.join(template_dir,'checklists.json')
 
     if not os.path.exists(json_file):
@@ -220,12 +218,12 @@ def select_template(template_dir:str, metadata_df:pd.DataFrame)-> tuple[dict, st
 
 
 ### CREATING SAMPLES XML
-def create_samples_file( metadata_path: str, template_dir: str) -> str:
+def create_samples_file( metadata_path: str, template_dir: str, ena_checklist: str) -> str:
 
     metadata_df = load_metadata(metadata_path)
     project_name = metadata_df["expid"].iloc[0]
 
-    mapping_dict, template_xml, checklist_code = select_template(template_dir, metadata_df)
+    mapping_dict, template_xml, checklist_code = select_template(template_dir, metadata_df, ena_checklist)
     samples_all = []
 
     # Create a template for each sample
