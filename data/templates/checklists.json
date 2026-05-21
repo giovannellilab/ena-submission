@@ -3,7 +3,9 @@
     "ERC000021" : "sample_ERC000021",
     "ERC000025" : "sample_ERC000025",
     "ERC000047" : "sample_ERC000047",
-    "ERC000050" : "sample_ERC000050"  },
+    "ERC000050" : "sample_ERC000050",
+    "ERC000022" : "sample_ERC000022"
+  },
 
   "ERC000025": {
     "$$$SAMPLE_TITLE$$$": "sample_title",
@@ -21,6 +23,24 @@
     "$$$LOC$$$": "geographic_location_(country and/or sea)"
   },
   "ERC000021" : {
+    "$$$SAMPLE_TITLE$$$": "sample_title",
+    "$$$SAMPLE_DESCRIPTION$$$" : "sample_description",
+    "$$$SAMPLE_ALIAS$$$": "sample_alias",
+    "$$$ENV_TAX_ID$$$": "tax_id",
+    "$$$ENV_SCI_NAME$$$": "scientific_name",
+    "$$$PROJECT_NAME$$$": "project_name",
+    "$$$COLLECTION_DATE$$$": "collection_date",
+    "$$$LATITUDE$$$": "geographic_location_latitude",
+    "$$$LONGITUDE$$$": "geographic_location_longitude",
+    "$$$ENV_BROAD$$$": "broad_scale_environmental_context",
+    "$$$ENV_LOCAL$$$": "local_environmental_context",
+    "$$$ENV_MEDIUM$$$": "environmental_medium",
+    "$$$ELEVATION$$$": "elevation",
+    "$$$LOC$$$": "graphic_location (country or sea)",
+    "$$$REGLOC$$$": "geographic_location (region_and_locality)",
+    "$$$DEPTH$$$" : "depth"
+  },
+  "ERC000022" : {
     "$$$SAMPLE_TITLE$$$": "sample_title",
     "$$$SAMPLE_DESCRIPTION$$$" : "sample_description",
     "$$$SAMPLE_ALIAS$$$": "sample_alias",
