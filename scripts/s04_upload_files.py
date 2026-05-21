@@ -24,8 +24,8 @@ def main():
 
 
     file_list = gather_files(
-        experiment_type = args.experiment_type,
-        nested = args.nested,
+        experiment_type=args.experiment_type,
+        nested=args.nested,
         readmapping_table_wgs=readmapping_table_wgs,
         readmapping_table_amplicon=readmapping_table_amp,
         raw_data_dir_amplicon=raw_data_dir_amp,
@@ -47,22 +47,46 @@ def read_config(config_file: str):
     return data
 
 
-def gather_files(experiment_type: str, 
-           samples_dir: str,
-           mapping_samples:str,
-           nested:bool
+def gather_files(
+        experiment_type: str, 
+        readmapping_table_wgs: str,
+        readmapping_table_amp: str,
+        raw_data_dir_amp: str,
+        raw_data_dir_wgs: str,
+        nested: bool
            )-> list:
-
-    # Raise error if samples directory does not exist
-    if samples_dir and not os.path.exists(samples_dir):
-        raise FileNotFoundError(f"{samples_dir} does not exist!")
     
-    if mapping_samples and not os.path.exists(mapping_samples):
-        raise FileNotFoundError(f"{mapping_samples} does not exist!")
+    if experiment_type == "WGS":
+
+        if not readmapping_table_wgs:
+            raise ValueError("For WGS experiment, 'readmapping_table_wgs' must be provided in the config.")
+        if not raw_data_dir_wgs:
+            raise ValueError("For WGS experiment, 'raw_data_dir_wgs' must be provided in the config.")
+        else:
+            if not os.path.exists(raw_data_dir_wgs):
+                raise FileNotFoundError(f"{raw_data_dir_wgs} does not exist!")
+            else:
+                samples_dir = raw_data_dir_wgs
+                mapping_samples = readmapping_table_wgs
+            
+    elif experiment_type == "16S":
+
+        if not readmapping_table_amp:
+            raise ValueError("For 16S experiment, 'readmapping_table_amplicon' must be provided in the config.")
+        if not raw_data_dir_amp:
+            raise ValueError("For 16S experiment, 'raw_data_dir_amplicon' must be provided in the config.")
+        else:
+            if not os.path.exists(raw_data_dir_amp):
+                raise FileNotFoundError(f"{raw_data_dir_amp} does not exist!")
+            else:
+                samples_dir = raw_data_dir_amp
+                mapping_samples = readmapping_table_amp
+    else:
+        raise ValueError("Invalid experiment type. Must be either 'WGS' or '16S'.")
+    
 
     exp_dir = os.path.abspath(samples_dir)
     table_mapping = pd.read_csv(mapping_samples, sep="\t")
-    
 
     required_cols = ["r1","r2","sample"]
     has_sample_id = "sample_id" in table_mapping.columns
@@ -99,6 +123,7 @@ def gather_files(experiment_type: str,
             print(f"- {f_path} ---- ({size_file:.2f} MB)")
 
     return all_files
+
 
 def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> None:
     # NOTE: ftp will ask for each file confirmation, to disable interactive
