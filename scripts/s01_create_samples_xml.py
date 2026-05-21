@@ -12,6 +12,7 @@ import bs4 as bs
 import subprocess
 import json
 import yaml
+from ruamel.yaml import YAML
 
 def main():
     args = parse_args()
@@ -45,11 +46,45 @@ def main():
         project_name=project_name
     )
 
+    write_config(
+        config_file=config_file, 
+        key="receipt_sample_permanent",
+        value=samples_receipt_path
+        )
+
+
 def read_config(config_file: str):
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.safe_load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
 
     with open(config_file, "r") as file:
         data = yaml.load(file, Loader=yaml.SafeLoader)
     return data
+
+
+def write_config(config_file: str, key: str, value: str,):
+
+    yaml = YAML()
+    yaml.preserve_quotes = True
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
+
+    data[key] = value
+
+    with open(config_file, "w") as file:
+        data = yaml.dump(data, file)
+
+    return data
+
 
 def register_samples(
                 samples_xml_path: str,
@@ -291,8 +326,8 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
     spreadsheet = spreadsheet.dropna(subset=["sample_alias"])
 
     # 4. Date Standardization
-    if "collection_date" in spreadsheet.columns:
-        spreadsheet["collection_date"] = pd.to_datetime(spreadsheet["collection_date"], errors='coerce')\
+    if "collection date" in spreadsheet.columns:
+        spreadsheet["collection date"] = pd.to_datetime(spreadsheet["collection date"], errors='coerce')\
             .dt.strftime("%Y-%m-%d")
 
     return spreadsheet
@@ -301,7 +336,7 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 def parse_args():
     parser = argparse.ArgumentParser("preprocess_sequences")
-    parser.add_argument("-s", "--config_path", 
+    parser.add_argument("-s", "--config_file", 
                         help="config yaml file containing direcotries for the whole workflow.",
                         type=str
                         )
