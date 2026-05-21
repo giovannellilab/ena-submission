@@ -8,6 +8,8 @@ import bs4 as bs
 import sys 
 import pandas as pd
 import yaml
+from ruamel.yaml import YAML
+
 
 def main():
     args = parse_args()
@@ -35,13 +37,53 @@ def main():
 
     )
 
+    if registrationType:
+
+        write_config(
+            config_file=config_file, 
+            key="receipt_objects_permanent",
+            value=final_receipt_path
+            )
+    elif not registrationType:
+        
+        write_config(
+            config_file=config_file, 
+            key="receipt_objects_dry_run",
+            value=final_receipt_path
+            )
+    
     print(f"[STEP5][+][+][+] Experiments and runs info saved to {final_receipt_path}")
 
 
 def read_config(config_file: str):
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.safe_load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
 
     with open(config_file, "r") as file:
         data = yaml.load(file, Loader=yaml.SafeLoader)
+    return data
+
+def write_config(config_file: str, key: str, value: str,):
+
+    yaml = YAML()
+    yaml.preserve_quotes = True
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
+
+    data[key] = value
+
+    with open(config_file, "w") as file:
+        data = yaml.dump(data, file)
+
     return data
 
 

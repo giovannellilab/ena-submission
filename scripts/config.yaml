@@ -10,5 +10,7 @@ raw_data_dir_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/      # <
 readmapping_table_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/sample_table_WGS.tsv    # <-- edit to your table mapping
 readmapping_table_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/sample_table_16S.tsv    # <-- edit to your table mapping
 #### RECEIPT PATHS ####
-receipt_sample_permanent:
-receipt_object_permanent:
+receipt_samples_permanent:
+receipt_samples_dry_run:
+receipt_objects_permanent:
+receipt_objects_dry_run:

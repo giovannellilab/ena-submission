@@ -46,12 +46,20 @@ def main():
         project_name=project_name
     )
 
-    write_config(
-        config_file=config_file, 
-        key="receipt_sample_permanent",
-        value=samples_receipt_path
-        )
+    if registrationType:
 
+        write_config(
+            config_file=config_file, 
+            key="receipt_sample_permanent",
+            value=samples_receipt_path
+            )
+    elif not registrationType:
+        
+        write_config(
+            config_file=config_file, 
+            key="receipt_samples_dry_run",
+            value=samples_receipt_path
+            )
 
 def read_config(config_file: str):
     try:
@@ -291,8 +299,9 @@ def create_samples_file( metadata_path: str, template_dir: str, ena_checklist: s
 
     with open(output_path, mode="w") as handle:
         handle.write(samples_all)
-
+    
     print(f"[STEP1][+] Samples XML saved to:    {output_path}")
+
 
     return output_path
 
