@@ -13,18 +13,17 @@ def main():
     args = parse_args()
 
     config_file = args.config_path
+    data = read_config(config_file)
 
-    with open(config_file, "r") as file:
-        
-        data = yaml.load(file, Loader=yaml.SafeLoader)
-        project = data.get("project_name")
-        template_dir = data.get("template_dir")
-        submission_type = data.get("submission_type")
-        metadata_file = data.get("metadata_file")
-        readmapping_table_wgs = data.get("readmapping_table_wgs")
-        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
-        raw_data_dir_amplicon = data.get("raw_data_dir_amplicon")
-        raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+
+    project = data.get("project_name")
+    template_dir = data.get("template_dir")
+    submission_type = data.get("submission_type")
+    metadata_file = data.get("metadata_file")
+    readmapping_table_wgs = data.get("readmapping_table_wgs")
+    readmapping_table_amp = data.get("readmapping_table_amplicon")
+    raw_data_dir_amp = data.get("raw_data_dir_amplicon")
+    raw_data_dir_wgs = data.get("raw_data_dir_wgs")
 
 
 
@@ -44,6 +43,13 @@ def main():
 
         print(f"[STEP6][+] Metadata written to {details_path}")
 
+
+
+def read_config(config_file: str):
+
+    with open(config_file, "r") as file:
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+    return data
 
 
 def parse_objects_receipts(

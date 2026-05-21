@@ -18,15 +18,14 @@ def main():
 
 
     config_file = args.config_file
+    data = read_config(config_file)
 
-    with open(config_file, "r") as file:
 
-        data = yaml.load(file, Loader=yaml.SafeLoader)
-        project = data.get("project_name")
-        template_dir = data.get("template_dir")
-        submission_type = data.get("submission_type")
-        metadata_file = data.get("metadata_file")
-        ena_checklist = data.get("ena_checklist")
+    project = data.get("project_name")
+    template_dir = data.get("template_dir")
+    submission_type = data.get("submission_type")
+    metadata_file = data.get("metadata_file")
+    ena_checklist = data.get("ena_checklist")
 
     samples_xml_path = create_samples_file(
         metadata_path=metadata_file,
@@ -45,6 +44,11 @@ def main():
         registration_type=registrationType
     )
 
+def read_config(config_file: str):
+
+    with open(config_file, "r") as file:
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+    return data
 
 def register_samples(
                 samples_xml_path: str,

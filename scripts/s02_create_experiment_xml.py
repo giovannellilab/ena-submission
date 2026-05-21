@@ -16,16 +16,14 @@ def main():
     args = parse_args()
 
     config_file = args.config_path
+    data = read_config(config_file)
 
-    with open(config_file, "r") as file:
-        
-        data = yaml.load(file, Loader=yaml.SafeLoader)
-        project = data.get("project_name")
-        template_dir = data.get("template_dir")
-        submission_type = data.get("submission_type")
-        metadata_file = data.get("metadata_file")
-        readmapping_table_wgs = data.get("readmapping_table_wgs")
-        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+    project = data.get("project_name")
+    template_dir = data.get("template_dir")
+    submission_type = data.get("submission_type")
+    metadata_file = data.get("metadata_file")
+    readmapping_table_wgs = data.get("readmapping_table_wgs")
+    readmapping_table_ampl = data.get("readmapping_table_amplicon")
 
     create_experiment(
         samples_receipt_path=args.recipe,
@@ -34,8 +32,14 @@ def main():
         experiment_type=args.experiment_type,
 
         mapping_WGS = readmapping_table_wgs,
-        mapping_AMP = readmapping_table_amplicon,
+        mapping_AMP = readmapping_table_ampl,
     )
+
+def read_config(config_file: str):
+
+    with open(config_file, "r") as file:
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+    return data
 
 
 def create_experiment(
