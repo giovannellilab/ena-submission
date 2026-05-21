@@ -20,10 +20,6 @@ def main():
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
-    readmapping_table_wgs = data.get("readmapping_table_wgs")
-    readmapping_table_amp = data.get("readmapping_table_amplicon")
-    raw_data_dir_amp = data.get("raw_data_dir_amplicon")
-    raw_data_dir_wgs = data.get("raw_data_dir_wgs")
 
 
     registrationType = None if args.registration_type == "null" else args.registration_type

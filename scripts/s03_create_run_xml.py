@@ -20,9 +20,8 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
     
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
-    submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
     readmapping_table_wgs = data.get("readmapping_table_wgs")
     readmapping_table_amplicon = data.get("readmapping_table_amplicon")
@@ -47,6 +46,7 @@ def main():
         metadata_path=metadata_file,
         template_dir=template_dir,
         experiment_type=args.experiment_types,
+        project_name = project_name,
         mapping=mapping_info,
     )
 
@@ -203,6 +203,7 @@ def create_run(
     metadata_path: str,
     template_dir: str,
     experiment_type: str,
+    project_name: str,
     mapping
 ) -> str:
     #ADD input parameter for project_name & experiment alias
@@ -216,8 +217,6 @@ def create_run(
     
     # if AMP_samples_dir and not os.path.exists(AMP_samples_dir):
     #     raise FileNotFoundError(f"{AMP_samples_dir} does not exist!")
-    metadata_df = load_metadata(metadata_path)
-    project_name = metadata_df["expid"].iloc[0]
 
     template_path = os.path.join(
         template_dir,

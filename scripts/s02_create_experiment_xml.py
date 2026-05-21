@@ -20,7 +20,6 @@ def main():
 
     project_name = data.get("project_name")
     template_dir = data.get("template_dir")
-    submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
     readmapping_table_wgs = data.get("readmapping_table_wgs")
     readmapping_table_ampl = data.get("readmapping_table_amplicon")
