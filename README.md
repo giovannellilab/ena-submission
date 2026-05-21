@@ -69,6 +69,33 @@ In the case your forward and reverse sequence files are nested within each sampl
 *IMPORTANT*
 The table above MUST be created for each different experiment type you are willing to upload! As we usually seqeunce both WGS and 16S biological materials, these tables are requested in 2/5 STEPs below
 
+## Writing config file
+We use a config file to insert information regarding required files and directories for the submission.
+You can edit this file such taht matches your ENA_checklist, your ENA metadata file, and data related paths..
+- template_dir -> directory containing templates used by the scripts, mut not be changed.
+- metadata_file -> absolute path to your edited ENA checklist list file
+- raw_data_dir* -> absolute path to your raw sequencing data to be uploaded.
+- readmapping_table_* -> absolute path to tables (see previous chapter) mapping file names to sample_aliases.
+- submission_type -> defualt to ADD, you can change it to MODIFY if you wish to change already registered metadata.
+
+A snapshot is provided.
+```bash
+### MAIN SETTINGS ###
+project_name: AEO25        # <-- edit this line to your projectname
+ena_checklist: ERC000025      # <-- edit this line to your temaplte ERC ID
+template_dir: /home/edotacca/working_dir/ena-submission/data/templates/
+metadata_file: /home/edotacca/working_dir/ena-submission/data/AEO25/Checklist_GSC-MIxS soil_ERC000022_1779375211704.tsv
+submission_type: ADD     # <-- defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
+#### DATA-RELATED PATHS ###
+raw_data_dir_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/    # <-- edit to raw WGS seqeunce data folder
+raw_data_dir_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/      # <-- edit to your AMPLICON sequence data folder
+readmapping_table_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/sample_table_WGS.tsv    # <-- edit to your table mapping
+readmapping_table_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/sample_table_16S.tsv    # <-- edit to your table mapping
+#### RECEIPT PATHS ####
+receipt_sample_permanent:
+receipt_object_permanent:
+
+```
 
 ## Workflow
 
@@ -86,12 +113,7 @@ python s01_create_samples_xml.py -h
 usage: preprocess_sequences [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-s {1,2}] [-x {y,yes,n,no,null}] [-u USER_PASSWORD]
 options:
   -h, --help            show this help message and exit
-  -i, --metadata_path METADATA_PATH
-                        Excel file containing the metadata for the sequences.
-  -t, --template_dir TEMPLATE_DIR
-                        Directory containing the templates for the submission.
-  -s, --submission_type {1,2}
-                        Submission type: -type 1 for ADD mode; -type 2 fpr MODIFY mode
+
   -x, --registration_type {y,yes,n,no,null}
                         Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
   -u, --user_password USER_PASSWORD
@@ -110,15 +132,7 @@ options:
   -h, --help            show this help message and exit
   -e, --experiment_type {16S,WGS,ITS}
                         String defining either 16S, WGS or ITS sequences
-  -i, --metadata_path METADATA_PATH
-                        Excel file containing the metadata for the sequences.
-  -t, --template_dir TEMPLATE_DIR
-                        Directory containing the templates for the submission.
   -r, --recipe RECIPE   XML File obtained from the s01 script.
-  -m, --mapping_WGS MAPPING_WGS
-                        Table containing rawreads filename (forward and reverse) and sample_alias for WGS
-  -k, --mapping_AMP MAPPING_AMP
-                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
 ```
 
 STEP 3) Create run files:
@@ -132,16 +146,6 @@ options:
   -h, --help            show this help message and exit
   -i, --metadata_path METADATA_PATH
                         Excel file containing the metadata for the sequences.
-  -w, --WGS_samples_dir WGS_SAMPLES_DIR
-                        Directory containing the sequences to submit.
-  -a, --AMP_samples_dir AMP_SAMPLES_DIR
-                        Directory containing the AMPlicon sequences to submit (16S/18S/ITS).
-  -m, --mapping_WGS MAPPING_WGS
-                        Table containing rawreads filename (forward and reverse) and sample_alias for WGS
-  -k, --mapping_AMP MAPPING_AMP
-                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
-  -t, --template_dir TEMPLATE_DIR
-                        Directory containing the templates for the submission.
   -e, --experiment_types {AMP,WGS}
                         String defining either 16S or WGS
   -n, --nested          If sequences files are nested within each corrispective sample dir names
@@ -159,15 +163,7 @@ options:
   -h, --help            show this help message and exit
   -e, --experiment_type {WGS,16S}
                         Either 16S or metagenomics.
-  -w, --files_samples_dir FILES_SAMPLES_DIR
-                        Directory containing the sequences to submit.
-  -a, --AMP_samples_dir AMP_SAMPLES_DIR
-                        Directory containing the 16S sequences to submit.
   -n, --nested          If sequences files are nested within each corrispective sample dir names
-  -m, --mapping_WGS MAPPING_WGS
-                        Table containing rawreads filename (forward and reverse), sample_alias for your reads AND/or sample_id if nested
-  -k, --mapping_AMP MAPPING_AMP
-                        Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON
   -u, --username USERNAME
                         Username for the submission.
   -i, --interactive INTERACTIVE
@@ -199,8 +195,6 @@ options:
                         String defining either 16S, WGS or both.
   -u, --user_password USER_PASSWORD
                         User and password for the submission (e.g. user1:password1234).
-  -s, --submission_type {1,2}
-                        Submission mode: type 1 for ADD mode; type 2 fpr MODIFY mode
   -x, --registration_type {y,yes,n,no,null}
                         Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
 ```
