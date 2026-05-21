@@ -11,22 +11,35 @@ import pandas as pd
 import bs4 as bs
 import subprocess
 import json
+import yaml
 
 def main():
     args = parse_args()
 
+
+    config_file = args.config_file
+
+    with open(config_file, "r") as file:
+
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+
     samples_xml_path = create_samples_file(
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir
+        metadata_path=metadata_file,
+        template_dir=template_dir
+        
     )
 
     registrationType = None if args.registration_type == "null" else args.registration_type
 
     samples_receipt_path = register_samples(
+        template_dir=template_dir,
         samples_xml_path=samples_xml_path,
-        template_dir=args.template_dir,
         user_password=args.user_password,
-        submission_type=args.submission_type,
+        submission_type=submission_type,
         registration_type=registrationType
     )
 
@@ -35,19 +48,19 @@ def register_samples(
                 samples_xml_path: str,
                 template_dir: str,
                 user_password: str,
-                submission_type: int,
+                submission_type: str,
                 registration_type: str
                 ) -> str:
 
     # Define input XML files
     #set submission type, ADD new metadata (new sample/s), or MODIFY existant metadata (already registered sample/s)
-    if submission_type == 1:
+    if submission_type == "ADD":
         print(f'[INFO] Submitting metadata in ADD mode')
         submission_path = os.path.join(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_type == 2:
+    elif submission_type == "MODIFY":
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
@@ -286,19 +299,9 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 def parse_args():
     parser = argparse.ArgumentParser("preprocess_sequences")
-    parser.add_argument("-i", "--metadata_path", 
-                        help="Excel file containing the metadata for the sequences.",
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
                         type=str
-                        )
-    parser.add_argument("-t", "--template_dir",
-                        help="Directory containing the templates for the submission.",
-                        type=str
-                        )
-    parser.add_argument("-s", "--submission_type",
-                        help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
-                        type=int,
-                        default=1,
-                        choices=[1,2]  # Accept only known values
                         )
     parser.add_argument("-x", "--registration_type",
                         help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",

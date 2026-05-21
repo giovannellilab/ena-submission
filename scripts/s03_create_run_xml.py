@@ -11,16 +11,34 @@ import pandas as pd
 import bs4 as bs
 import subprocess
 from tqdm import tqdm
+import yaml
+
 
 def main():
     args = parse_args()
 
+    config_file = args.config_path
+
+    with open(config_file, "r") as file:
+        
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+        readmapping_table_wgs = data.get("readmapping_table_wgs")
+        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+        raw_data_dir_amplicon = data.get("raw_data_dir_amplicon")
+        raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+
+
+
     updated_table, table_file = compute_gather(
-        metadata_path=args.metadata_path,
-        WGS_samples_dir = args.WGS_samples_dir,
-        AMP_samples_dir = args.AMP_samples_dir,
-        mapping_WGS = args.mapping_WGS,
-        mapping_AMP = args.mapping_AMP,
+        metadata_path= metadata_file,
+        WGS_samples_dir = raw_data_dir_wgs,
+        AMP_samples_dir = raw_data_dir_amplicon,
+        mapping_WGS = readmapping_table_wgs,
+        mapping_AMP = readmapping_table_amplicon,
         experiment_type=args.experiment_types,
         nested=args.nested
     )
@@ -28,8 +46,8 @@ def main():
     mapping_info = updated_table if not updated_table.empty else table_file
 
     run_path = create_run(
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir,
+        metadata_path=metadata_file,
+        template_dir=template_dir,
         experiment_type=args.experiment_types,
         mapping=mapping_info,
     )
@@ -259,26 +277,8 @@ def create_run(
 
 def parse_args():
     parser = argparse.ArgumentParser("preprocess_sequences")
-    parser.add_argument("-i", "--metadata_path", 
-                        help="Excel file containing the metadata for the sequences.",
-                        type=str
-                        )
-    parser.add_argument("-w", "--WGS_samples_dir",
-                        help="Directory containing the sequences to submit.",
-                        type=str
-                        )
-    parser.add_argument("-a", "--AMP_samples_dir",
-                        help="Directory containing the AMPlicon sequences to submit (16S/18S/ITS).",
-                        type=str
-                        )
-    parser.add_argument("-s", "--mapping_WGS",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for Shotgun Metagenomics",
-                        type=str,)
-    parser.add_argument("-k", "--mapping_AMP",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON",
-                        type=str,)
-    parser.add_argument("-t", "--template_dir",
-                        help="Directory containing the templates for the submission.",
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
                         type=str
                         )
     parser.add_argument("-e", "--experiment_types",

@@ -5,16 +5,32 @@ import argparse
 import pandas as pd
 import subprocess
 import time
-
+import yaml
 
 def main():
     args = parse_args()
+    config_file = args.config_path
+
+    with open(config_file, "r") as file:
+        
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+        readmapping_table_wgs = data.get("readmapping_table_wgs")
+        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+        raw_data_dir_amplicon = data.get("raw_data_dir_amplicon")
+        raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+
 
     file_list = gather_files(
         experiment_type = args.experiment_type,
-        samples_dir = args.files_samples_dir,
-        mapping_samples = args.mapping_table,
-        nested = args.nested
+        nested = args.nested,
+        readmapping_table_wgs=readmapping_table_wgs,
+        readmapping_table_amplicon=readmapping_table_amplicon,
+        raw_data_dir_amplicon=raw_data_dir_amplicon,
+        raw_data_dir_wgs=raw_data_dir_wgs,
     )
 
     upload_files(
@@ -124,20 +140,15 @@ def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> 
 
 def parse_args():
     parser = argparse.ArgumentParser("Uploading raw sequences")
-    
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
+                        type=str
+                        )
     parser.add_argument("-e", "--experiment_type",
                         help="Either 16S or metagenomics.",
                         type=str,
                         choices=["WGS", "16S"]
     )
-    parser.add_argument("-w", "--files_samples_dir",
-                        help="Directory containing the sequences to submit.",
-                        type=str
-                        )
-    parser.add_argument("-m", "--mapping_table",
-                        help="Table containing rawreads filename (forward [r1] and reverse [r2] ), sample_alias [sample] for your reads AND/or [sample_id] if nested",
-                        type=str,)
-                        
     parser.add_argument("-n", "--nested",
                         help="If sequences files are nested within each corrispective sample dir names",
                         action='store_true'

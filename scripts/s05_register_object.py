@@ -7,18 +7,33 @@ import subprocess
 import bs4 as bs
 import sys 
 import pandas as pd
-
+import yaml
 
 def main():
     args = parse_args()
+    
+    config_file = args.config_path
+    
+    with open(config_file, "r") as file:
+        
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+        readmapping_table_wgs = data.get("readmapping_table_wgs")
+        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+        raw_data_dir_amplicon = data.get("raw_data_dir_amplicon")
+        raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+
 
     registrationType = None if args.registration_type == "null" else args.registration_type
 
     final_receipt_path = register_objects(
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir,
+        metadata_path=metadata_file,
+        template_dir=template_dir,
         user_password=args.user_password,
-        submission_mode=args.submission_mode,
+        submission_mode=submission_type,
         registration_type=registrationType,
         experiment_type=args.experiment_type
 
@@ -173,13 +188,8 @@ def receipt_output_handling(receipt_path: str)-> dict:
 def parse_args():
     parser = argparse.ArgumentParser("Register objects")
     parser.add_argument(
-        "-i", "--metadata_path",
-        help="Excel file containing the metadata for the sequences.",
-        type=str
-    )
-    parser.add_argument(
-        "-t", "--template_dir",
-        help="Directory containing the templates for the submission.",
+        "-s", "--config_path", 
+        help="config yaml file containing direcotries for the whole workflow.",
         type=str
     )
     parser.add_argument(
@@ -192,13 +202,6 @@ def parse_args():
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
         type=str
-    )
-    parser.add_argument(
-        "-s", "--submission_mode",
-        help="Submission mode: \n type 1 for ADD mode; \n or type 2 fpr MODIFY mode",
-        type=int,
-        default=1,
-        choices=[1,2]
     )
     parser.add_argument(
         "-x", "--registration_type",

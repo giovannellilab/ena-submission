@@ -1,0 +1,9 @@
+project_name: AEO25        # <-- edit this line to your projectname
+ena_checklist: ERC000025      # <-- edit this line to your temaplte ERC ID
+template_dir: /data/template/
+metadata_file: /data/ExpID_ena_submission_ERC000025    # <-- edit to your metadata file location
+submission_type: ADD     # <-- defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
+raw_data_dir_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/    # <-- edit to raw WGS seqeunce data folder
+raw_data_dir_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/      # <-- edit to your AMPLICON sequence data folder
+readmapping_table_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/sample_table_WGS.tsv    # <-- edit to your table mapping
+readmapping_table_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/sample_table_16S.tsv    # <-- edit to your table mapping

@@ -10,20 +10,31 @@ from datetime import datetime
 import pandas as pd
 import bs4 as bs
 import subprocess
-
+import yaml
 
 def main():
     args = parse_args()
 
-    
+    config_file = args.config_path
+
+    with open(config_file, "r") as file:
+        
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+        readmapping_table_wgs = data.get("readmapping_table_wgs")
+        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+
     create_experiment(
         samples_receipt_path=args.recipe,
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir,
+        metadata_path=metadata_file,
+        template_dir=template_dir,
         experiment_type=args.experiment_type,
 
-        mapping_WGS = args.mapping_WGS,
-        mapping_AMP = args.mapping_AMP,
+        mapping_WGS = readmapping_table_wgs,
+        mapping_AMP = readmapping_table_amplicon,
     )
 
 
@@ -183,28 +194,18 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 def parse_args():
     parser = argparse.ArgumentParser("preprocess_sequences")
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
+                        type=str
+                        )
     parser.add_argument("-e", "--experiment_type",
                         help="String defining either 16S, WGS, 18S or ITS sequences",
                         choices=["16S", "WGS"]
-                        )
-    parser.add_argument("-i", "--metadata_path", 
-                        help="Spreadsheet file containing the metadata for the sequences.",
-                        type=str
-                        )
-    parser.add_argument("-t", "--template_dir",
-                        help="Directory containing the templates for the submission.",
-                        type=str
                         )
     parser.add_argument("-r", "--recipe",
                         help="XML sample receipt File obtained from the s01 script.",
                         type=str    
                         )
-    parser.add_argument("-m", "--mapping_WGS",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for WGS",
-                        type=str,)
-    parser.add_argument("-k", "--mapping_AMP",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON",
-                        type=str,)
 
     return parser.parse_args()
 

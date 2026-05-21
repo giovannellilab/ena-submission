@@ -6,22 +6,39 @@ import subprocess
 import bs4 as bs
 import sys 
 import pandas as pd
+import yaml
 
 
 def main():
     args = parse_args()
 
+    config_file = args.config_path
+
+    with open(config_file, "r") as file:
+        
+        data = yaml.load(file, Loader=yaml.SafeLoader)
+        project = data.get("project_name")
+        template_dir = data.get("template_dir")
+        submission_type = data.get("submission_type")
+        metadata_file = data.get("metadata_file")
+        readmapping_table_wgs = data.get("readmapping_table_wgs")
+        readmapping_table_amplicon = data.get("readmapping_table_amplicon")
+        raw_data_dir_amplicon = data.get("raw_data_dir_amplicon")
+        raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+
+
+
     for experiment_type in args.experiment_types:
 
         print(f"Creating details registration for {experiment_type}")
         receipt_df = parse_objects_receipts(
-            metadata_path = args.metadata_path,
+            metadata_path = metadata_file,
             experiment_type=experiment_type
         )
 
         details_path = save_results_metadata(
             dataframe=receipt_df,
-            metadata_path=args.metadata_path,
+            metadata_path=metadata_file,
             experiment_type=experiment_type
         )
 
@@ -271,8 +288,8 @@ def mapping(
 def parse_args():
     parser = argparse.ArgumentParser("Register objects")
     parser.add_argument(
-        "-i", "--metadata_path",
-        help="Excel file containing the metadata for the sequences.",
+        "-s", "--config_path", 
+        help="config yaml file containing direcotries for the whole workflow.",
         type=str
     )
     parser.add_argument(
