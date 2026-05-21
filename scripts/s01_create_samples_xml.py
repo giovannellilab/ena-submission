@@ -21,7 +21,7 @@ def main():
     data = read_config(config_file)
 
 
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
@@ -41,7 +41,8 @@ def main():
         samples_xml_path=samples_xml_path,
         user_password=args.user_password,
         submission_type=submission_type,
-        registration_type=registrationType
+        registration_type=registrationType,
+        project_name=project_name
     )
 
 def read_config(config_file: str):
@@ -55,7 +56,8 @@ def register_samples(
                 template_dir: str,
                 user_password: str,
                 submission_type: str,
-                registration_type: str
+                registration_type: str,
+                project_name: str
                 ) -> str:
 
     # Define input XML files
@@ -72,8 +74,6 @@ def register_samples(
             template_dir,
             "submission_MOD.xml"
         )
-    # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(samples_xml_path).split("_")[0]
     
     output_path = os.path.join(os.path.dirname(samples_xml_path),
                                f"{project_name}_ena_samples_receipt.xml")

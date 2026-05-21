@@ -13,7 +13,7 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")

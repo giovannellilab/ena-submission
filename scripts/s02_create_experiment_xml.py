@@ -18,7 +18,7 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
@@ -33,6 +33,7 @@ def main():
 
         mapping_WGS = readmapping_table_wgs,
         mapping_AMP = readmapping_table_ampl,
+        project_name = project_name
     )
 
 def read_config(config_file: str):
@@ -48,11 +49,9 @@ def create_experiment(
     template_dir: str,
     experiment_type: str,
     mapping_WGS : str,
-    mapping_AMP : str
+    mapping_AMP : str,
+    project_name : str
 ) -> str:
-
-    # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
 
     receipt_df = parse_samples_receipt(
         samples_receipt_path=samples_receipt_path,

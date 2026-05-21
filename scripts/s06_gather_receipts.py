@@ -16,7 +16,7 @@ def main():
     data = read_config(config_file)
 
 
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
@@ -24,7 +24,7 @@ def main():
     readmapping_table_amp = data.get("readmapping_table_amplicon")
     raw_data_dir_amp = data.get("raw_data_dir_amplicon")
     raw_data_dir_wgs = data.get("raw_data_dir_wgs")
-
+    ena_checklist = data.get("ena_checklist")
 
 
     for experiment_type in args.experiment_types:
@@ -32,13 +32,16 @@ def main():
         print(f"Creating details registration for {experiment_type}")
         receipt_df = parse_objects_receipts(
             metadata_path = metadata_file,
-            experiment_type=experiment_type
+            experiment_type=experiment_type,
+            project_name=project_name
         )
 
         details_path = save_results_metadata(
             dataframe=receipt_df,
             metadata_path=metadata_file,
-            experiment_type=experiment_type
+            experiment_type=experiment_type,
+            ena_checklist=ena_checklist,
+            project_name=project_name
         )
 
         print(f"[STEP6][+] Metadata written to {details_path}")
@@ -54,7 +57,8 @@ def read_config(config_file: str):
 
 def parse_objects_receipts(
     metadata_path: str,
-    experiment_type: str
+    experiment_type: str,
+    project_name: str
 ) -> pd.DataFrame:
 
     # Associate:
@@ -63,7 +67,6 @@ def parse_objects_receipts(
     # - RUN accession:    ERR00000000
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
     sample_receipt_path = os.path.join(
@@ -202,16 +205,17 @@ def parse_objects_receipts(
 def save_results_metadata(
     dataframe: pd.DataFrame,
     metadata_path: str,
-    experiment_type: str
+    experiment_type: str,
+    ena_checklist: str,
+    project_name: str
+
 )-> str:
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
-    ena_code = os.path.basename(metadata_path).split("_")[-1][:-5]
-    print(ena_code)
+    print(ena_checklist)
     # project ACCESSION such : PRJEB67767
     metadata_dir = os.path.dirname(metadata_path)
-    sample_xml_file = f'{project_name}_ena_sample_{ena_code}.xml'
+    sample_xml_file = f'{project_name}_ena_sample_{ena_checklist}.xml'
     
     with open(os.path.join(metadata_dir,sample_xml_file), mode="r") as handle:
         xml_sample = bs.BeautifulSoup(handle, "xml")

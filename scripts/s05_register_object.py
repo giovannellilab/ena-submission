@@ -16,7 +16,7 @@ def main():
     data = read_config(config_file)
 
 
-    project = data.get("project_name")
+    project_name = data.get("project_name")
     template_dir = data.get("template_dir")
     submission_type = data.get("submission_type")
     metadata_file = data.get("metadata_file")
@@ -30,6 +30,7 @@ def main():
 
     final_receipt_path = register_objects(
         metadata_path=metadata_file,
+        project_name=project_name,
         template_dir=template_dir,
         user_password=args.user_password,
         submission_mode=submission_type,
@@ -54,11 +55,11 @@ def register_objects(
     user_password: str,
     submission_mode: str,
     registration_type: str,
-    experiment_type: str
+    experiment_type: str,
+    project_name: str
     ) -> str:
 
     #call to load_metadata
-    project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
