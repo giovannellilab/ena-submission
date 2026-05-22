@@ -11,7 +11,7 @@ import pandas as pd
 import bs4 as bs
 import subprocess
 from tqdm import tqdm
-import yaml
+from ruamel.yaml import YAML
 
 
 def main():

@@ -11,7 +11,6 @@ import pandas as pd
 import bs4 as bs
 import subprocess
 import json
-import yaml
 from ruamel.yaml import YAML
 
 def main():

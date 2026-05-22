@@ -10,7 +10,8 @@ from datetime import datetime
 import pandas as pd
 import bs4 as bs
 import subprocess
-import yaml
+from ruamel.yaml import YAML
+
 
 def main():
     args = parse_args()

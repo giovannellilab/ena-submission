@@ -5,7 +5,7 @@ import argparse
 import pandas as pd
 import subprocess
 import time
-import yaml
+from ruamel.yaml import YAML
 
 def main():
     args = parse_args()

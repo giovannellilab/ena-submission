@@ -6,7 +6,7 @@ import subprocess
 import bs4 as bs
 import sys 
 import pandas as pd
-import yaml
+from ruamel.yaml import YAML
 
 
 def main():
