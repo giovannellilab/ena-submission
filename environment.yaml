@@ -1,4 +1,4 @@
-name: ena_submission
+name: ena
 channels:
   - conda-forge
 dependencies:
