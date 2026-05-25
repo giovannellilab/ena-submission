@@ -55,7 +55,6 @@
     "$$$ENV_MEDIUM$$$": "environmental medium",
     "$$$ELEVATION$$$": "elevation",
     "$$$LOC$$$": "geographic location (country and/or sea)",
-    "$$$REGLOC$$$": "geographic_location (region_and_locality)",
     "$$$DEPTH$$$" : "depth"
   },
   "ERC000025_mirri25": {
