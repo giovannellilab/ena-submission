@@ -1,16 +1,34 @@
 ### MAIN SETTINGS ###
-project_name: AEO25        # <-- edit this line to your projectname
-ena_checklist: ERC000025      # <-- edit this line to your temaplte ERC ID
-template_dir: /home/edotacca/working_dir/ena-submission/data/templates/
-metadata_file: /home/edotacca/working_dir/ena-submission/data/AEO25/AEO25_ena_submission_ERC000025.xlsx
-submission_type: ADD     # <-- defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
-#### DATA-RELATED PATHS ###
-raw_data_dir_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/    # <-- edit to raw WGS seqeunce data folder
-raw_data_dir_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/      # <-- edit to your AMPLICON sequence data folder
-readmapping_table_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/sample_table_WGS.tsv    # <-- edit to your table mapping
-readmapping_table_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/sample_table_16S.tsv    # <-- edit to your table mapping
+# Edit this line to your projectname
+project_name: PRJEB113292
+# Edit this line to your temaplte ERC ID
+ena_checklist: ERC000022
+template_dir: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/templates
+metadata_file: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_metadata.tsv
+# Defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
+submission_type: ADD
+
+#### DATA-RELATED PATHS ####
+# Edit to raw WGS seqeunce data folder
+raw_data_dir_wgs: 
+# Edit to your AMPLICON sequence data folder
+raw_data_dir_amplicon: /SERVER/sequences/vulcano_suoli/16s
+#  Edit to your table mapping
+readmapping_table_wgs: 
+# Edit to your table mapping
+readmapping_table_amplicon: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/Mapping_filenames.tsv
+                                
 #### RECEIPT PATHS ####
-receipt_samples_permanent:
 receipt_samples_dry_run:
-receipt_objects_permanent:
+receipt_objects_permanent: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_ena_object_receipt_16S.xml
 receipt_objects_dry_run:
+receipt_samples_permanent: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_ena_samples_receipt.xml
+
+#### EXPERIMENT DETAIS ####
+SEQUENCING_YEAR: 2025
+SEQUENCING_PLATFORM: ILLUMINA
+SEQUENCING_INSTRUMENT_MODEL: Illumina MiSeq
+SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL: DNA extraction was performed using the
+  DNeasy PowerSoil Pro kit (QIAGEN) following themanufacturer's protocol. PCR 
+  amplification of the V3-V4 hypervariable region of the 16S rRNA gene was 
+  performed, followed byPCR product purification.
