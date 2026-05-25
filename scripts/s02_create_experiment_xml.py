@@ -10,7 +10,8 @@ from datetime import datetime
 import pandas as pd
 import bs4 as bs
 import subprocess
-import yaml
+from ena_utils import read_config, get_config_variable
+
 
 def main():
     args = parse_args()
@@ -18,28 +19,30 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project_name = data.get("project_name")
-    template_dir = data.get("template_dir")
-    metadata_file = data.get("metadata_file")
-    readmapping_table_wgs = data.get("readmapping_table_wgs")
-    readmapping_table_ampl = data.get("readmapping_table_amplicon")
+    project_name = get_config_variable(data, "project_name") 
+    template_dir = get_config_variable(data, "template_dir") 
+    metadata_file = get_config_variable(data, "metadata_file") 
+    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs")
+    readmapping_table_ampl = get_config_variable(data, "readmapping_table_amplicon")
+    recipe = get_config_variable(data, "receipt_samples_permanent") 
+    sequencing_year = get_config_variable(data, "SEQUENCING_YEAR")
+    sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
+    sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
+    sequencing_library_construction_protocol = get_config_variable(data,"SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL")
+
 
     create_experiment(
-        samples_receipt_path=args.recipe,
+        samples_receipt_path=recipe,
         metadata_path=metadata_file,
         template_dir=template_dir,
         experiment_type=args.experiment_type,
 
         mapping_WGS = readmapping_table_wgs,
         mapping_AMP = readmapping_table_ampl,
-        project_name = project_name
+        project_name = project_name,
+
+        sequencing_year = sequencing_year
     )
-
-def read_config(config_file: str):
-
-    with open(config_file, "r") as file:
-        data = yaml.load(file, Loader=yaml.SafeLoader)
-    return data
 
 
 def create_experiment(
@@ -49,10 +52,12 @@ def create_experiment(
     experiment_type: str,
     mapping_WGS : str,
     mapping_AMP : str,
-    project_name : str
+    project_name : str,
+    sequencing_year : str,
 ) -> str:
 
     receipt_df = parse_samples_receipt(
+        project_name=project_name,
         samples_receipt_path=samples_receipt_path,
         metadata_path=metadata_path
     )
@@ -97,7 +102,7 @@ def create_experiment(
                     .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
                     .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
                     .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
-                    .replace("$$$YEAR$$$", str(datetime.now().year))
+                    .replace("$$$YEAR$$$", str(sequencing_year))
 
                 experiment_xml += [template_xml]
             else:
@@ -127,7 +132,7 @@ def create_experiment(
     return output_path
 
 
-def parse_samples_receipt(samples_receipt_path: str, metadata_path: str) -> pd.DataFrame:
+def parse_samples_receipt(project_name:str, samples_receipt_path: str, metadata_path: str) -> pd.DataFrame:
     # Programmatically assign study ID
     metadata_df = load_metadata(metadata_path)
 
@@ -143,9 +148,7 @@ def parse_samples_receipt(samples_receipt_path: str, metadata_path: str) -> pd.D
             title = sample.get("accession")
             ext_id_element = sample.find("EXT_ID")
             ext_id = ext_id_element.get("accession")
-            study_id = metadata_df[metadata_df["sample_alias"] == alias]\
-                ["project_name"]\
-                .values[0]
+            study_id = project_name
 
             row = pd.Series({
                 "project_id": study_id,
@@ -203,10 +206,6 @@ def parse_args():
     parser.add_argument("-e", "--experiment_type",
                         help="String defining either 16S, WGS, 18S or ITS sequences",
                         choices=["16S", "WGS"]
-                        )
-    parser.add_argument("-r", "--recipe",
-                        help="XML sample receipt File obtained from the s01 script.",
-                        type=str    
                         )
 
     return parser.parse_args()
