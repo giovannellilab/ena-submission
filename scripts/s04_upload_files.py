@@ -5,7 +5,8 @@ import argparse
 import pandas as pd
 import subprocess
 import time
-import yaml
+from ruamel.yaml import YAML
+
 
 def main():
     args = parse_args()
@@ -27,8 +28,8 @@ def main():
         experiment_type=args.experiment_type,
         nested=args.nested,
         readmapping_table_wgs=readmapping_table_wgs,
-        readmapping_table_amplicon=readmapping_table_amp,
-        raw_data_dir_amplicon=raw_data_dir_amp,
+        readmapping_table_amp=readmapping_table_amp,
+        raw_data_dir_amp=raw_data_dir_amp,
         raw_data_dir_wgs=raw_data_dir_wgs,
     )
 
@@ -41,9 +42,17 @@ def main():
 
 
 def read_config(config_file: str):
+    yaml = YAML(typ="safe")
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
 
     with open(config_file, "r") as file:
-        data = yaml.load(file, Loader=yaml.SafeLoader)
+        data = yaml.load(file)
     return data
 
 
@@ -88,7 +97,7 @@ def gather_files(
     exp_dir = os.path.abspath(samples_dir)
     table_mapping = pd.read_csv(mapping_samples, sep="\t")
 
-    required_cols = ["r1","r2","sample"]
+    required_cols = ["r1","r2","sample_alias"]
     has_sample_id = "sample_id" in table_mapping.columns
 
     assert all(col in table_mapping.columns for col in required_cols), \
@@ -109,8 +118,8 @@ def gather_files(
 
         base_path = os.path.join(exp_dir, str(i.sample_id)) if nested else exp_dir
 
-        r1 = os.path.join(str(base_path),i.forward)
-        r2 = os.path.join(str(base_path),i.reverse)
+        r1 = os.path.join(str(base_path),i.r1)
+        r2 = os.path.join(str(base_path),i.r2)
  
         # 5. Immediate File Verification
         for f_path in [r1, r2]:
@@ -137,7 +146,7 @@ def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> 
 
     ftp_connection = [
         "lftp",
-        f"webin2.ebi.ac.uk",
+        f"{username}@webin2.ebi.ac.uk",
         "-e", mput_command
     ]
     
@@ -186,7 +195,7 @@ def parse_args():
                         )
    
     parser.add_argument("-u", "--username",
-                        help="Username for the submission.",
+                        help="User for the submission (e.g. user1).",
                         type=str
     )
     parser.add_argument("-i", "--interactive",
