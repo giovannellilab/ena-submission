@@ -46,9 +46,9 @@ Before starting, it is assumed that you already have created your study in ENA [
 
 
 In addition, you will be asked to compile a mandatory TSV *sample table.tsv* (the likes used in [geomosaic_setup](https://giovannellilab.github.io/Geomosaic/commands/setup.html) ) (tab separated format) to be sure that the sequences you are about to upload are referenced to the right sample alias in your Ena_submission spreadsheet. To note, this table must be created for each different experiment!
-The namings are stored under the following columns: forward,reverse,samples_alias. An example:
+The namings are stored under the following columns: forward (r1),reverse (r2),samples_alias. An example:
 
-| forward         | reverse         | sample_alias |
+| r1              | r2              | sample_alias |
 | ----------------|-----------------|--------------|
 | G255_1.fastq.gz | G255_2.fastq.gz | AC_280625_F  |
 | G256_1.fastq.gz | G256_2.fastq.gz | BC_200625_S  |
@@ -58,7 +58,7 @@ The namings are stored under the following columns: forward,reverse,samples_alia
 
 In the case your forward and reverse sequence files are nested within each sample's name ( our sequenced data is returned from seq company typically in this way ), it is suggested to add a further column namedd 'sample_id' which MUST correspond at the sample directory in your folder.This will help to find each files in the correct location. In the case the 'sample_alias' corrsponds to the 'sample_id', copy and paste!
 
-| forward         | reverse         | sample_alias | sample_id |
+| r1              | r2              | sample_alias | sample_id |
 |-----------------|-----------------|--------------|-----------|
 | G255_1.fastq.gz | G255_2.fastq.gz | AC_280625_F  | G255      |
 | G256_1.fastq.gz | G256_2.fastq.gz | BC_200625_S  | G256      | 
@@ -81,19 +81,42 @@ You can edit this file such taht matches your ENA_checklist, your ENA metadata f
 A snapshot is provided.
 ```bash
 ### MAIN SETTINGS ###
-project_name: AEO25        # <-- edit this line to your projectname
-ena_checklist: ERC000025      # <-- edit this line to your temaplte ERC ID
-template_dir: /home/edotacca/working_dir/ena-submission/data/templates/
-metadata_file: /home/edotacca/working_dir/ena-submission/data/AEO25/Checklist_GSC-MIxS soil_ERC000022_1779375211704.tsv
-submission_type: ADD     # <-- defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
-#### DATA-RELATED PATHS ###
-raw_data_dir_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/    # <-- edit to raw WGS seqeunce data folder
-raw_data_dir_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/      # <-- edit to your AMPLICON sequence data folder
-readmapping_table_wgs: /media/edotacca/Thor1/sequencing_data/AEO25/Metagenomes/sample_table_WGS.tsv    # <-- edit to your table mapping
-readmapping_table_amplicon: /media/edotacca/Thor1/sequencing_data/AEO25/16S/sample_table_16S.tsv    # <-- edit to your table mapping
+# Edit this line to your projectname
+project_name: PRJEB113292
+# Edit this line to your template ERC ID
+ena_checklist: ERC000025
+template_dir: /home/edotacca/working_dir/ena-submission/data/templates
+metadata_file: 
+  /home/edotacca/working_dir/ena-submission/data/AEO25/AEO25_ena_submission_ERC000025.xlsx
+# Defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
+submission_type: ADD
+
+#### DATA-RELATED PATHS ####
+# Edit to raw WGS seqeunce data folder
+raw_data_dir_wgs:
+# Edit to your AMPLICON sequence data folder
+raw_data_dir_amp: /SERVER/sequences/vulcano_suoli/16s
+#  Edit to your table mapping
+readmapping_table_wgs:
+# Edit to your table mapping
+readmapping_table_amp: 
+  /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/Mapping_filenames.tsv
+
 #### RECEIPT PATHS ####
-receipt_sample_permanent:
-receipt_object_permanent:
+receipt_samples_dry_run:
+receipt_objects_permanent: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_ena_object_receipt_16S.xml
+receipt_objects_dry_run:
+receipt_samples_permanent: /home/edotacca/working_dir/ena-submission/data/AEO25/PRJEB113292_ena_samples_receipt.xml
+
+#### EXPERIMENT DETAILS ####
+SEQUENCING_YEAR: 2026
+SEQUENCING_PLATFORM: ILLUMINA
+SEQUENCING_INSTRUMENT_MODEL: Illumina Novaseq X Plus
+SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL: Sequencing was carried out by Novogene
+  (UK). The NGS DNA Library Prep Set (Cat No.PT004). Before sequencing DNA 
+  samples were quantified using a Qubit (invitrogen) dsDNA Broad Range or High 
+  Sensitivity assay and visually inspected on a 1% agarose gel colored with 
+  EtBr.
 
 ```
 
@@ -110,13 +133,14 @@ AND permanent submission, where your smaple_aliases are registered and assoicate
 ```bash
 python s01_create_samples_xml.py -h
 
-usage: preprocess_sequences [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-s {1,2}] [-x {y,yes,n,no,null}] [-u USER_PASSWORD]
+usage: Register sample metadata [-h] [-s CONFIG_FILE] [-x {y,yes,n,no,null}] [-u USER_PASSWORD]
 options:
   -h, --help            show this help message and exit
-
-  -x, --registration_type {y,yes,n,no,null}
-                        Submission type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
-  -u, --user_password USER_PASSWORD
+  -s CONFIG_FILE, --config_file CONFIG_FILE
+                        config yaml file containing direcotries for the whole workflow.
+  -x {y,yes,n,no,null}, --registration_type {y,yes,n,no,null}
+                        Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
+  -u USER_PASSWORD, --user_password USER_PASSWORD
                         User and password for the submission (e.g. user1:password1234).
 ```
 
@@ -127,12 +151,13 @@ STEP 2) Create experiments files:
 ```bash
 python s02_create_experiment_xml.py -h
 
-usage: preprocess_sequences [-h] [-e {16S,WGS,ITS}] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-r RECIPE] [-m MAPPING_WGS] [-k MAPPING_AMP]
+usage: Create experiments Objects [-h] [-s CONFIG_PATH] [-e {16S,WGS}]
 options:
   -h, --help            show this help message and exit
-  -e, --experiment_type {16S,WGS,ITS}
-                        String defining either 16S, WGS or ITS sequences
-  -r, --recipe RECIPE   XML File obtained from the s01 script.
+  -s CONFIG_PATH, --config_path CONFIG_PATH
+                        config yaml file containing direcotries for the whole workflow.
+  -e {16S,WGS}, --experiment_type {16S,WGS}
+                        String defining either 16S, WGS, 18S or ITS sequences
 ```
 
 STEP 3) Create run files:
@@ -140,16 +165,15 @@ STEP 3) Create run files:
 ```bash
 
 python s03_create_run_xml.py -h
-usage: preprocess_sequences [-h] [-i METADATA_PATH] [-w WGS_SAMPLES_DIR] [-a AMP_SAMPLES_DIR] [-m MAPPING_WGS] [-k MAPPING_AMP] [-t TEMPLATE_DIR] [-e {AMP,WGS}] [-n]
 
+usage: Create run objects [-h] -s CONFIG_PATH -e {16S,WGS} [-n]
 options:
   -h, --help            show this help message and exit
-  -i, --metadata_path METADATA_PATH
-                        Excel file containing the metadata for the sequences.
-  -e, --experiment_types {AMP,WGS}
+  -s CONFIG_PATH, --config_path CONFIG_PATH
+                        config yaml file containing direcotries for the whole workflow.
+  -e {16S,WGS}, --experiment_types {16S,WGS}
                         String defining either 16S or WGS
   -n, --nested          If sequences files are nested within each corrispective sample dir names
-
 ```
 
 ### Uploading data files (Can be done indepdenlty BUT always before registering)
@@ -158,17 +182,19 @@ STEP 4) Upload files: is also executed a number of times N equal to your experim
 ```bash
 python s04_upload_files.py -h
 
-usage: Uploading raw sequences [-h] [-e {WGS,16S}] [-w FILES_SAMPLES_DIR] [-a AMP_SAMPLES_DIR] [-n] [-m MAPPING_WGS] [-k MAPPING_AMP] [-u USERNAME] [-i INTERACTIVE] [--dry_run]
+usage: Uploading raw sequences [-h] [-s CONFIG_PATH] [-e {WGS,16S}] [-n] [-u USERNAME] [-i INTERACTIVE] [--dry_run]
 options:
   -h, --help            show this help message and exit
-  -e, --experiment_type {WGS,16S}
+  -s CONFIG_PATH, --config_path CONFIG_PATH
+                        config yaml file containing direcotries for the whole workflow.
+  -e {WGS,16S}, --experiment_type {WGS,16S}
                         Either 16S or metagenomics.
   -n, --nested          If sequences files are nested within each corrispective sample dir names
-  -u, --username USERNAME
-                        Username for the submission.
-  -i, --interactive INTERACTIVE
+  -u USERNAME, --username USERNAME
+                        User for the submission (e.g. user1).
+  -i INTERACTIVE, --interactive INTERACTIVE
                         Whether to perform the upload in interactive mode.
-  --dry_run             Execute a dry_run with only printing the command
+  -z, --dry_run         Execute a dry_run with only printing the command
 ```
 You can check the presence of your files in the ENA bay area with your user:password by typing:
 ```bash
@@ -184,32 +210,30 @@ AND permanent submission, where your experiment_aliases and run_aliases are regi
 
 ```bash
 python s05_register_object.py -h
-usage: Register objects [-h] [-i METADATA_PATH] [-t TEMPLATE_DIR] [-e EXPERIMENT_TYPES] [-u USER_PASSWORD] [-s {1,2}] [-x {y,yes,n,no,null}]
+
+usage: Register objects [-h] [-s CONFIG_PATH] [-e {16S,WGS}] [-u USER_PASSWORD] [-x {y,yes,n,no,null}]
 options:
   -h, --help            show this help message and exit
-  -i, --metadata_path METADATA_PATH
-                        Excel file containing the metadata for the sequences.
-  -t, --template_dir TEMPLATE_DIR
-                        Directory containing the templates for the submission.
-  -e, --experiment_types EXPERIMENT_TYPES
+  -s CONFIG_PATH, --config_path CONFIG_PATH
+                        config yaml file containing direcotries for the whole workflow.
+  -e {16S,WGS}, --experiment_type {16S,WGS}
                         String defining either 16S, WGS or both.
-  -u, --user_password USER_PASSWORD
+  -u USER_PASSWORD, --user_password USER_PASSWORD
                         User and password for the submission (e.g. user1:password1234).
-  -x, --registration_type {y,yes,n,no,null}
+  -x {y,yes,n,no,null}, --registration_type {y,yes,n,no,null}
                         Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.
 ```
 STEP 6) Parse receipts objects:
 This step allows you to store all the informations for your submission & registrations in tabular data for tracking purposes
 ```bash
-
 python s06_gather_receipts.py -h
-usage: Register objects [-h] [-i METADATA_PATH] [-e {16S,WGS} [{16S,WGS} ...]]
 
+usage: Register objects [-h] [-s CONFIG_PATH] [-e {16S,WGS} [{16S,WGS} ...]]
 options:
   -h, --help            show this help message and exit
-  -i, --metadata_path METADATA_PATH
-                        Excel file containing the metadata for the sequences.
-  -e, --experiment_types {16S,WGS} [{16S,WGS} ...]
+  -s CONFIG_PATH, --config_path CONFIG_PATH
+                        config yaml file containing direcotries for the whole workflow.
+  -e {16S,WGS} [{16S,WGS} ...], --experiment_types {16S,WGS} [{16S,WGS} ...]
                         String defining either 16S, WGS or both.
 ```
 
