@@ -4,11 +4,10 @@ import argparse
 import os
 import csv
 import subprocess
-import bs4 as bs
+from bs4 import BeautifulSoup
 import sys 
 import pandas as pd
-import yaml
-from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
@@ -17,12 +16,10 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-
-    project_name = data.get("project_name")
-    template_dir = data.get("template_dir")
-    submission_type = data.get("submission_type")
-    metadata_file = data.get("metadata_file")
-
+    project_name = get_config_variable(data, "project_name")
+    template_dir = get_config_variable(data, "template_dir")
+    submission_type = get_config_variable(data, "submission_type")
+    metadata_file = get_config_variable(data, "metadata_file")
 
     registrationType = None if args.registration_type == "null" else args.registration_type
 
@@ -55,38 +52,6 @@ def main():
     print(f"[STEP5][+][+][+] Experiments and runs info saved to {final_receipt_path}")
 
 
-def read_config(config_file: str):
-    try:
-        with open(config_file, "r") as file:
-            data = yaml.safe_load(file) or {}
-    except FileNotFoundError:
-        # If the file doesn't exist yet, start with a fresh dictionary
-        data = {}
-
-    with open(config_file, "r") as file:
-        data = yaml.load(file, Loader=yaml.SafeLoader)
-    return data
-
-def write_config(config_file: str, key: str, value: str,):
-
-    yaml = YAML()
-    yaml.preserve_quotes = True
-
-    try:
-        with open(config_file, "r") as file:
-            data = yaml.load(file) or {}
-    except FileNotFoundError:
-        # If the file doesn't exist yet, start with a fresh dictionary
-        data = {}
-
-    data[key] = value
-
-    with open(config_file, "w") as file:
-        data = yaml.dump(data, file)
-
-    return data
-
-
 def register_objects(
     metadata_path: str,
     template_dir: str,
@@ -101,13 +66,13 @@ def register_objects(
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
-    if submission_mode == 1:
+    if submission_mode == "ADD":
         print(f'[INFO] Submitting metadata in ADD mode')
         submission_path = os.path.join(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_mode == 2:
+    elif submission_mode == "MOD":
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
@@ -207,7 +172,7 @@ def receipt_output_handling(receipt_path: str)-> dict:
     with open(receipt_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
-    soup = bs.BeautifulSoup(content, 'xml')
+    soup = BeautifulSoup(content, 'xml')
     receipt = soup.find('RECEIPT')
     success = receipt.get('success').lower() == 'true'
 
