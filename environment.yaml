@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - _openmp_mutex=4.5
+  - _openmp_mutex=4.5
   - bzip2=1.0.8
   - ca-certificates=2025.8.3
   - icu=75.1
@@ -48,3 +49,4 @@ dependencies:
       - tqdm==4.67.1
       - typing-extensions==4.15.0
       - tzdata==2025.2
+      - tqdm==4.67.1
