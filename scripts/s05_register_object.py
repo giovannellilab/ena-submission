@@ -16,7 +16,7 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project_name = get_config_variable(data, "project_name")
+    project_name = get_config_variable(data, "project_name") 
     template_dir = get_config_variable(data, "template_dir")
     submission_type = get_config_variable(data, "submission_type")
     metadata_file = get_config_variable(data, "metadata_file")

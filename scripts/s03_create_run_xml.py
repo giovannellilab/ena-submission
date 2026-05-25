@@ -11,6 +11,7 @@ import pandas as pd
 import subprocess
 from tqdm import tqdm
 from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
@@ -19,18 +20,20 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project_name              = data.get("project_name")
-    template_dir              = data.get("template_dir")
-    metadata_file             = data.get("metadata_file")
-    readmapping_table_wgs     = data.get("readmapping_table_wgs")
-    readmapping_table_amplicon = data.get("readmapping_table_amplicon")
-    raw_data_dir_amplicon     = data.get("raw_data_dir_amplicon")
-    raw_data_dir_wgs          = data.get("raw_data_dir_wgs")
+
+    project_name = get_config_variable(data, "project_name")
+    template_dir = get_config_variable(data, "template_dir")
+    metadata_file = get_config_variable(data, "metadata_file")
+
+    readmapping_table_wgs = get_config_variable(data,"readmapping_table_wgs")
+    readmapping_table_amp = get_config_variable(data,"readmapping_table_amp")
+    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp")
+    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs")
 
     if args.experiment_types == "16S":
         updated_table, table_file = compute_gather_amp(
-            AMP_samples_dir=raw_data_dir_amplicon,
-            mapping_AMP=readmapping_table_amplicon,
+            AMP_samples_dir=raw_data_dir_amp,
+            mapping_AMP=readmapping_table_amp,
             metadata_path=metadata_file,
             nested=args.nested
         )
@@ -53,21 +56,6 @@ def main():
     )
 
 
-def read_config(config_file: str):
-    yaml = YAML(typ="safe")
-
-    try:
-        with open(config_file, "r") as file:
-            data = yaml.load(file) or {}
-    except FileNotFoundError:
-        # If the file doesn't exist yet, start with a fresh dictionary
-        data = {}
-
-    with open(config_file, "r") as file:
-        data = yaml.load(file)
-    return data
-
-   
 def load_metadata(metadata_path: str) -> pd.DataFrame:
     
     spreadsheet_file = os.path.abspath(metadata_path)
@@ -322,7 +310,7 @@ def create_run(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("preprocess_sequences")
+    parser = argparse.ArgumentParser("Create run objects")
     parser.add_argument("-s", "--config_path", 
                         help="config yaml file containing direcotries for the whole workflow.",
                         required=True,

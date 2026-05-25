@@ -12,6 +12,8 @@ from bs4 import BeautifulSoup
 import subprocess
 import json
 from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
+
 
 def main():
     args = parse_args()
@@ -21,11 +23,11 @@ def main():
     data = read_config(config_file)
 
 
-    project_name = data.get("project_name")
-    template_dir = data.get("template_dir")
-    submission_type = data.get("submission_type")
-    metadata_file = data.get("metadata_file")
-    ena_checklist = data.get("ena_checklist")
+    project_name = get_config_variable(data, "project_name")
+    template_dir = get_config_variable(data, "template_dir")
+    metadata_file = get_config_variable(data, "metadata_file")
+    submission_type = get_config_variable(data, "submission_type")
+    ena_checklist = get_config_variable(data, "ena_checklist")
 
     samples_xml_path = create_samples_file(
         project_name=project_name,
@@ -345,7 +347,7 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("preprocess_sequences")
+    parser = argparse.ArgumentParser("Register sample metadata")
     parser.add_argument("-s", "--config_file", 
                         help="config yaml file containing direcotries for the whole workflow.",
                         type=str

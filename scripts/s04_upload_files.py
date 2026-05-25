@@ -6,6 +6,7 @@ import pandas as pd
 import subprocess
 import time
 from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
@@ -14,14 +15,10 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    project_name = data.get("project_name")
-    template_dir = data.get("template_dir")
-    submission_type = data.get("submission_type")
-    metadata_file = data.get("metadata_file")
-    readmapping_table_wgs = data.get("readmapping_table_wgs")
-    readmapping_table_amp = data.get("readmapping_table_amplicon")
-    raw_data_dir_amp = data.get("raw_data_dir_amplicon")
-    raw_data_dir_wgs = data.get("raw_data_dir_wgs")
+    readmapping_table_wgs = get_config_variable(data,"readmapping_table_wgs")
+    readmapping_table_amp = get_config_variable(data,"readmapping_table_amp")
+    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp")
+    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs")
 
 
     file_list = gather_files(
@@ -203,8 +200,8 @@ def parse_args():
                         type=bool,
                         default=False
     )
-    parser.add_argument("--dry_run", action='store_true',
-                        help="Execute a dry_run with only printing the command")
+    parser.add_argument("-z", "--dry_run", action='store_true',
+                        help="Execute a dry_run with only printing the command.")
     
     return parser.parse_args()
 

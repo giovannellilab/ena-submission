@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import sys 
 import pandas as pd
 from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
@@ -16,10 +17,11 @@ def main():
     data = read_config(config_file)
 
 
-    project_name = data.get("project_name")
-    metadata_file = data.get("metadata_file")
-    ena_checklist = data.get("ena_checklist")
-
+    project_name = get_config_variable(data, "project_name")
+    ena_checklist = get_config_variable(data, "ena_checklist")
+    metadata_file = get_config_variable(data, "metadata_file")
+    sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
+    sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
 
     for experiment_type in args.experiment_types:
 
@@ -35,25 +37,12 @@ def main():
             metadata_path=metadata_file,
             experiment_type=experiment_type,
             ena_checklist=ena_checklist,
-            project_name=project_name
+            project_name=project_name,
+            sequencing_platform=sequencing_platform,
+            sequencing_instrument_model=sequencing_instrument_model
         )
 
         print(f"[STEP6][+] Metadata written to {details_path}")
-
-
-def read_config(config_file: str):
-    yaml = YAML(typ="safe")
-
-    try:
-        with open(config_file, "r") as file:
-            data = yaml.load(file) or {}
-    except FileNotFoundError:
-        # If the file doesn't exist yet, start with a fresh dictionary
-        data = {}
-
-    with open(config_file, "r") as file:
-        data = yaml.load(file)
-    return data
 
 
 def parse_objects_receipts(
@@ -208,7 +197,9 @@ def save_results_metadata(
     metadata_path: str,
     experiment_type: str,
     ena_checklist: str,
-    project_name: str
+    project_name: str,
+    sequencing_platform: str,
+    sequencing_instrument_model: str
 
 )-> str:
 
@@ -247,16 +238,16 @@ def save_results_metadata(
     ]
     if experiment_type == "16S":
         ngs_data = [
-            "ILLUMINA",
-            "Illumina NovaSeq 6000",
+            str(sequencing_platform),
+            str(sequencing_instrument_model),
             "METAGENOMIC",
             "PCR",
             "AMPLICON"
         ]
     else:
         ngs_data = [
-            "ILLUMINA",
-            "Illumina NovaSeq 6000",
+            str(sequencing_platform),
+            str(sequencing_instrument_model),
             "GENOMIC",
             "RANDOM",
             "WGS"

@@ -22,9 +22,11 @@ def main():
     project_name = get_config_variable(data, "project_name") 
     template_dir = get_config_variable(data, "template_dir") 
     metadata_file = get_config_variable(data, "metadata_file") 
+    
     readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs")
     readmapping_table_ampl = get_config_variable(data, "readmapping_table_amplicon")
     recipe = get_config_variable(data, "receipt_samples_permanent") 
+    
     sequencing_year = get_config_variable(data, "SEQUENCING_YEAR")
     sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
     sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
@@ -41,6 +43,9 @@ def main():
         mapping_AMP = readmapping_table_ampl,
         project_name = project_name,
 
+        sequencing_platform = sequencing_platform,
+        sequencing_instrument_model = sequencing_instrument_model,
+        sequencing_library_construction_protocol = sequencing_library_construction_protocol,
         sequencing_year = sequencing_year
     )
 
@@ -54,6 +59,10 @@ def create_experiment(
     mapping_AMP : str,
     project_name : str,
     sequencing_year : str,
+    sequencing_platform : str,
+    sequencing_instrument_model: str,
+    sequencing_library_construction_protocol: str
+
 ) -> str:
 
     receipt_df = parse_samples_receipt(
@@ -102,6 +111,9 @@ def create_experiment(
                     .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
                     .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
                     .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
+                    .replace("$$$PLATFORM_TYPE$$$", sequencing_platform)\
+                    .replace("$$$SEQ_INSTRUMENT_MODEL$$$", str(sequencing_instrument_model))\
+                    .replace("$$$LIBRARY_PROTOCOL$$$", str(sequencing_library_construction_protocol))\
                     .replace("$$$YEAR$$$", str(sequencing_year))
 
                 experiment_xml += [template_xml]
@@ -125,7 +137,7 @@ def create_experiment(
         handle.write(experiment_xml)
     
     print(f"\nIn the case a Sample alias check is FALSE. it means either:\n"
-                "NO experiment was generated for this alias, do not bother, continue with STEP3\n"
+                "NO sequence data {WGS or AMP},  was generated for this alias, do not bother, continue with STEP3\n"
                 "Otherwise, check naming correspondence, it might be wrong. check, modify,repeat! \n")
     print(f"[STEP2][+] Experiment XML saved to:  {output_path}")
 
@@ -198,7 +210,7 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("preprocess_sequences")
+    parser = argparse.ArgumentParser("Create experiments Objects")
     parser.add_argument("-s", "--config_path", 
                         help="config yaml file containing direcotries for the whole workflow.",
                         type=str
