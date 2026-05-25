@@ -1,8 +1,8 @@
 ### MAIN SETTINGS ###
 # Edit this line to your projectname
-project_name: PRJEB113292
+project_name: PRJEB111156
 # Edit this line to your temaplte ERC ID
-ena_checklist: ERC000022
+ena_checklist: ERC000025
 template_dir: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/templates
 metadata_file: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_metadata.tsv
 # Defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
@@ -12,11 +12,11 @@ submission_type: ADD
 # Edit to raw WGS seqeunce data folder
 raw_data_dir_wgs: 
 # Edit to your AMPLICON sequence data folder
-raw_data_dir_amplicon: /SERVER/sequences/vulcano_suoli/16s
+raw_data_dir_amp: /SERVER/sequences/vulcano_suoli/16s
 #  Edit to your table mapping
 readmapping_table_wgs: 
 # Edit to your table mapping
-readmapping_table_amplicon: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/Mapping_filenames.tsv
+readmapping_table_amp: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/Mapping_filenames.tsv
                                 
 #### RECEIPT PATHS ####
 receipt_samples_dry_run:
