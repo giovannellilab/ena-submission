@@ -1,0 +1,34 @@
+### MAIN SETTINGS ###
+# Edit this line to your projectname
+project_name: PRJEB113292
+# Edit this line to your temaplte ERC ID
+ena_checklist: ERC000022
+template_dir: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/templates
+metadata_file: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_metadata.tsv
+# Defualt to ADD, you can change it to MODIFY if widh to chenge info of already registered metadata
+submission_type: ADD
+
+#### DATA-RELATED PATHS ####
+# Edit to raw WGS seqeunce data folder
+raw_data_dir_wgs: 
+# Edit to your AMPLICON sequence data folder
+raw_data_dir_amplicon: /SERVER/sequences/vulcano_suoli/16s
+#  Edit to your table mapping
+readmapping_table_wgs: 
+# Edit to your table mapping
+readmapping_table_amplicon: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/Mapping_filenames.tsv
+                                
+#### RECEIPT PATHS ####
+receipt_samples_dry_run:
+receipt_objects_permanent: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_ena_object_receipt_16S.xml
+receipt_objects_dry_run:
+receipt_samples_permanent: /SERVER/sequences/vulcano_suoli/16s/ena-submission/data/PRJEB113292_ena_samples_receipt.xml
+
+#### EXPERIMENT DETAIS ####
+SEQUENCING_YEAR: 2025
+SEQUENCING_PLATFORM: ILLUMINA
+SEQUENCING_INSTRUMENT_MODEL: Illumina MiSeq
+SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL: DNA extraction was performed using the
+  DNeasy PowerSoil Pro kit (QIAGEN) following themanufacturer's protocol. PCR 
+  amplification of the V3-V4 hypervariable region of the 16S rRNA gene was 
+  performed, followed byPCR product purification.

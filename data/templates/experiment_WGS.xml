@@ -12,13 +12,13 @@
                <LIBRARY_LAYOUT>
                    <PAIRED NOMINAL_LENGTH="150"/> 
                </LIBRARY_LAYOUT>
-               <LIBRARY_CONSTRUCTION_PROTOCOL>Sequencing was carried out by Novogene (UK). The NGS DNA Library Prep Set (Cat No.PT004). Before sequencing DNA samples were quantified using a Qubit (invitrogen) dsDNA Broad Range or High Sensitivity assay and visually inspected on a 1% agarose gel colored with EtBr.</LIBRARY_CONSTRUCTION_PROTOCOL>      
+               <LIBRARY_CONSTRUCTION_PROTOCOL>$$$LIBRARY_PROTOCOL$$$</LIBRARY_CONSTRUCTION_PROTOCOL>      
             </LIBRARY_DESCRIPTOR>
        </DESIGN>
        <PLATFORM>
-           <ILLUMINA>
-               <INSTRUMENT_MODEL>Illumina Novaseq X Plus</INSTRUMENT_MODEL>
-           </ILLUMINA>
+           <$$$PLATFORM_TYPE$$$>
+               <INSTRUMENT_MODEL>$$$SEQ_INSTRUMENT_MODEL$$$</INSTRUMENT_MODEL>
+           </$$$PLATFORM_TYPE$$$>
        </PLATFORM>
        <EXPERIMENT_ATTRIBUTES>
            <EXPERIMENT_ATTRIBUTE>

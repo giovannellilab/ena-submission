@@ -3,35 +3,52 @@ import argparse
 import os
 import csv
 import subprocess
-import bs4 as bs
+from bs4 import BeautifulSoup
 import sys 
 import pandas as pd
+from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
     args = parse_args()
 
+    config_file = args.config_path
+    data = read_config(config_file)
+
+
+    project_name = get_config_variable(data, "project_name")
+    ena_checklist = get_config_variable(data, "ena_checklist")
+    metadata_file = get_config_variable(data, "metadata_file")
+    sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
+    sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
+
     for experiment_type in args.experiment_types:
 
         print(f"Creating details registration for {experiment_type}")
         receipt_df = parse_objects_receipts(
-            metadata_path = args.metadata_path,
-            experiment_type=experiment_type
+            metadata_path = metadata_file,
+            experiment_type=experiment_type,
+            project_name=project_name
         )
 
         details_path = save_results_metadata(
             dataframe=receipt_df,
-            metadata_path=args.metadata_path,
-            experiment_type=experiment_type
+            metadata_path=metadata_file,
+            experiment_type=experiment_type,
+            ena_checklist=ena_checklist,
+            project_name=project_name,
+            sequencing_platform=sequencing_platform,
+            sequencing_instrument_model=sequencing_instrument_model
         )
 
         print(f"[STEP6][+] Metadata written to {details_path}")
 
 
-
 def parse_objects_receipts(
     metadata_path: str,
-    experiment_type: str
+    experiment_type: str,
+    project_name: str
 ) -> pd.DataFrame:
 
     # Associate:
@@ -40,7 +57,6 @@ def parse_objects_receipts(
     # - RUN accession:    ERR00000000
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
     sample_receipt_path = os.path.join(
@@ -67,7 +83,7 @@ def parse_objects_receipts(
     # ------------------------------------------------------------------------ #
     # RETRIEVING METADATA from samples_receipt.xml file
     with open(sample_receipt_path, mode="r") as handle:
-        xml_data = bs.BeautifulSoup(handle, "xml")
+        xml_data = BeautifulSoup(handle, "xml")
 
         samples = {}
         for sample in xml_data.find_all("SAMPLE"):
@@ -78,7 +94,7 @@ def parse_objects_receipts(
     # ------------------------------------------------------------------------ #
     # RETRIEVING METADATA from Object-registration-receipt.xml file
     with open(object_receipt_path, mode="r") as handle:
-        xml_data = bs.BeautifulSoup(handle, "xml")
+        xml_data = BeautifulSoup(handle, "xml")
 
     exps = {}
     for exp in xml_data.find_all("EXPERIMENT"):
@@ -100,8 +116,8 @@ def parse_objects_receipts(
 
     # RETRIEVING METADATA from experiment.xml AND run.xml
     with open(experiment_path, mode="r") as ef, open(run_path, mode="r") as rf:
-        xml_exp = bs.BeautifulSoup(ef, "xml")
-        xml_run = bs.BeautifulSoup(rf, "xml")
+        xml_exp = BeautifulSoup(ef, "xml")
+        xml_run = BeautifulSoup(rf, "xml")
 
         exp_meta = {}
         for exp in xml_exp.find_all("EXPERIMENT"):
@@ -179,19 +195,22 @@ def parse_objects_receipts(
 def save_results_metadata(
     dataframe: pd.DataFrame,
     metadata_path: str,
-    experiment_type: str
+    experiment_type: str,
+    ena_checklist: str,
+    project_name: str,
+    sequencing_platform: str,
+    sequencing_instrument_model: str
+
 )-> str:
 
     # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
-    ena_code = os.path.basename(metadata_path).split("_")[-1][:-5]
-    print(ena_code)
+    print(ena_checklist)
     # project ACCESSION such : PRJEB67767
     metadata_dir = os.path.dirname(metadata_path)
-    sample_xml_file = f'{project_name}_ena_sample_{ena_code}.xml'
+    sample_xml_file = f'{project_name}_ena_sample_{ena_checklist}.xml'
     
     with open(os.path.join(metadata_dir,sample_xml_file), mode="r") as handle:
-        xml_sample = bs.BeautifulSoup(handle, "xml")
+        xml_sample = BeautifulSoup(handle, "xml")
 
         for attr in xml_sample.find_all("SAMPLE_ATTRIBUTE"):
             tag = attr.find("TAG")
@@ -219,16 +238,16 @@ def save_results_metadata(
     ]
     if experiment_type == "16S":
         ngs_data = [
-            "ILLUMINA",
-            "Illumina NovaSeq 6000",
+            str(sequencing_platform),
+            str(sequencing_instrument_model),
             "METAGENOMIC",
             "PCR",
             "AMPLICON"
         ]
     else:
         ngs_data = [
-            "ILLUMINA",
-            "Illumina NovaSeq 6000",
+            str(sequencing_platform),
+            str(sequencing_instrument_model),
             "GENOMIC",
             "RANDOM",
             "WGS"
@@ -271,8 +290,8 @@ def mapping(
 def parse_args():
     parser = argparse.ArgumentParser("Register objects")
     parser.add_argument(
-        "-i", "--metadata_path",
-        help="Excel file containing the metadata for the sequences.",
+        "-s", "--config_path", 
+        help="config yaml file containing direcotries for the whole workflow.",
         type=str
     )
     parser.add_argument(

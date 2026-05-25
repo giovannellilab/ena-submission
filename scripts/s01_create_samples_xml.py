@@ -8,53 +8,119 @@ import sys
 import argparse
 from datetime import datetime
 import pandas as pd
-import bs4 as bs
+from bs4 import BeautifulSoup
 import subprocess
 import json
+from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
+
 
 def main():
     args = parse_args()
 
+
+    config_file = args.config_file
+    data = read_config(config_file)
+
+
+    project_name = get_config_variable(data, "project_name")
+    template_dir = get_config_variable(data, "template_dir")
+    metadata_file = get_config_variable(data, "metadata_file")
+    submission_type = get_config_variable(data, "submission_type")
+    ena_checklist = get_config_variable(data, "ena_checklist")
+
     samples_xml_path = create_samples_file(
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir
+        project_name=project_name,
+        metadata_path=metadata_file,
+        template_dir=template_dir,
+        ena_checklist=ena_checklist
+        
     )
 
     registrationType = None if args.registration_type == "null" else args.registration_type
 
     samples_receipt_path = register_samples(
+        template_dir=template_dir,
         samples_xml_path=samples_xml_path,
-        template_dir=args.template_dir,
         user_password=args.user_password,
-        submission_type=args.submission_type,
-        registration_type=registrationType
+        submission_type=submission_type,
+        registration_type=registrationType,
+        project_name=project_name
     )
+
+    if registrationType:
+
+        write_config(
+            config_file=config_file, 
+            key="receipt_samples_permanent",
+            value=samples_receipt_path
+            )
+    elif not registrationType:
+        
+        write_config(
+            config_file=config_file, 
+            key="receipt_samples_dry_run",
+            value=samples_receipt_path
+            )
+
+def read_config(config_file: str):
+    yaml = YAML(typ="safe")
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
+
+    with open(config_file, "r") as file:
+        data = yaml.load(file)
+    return data
+
+
+def write_config(config_file: str, key: str, value: str,):
+
+    yaml = YAML()
+    yaml.preserve_quotes = True
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
+
+    data[key] = value
+
+    with open(config_file, "w") as file:
+        data = yaml.dump(data, file)
+
+    return data
 
 
 def register_samples(
                 samples_xml_path: str,
                 template_dir: str,
                 user_password: str,
-                submission_type: int,
-                registration_type: str
+                submission_type: str,
+                registration_type: str,
+                project_name: str
                 ) -> str:
 
     # Define input XML files
     #set submission type, ADD new metadata (new sample/s), or MODIFY existant metadata (already registered sample/s)
-    if submission_type == 1:
+    if submission_type == "ADD":
         print(f'[INFO] Submitting metadata in ADD mode')
         submission_path = os.path.join(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_type == 2:
+    elif submission_type == "MODIFY":
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
             "submission_MOD.xml"
         )
-    # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(samples_xml_path).split("_")[0]
     
     output_path = os.path.join(os.path.dirname(samples_xml_path),
                                f"{project_name}_ena_samples_receipt.xml")
@@ -140,7 +206,7 @@ def receipt_output_handling(receipt_path: str)-> dict:
     with open(receipt_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
-    soup = bs.BeautifulSoup(content, 'xml')
+    soup = BeautifulSoup(content, 'xml')
     receipt = soup.find('RECEIPT')
     success = receipt.get('success', 'false').lower() == 'true'
 
@@ -162,14 +228,10 @@ def receipt_output_handling(receipt_path: str)-> dict:
     return info_submission
 
 ### RETRIEVE XML template
-def select_template(template_dir:str, metadata_df:pd.DataFrame)-> tuple[dict, str, str]:
+def select_template(template_dir:str, metadata_df:pd.DataFrame, checklist_code: str)-> tuple[dict, str, str]:
     
     assert not metadata_df.empty, f"Input file at {os.path.join(template_dir)} contains no data rows."
 
-    assert 'ENA_checklist' in metadata_df.columns, \
-    f"Critical Column Missing: 'ENA_checklist'. Available: {list(metadata_df.columns)}"
-
-    checklist_code = metadata_df['ENA_checklist'].iloc[0]
     json_file = os.path.join(template_dir,'checklists.json')
 
     if not os.path.exists(json_file):
@@ -207,12 +269,11 @@ def select_template(template_dir:str, metadata_df:pd.DataFrame)-> tuple[dict, st
 
 
 ### CREATING SAMPLES XML
-def create_samples_file( metadata_path: str, template_dir: str) -> str:
+def create_samples_file(project_name:str,  metadata_path: str, template_dir: str, ena_checklist: str) -> str:
 
     metadata_df = load_metadata(metadata_path)
-    project_name = metadata_df["expid"].iloc[0]
 
-    mapping_dict, template_xml, checklist_code = select_template(template_dir, metadata_df)
+    mapping_dict, template_xml, checklist_code = select_template(template_dir, metadata_df, ena_checklist)
     samples_all = []
 
     # Create a template for each sample
@@ -241,8 +302,9 @@ def create_samples_file( metadata_path: str, template_dir: str) -> str:
 
     with open(output_path, mode="w") as handle:
         handle.write(samples_all)
-
+    
     print(f"[STEP1][+] Samples XML saved to:    {output_path}")
+
 
     return output_path
 
@@ -276,8 +338,8 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
     spreadsheet = spreadsheet.dropna(subset=["sample_alias"])
 
     # 4. Date Standardization
-    if "collection_date" in spreadsheet.columns:
-        spreadsheet["collection_date"] = pd.to_datetime(spreadsheet["collection_date"], errors='coerce')\
+    if "collection date" in spreadsheet.columns:
+        spreadsheet["collection date"] = pd.to_datetime(spreadsheet["collection date"], errors='coerce')\
             .dt.strftime("%Y-%m-%d")
 
     return spreadsheet
@@ -285,20 +347,10 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("preprocess_sequences")
-    parser.add_argument("-i", "--metadata_path", 
-                        help="Excel file containing the metadata for the sequences.",
+    parser = argparse.ArgumentParser("Register sample metadata")
+    parser.add_argument("-s", "--config_file", 
+                        help="config yaml file containing direcotries for the whole workflow.",
                         type=str
-                        )
-    parser.add_argument("-t", "--template_dir",
-                        help="Directory containing the templates for the submission.",
-                        type=str
-                        )
-    parser.add_argument("-s", "--submission_type",
-                        help="Submission type: \n -type 1 for ADD mode; \n -type 2 fpr MODIFY mode",
-                        type=int,
-                        default=1,
-                        choices=[1,2]  # Accept only known values
                         )
     parser.add_argument("-x", "--registration_type",
                         help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",

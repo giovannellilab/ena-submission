@@ -4,26 +4,51 @@ import argparse
 import os
 import csv
 import subprocess
-import bs4 as bs
+from bs4 import BeautifulSoup
 import sys 
 import pandas as pd
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
     args = parse_args()
+    
+    config_file = args.config_path
+    data = read_config(config_file)
+
+    project_name = get_config_variable(data, "project_name") 
+    template_dir = get_config_variable(data, "template_dir")
+    submission_type = get_config_variable(data, "submission_type")
+    metadata_file = get_config_variable(data, "metadata_file")
 
     registrationType = None if args.registration_type == "null" else args.registration_type
 
     final_receipt_path = register_objects(
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir,
+        metadata_path=metadata_file,
+        project_name=project_name,
+        template_dir=template_dir,
         user_password=args.user_password,
-        submission_mode=args.submission_mode,
+        submission_mode=submission_type,
         registration_type=registrationType,
         experiment_type=args.experiment_type
 
     )
 
+    if registrationType:
+
+        write_config(
+            config_file=config_file, 
+            key="receipt_objects_permanent",
+            value=final_receipt_path
+            )
+    elif not registrationType:
+        
+        write_config(
+            config_file=config_file, 
+            key="receipt_objects_dry_run",
+            value=final_receipt_path
+            )
+    
     print(f"[STEP5][+][+][+] Experiments and runs info saved to {final_receipt_path}")
 
 
@@ -33,21 +58,21 @@ def register_objects(
     user_password: str,
     submission_mode: str,
     registration_type: str,
-    experiment_type: str
+    experiment_type: str,
+    project_name: str
     ) -> str:
 
     #call to load_metadata
-    project_name = os.path.basename(metadata_path).split("_")[0]
     metadata_dir = os.path.dirname(metadata_path)
 
     # Define paths
-    if submission_mode == 1:
+    if submission_mode == "ADD":
         print(f'[INFO] Submitting metadata in ADD mode')
         submission_path = os.path.join(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_mode == 2:
+    elif submission_mode == "MOD":
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
@@ -147,7 +172,7 @@ def receipt_output_handling(receipt_path: str)-> dict:
     with open(receipt_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
-    soup = bs.BeautifulSoup(content, 'xml')
+    soup = BeautifulSoup(content, 'xml')
     receipt = soup.find('RECEIPT')
     success = receipt.get('success').lower() == 'true'
 
@@ -173,13 +198,8 @@ def receipt_output_handling(receipt_path: str)-> dict:
 def parse_args():
     parser = argparse.ArgumentParser("Register objects")
     parser.add_argument(
-        "-i", "--metadata_path",
-        help="Excel file containing the metadata for the sequences.",
-        type=str
-    )
-    parser.add_argument(
-        "-t", "--template_dir",
-        help="Directory containing the templates for the submission.",
+        "-s", "--config_path", 
+        help="config yaml file containing direcotries for the whole workflow.",
         type=str
     )
     parser.add_argument(
@@ -192,13 +212,6 @@ def parse_args():
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
         type=str
-    )
-    parser.add_argument(
-        "-s", "--submission_mode",
-        help="Submission mode: \n type 1 for ADD mode; \n or type 2 fpr MODIFY mode",
-        type=int,
-        default=1,
-        choices=[1,2]
     )
     parser.add_argument(
         "-x", "--registration_type",

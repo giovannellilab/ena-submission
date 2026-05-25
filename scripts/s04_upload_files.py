@@ -5,16 +5,29 @@ import argparse
 import pandas as pd
 import subprocess
 import time
+from ruamel.yaml import YAML
+from ena_utils import read_config, get_config_variable, write_config
 
 
 def main():
     args = parse_args()
 
+    config_file = args.config_path
+    data = read_config(config_file)
+
+    readmapping_table_wgs = get_config_variable(data,"readmapping_table_wgs")
+    readmapping_table_amp = get_config_variable(data,"readmapping_table_amp")
+    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp")
+    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs")
+
+
     file_list = gather_files(
-        experiment_type = args.experiment_type,
-        samples_dir = args.files_samples_dir,
-        mapping_samples = args.mapping_table,
-        nested = args.nested
+        experiment_type=args.experiment_type,
+        nested=args.nested,
+        readmapping_table_wgs=readmapping_table_wgs,
+        readmapping_table_amp=readmapping_table_amp,
+        raw_data_dir_amp=raw_data_dir_amp,
+        raw_data_dir_wgs=raw_data_dir_wgs,
     )
 
     upload_files(
@@ -25,24 +38,63 @@ def main():
     )
 
 
-def gather_files(experiment_type: str, 
-           samples_dir: str,
-           mapping_samples:str,
-           nested:bool
-           )-> list:
+def read_config(config_file: str):
+    yaml = YAML(typ="safe")
 
-    # Raise error if samples directory does not exist
-    if samples_dir and not os.path.exists(samples_dir):
-        raise FileNotFoundError(f"{samples_dir} does not exist!")
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
+
+    with open(config_file, "r") as file:
+        data = yaml.load(file)
+    return data
+
+
+def gather_files(
+        experiment_type: str, 
+        readmapping_table_wgs: str,
+        readmapping_table_amp: str,
+        raw_data_dir_amp: str,
+        raw_data_dir_wgs: str,
+        nested: bool
+           )-> list:
     
-    if mapping_samples and not os.path.exists(mapping_samples):
-        raise FileNotFoundError(f"{mapping_samples} does not exist!")
+    if experiment_type == "WGS":
+
+        if not readmapping_table_wgs:
+            raise ValueError("For WGS experiment, 'readmapping_table_wgs' must be provided in the config.")
+        if not raw_data_dir_wgs:
+            raise ValueError("For WGS experiment, 'raw_data_dir_wgs' must be provided in the config.")
+        else:
+            if not os.path.exists(raw_data_dir_wgs):
+                raise FileNotFoundError(f"{raw_data_dir_wgs} does not exist!")
+            else:
+                samples_dir = raw_data_dir_wgs
+                mapping_samples = readmapping_table_wgs
+            
+    elif experiment_type == "16S":
+
+        if not readmapping_table_amp:
+            raise ValueError("For 16S experiment, 'readmapping_table_amplicon' must be provided in the config.")
+        if not raw_data_dir_amp:
+            raise ValueError("For 16S experiment, 'raw_data_dir_amplicon' must be provided in the config.")
+        else:
+            if not os.path.exists(raw_data_dir_amp):
+                raise FileNotFoundError(f"{raw_data_dir_amp} does not exist!")
+            else:
+                samples_dir = raw_data_dir_amp
+                mapping_samples = readmapping_table_amp
+    else:
+        raise ValueError("Invalid experiment type. Must be either 'WGS' or '16S'.")
+    
 
     exp_dir = os.path.abspath(samples_dir)
     table_mapping = pd.read_csv(mapping_samples, sep="\t")
-    
 
-    required_cols = ["r1","r2","sample"]
+    required_cols = ["r1","r2","sample_alias"]
     has_sample_id = "sample_id" in table_mapping.columns
 
     assert all(col in table_mapping.columns for col in required_cols), \
@@ -63,8 +115,8 @@ def gather_files(experiment_type: str,
 
         base_path = os.path.join(exp_dir, str(i.sample_id)) if nested else exp_dir
 
-        r1 = os.path.join(str(base_path),i.forward)
-        r2 = os.path.join(str(base_path),i.reverse)
+        r1 = os.path.join(str(base_path),i.r1)
+        r2 = os.path.join(str(base_path),i.r2)
  
         # 5. Immediate File Verification
         for f_path in [r1, r2]:
@@ -78,6 +130,7 @@ def gather_files(experiment_type: str,
 
     return all_files
 
+
 def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> None:
     # NOTE: ftp will ask for each file confirmation, to disable interactive
     # mode, issue the prompt command or use -i flag in ftp command. Save
@@ -90,7 +143,7 @@ def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> 
 
     ftp_connection = [
         "lftp",
-        f"webin2.ebi.ac.uk",
+        f"{username}@webin2.ebi.ac.uk",
         "-e", mput_command
     ]
     
@@ -124,27 +177,22 @@ def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> 
 
 def parse_args():
     parser = argparse.ArgumentParser("Uploading raw sequences")
-    
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
+                        type=str
+                        )
     parser.add_argument("-e", "--experiment_type",
                         help="Either 16S or metagenomics.",
                         type=str,
                         choices=["WGS", "16S"]
     )
-    parser.add_argument("-w", "--files_samples_dir",
-                        help="Directory containing the sequences to submit.",
-                        type=str
-                        )
-    parser.add_argument("-m", "--mapping_table",
-                        help="Table containing rawreads filename (forward [r1] and reverse [r2] ), sample_alias [sample] for your reads AND/or [sample_id] if nested",
-                        type=str,)
-                        
     parser.add_argument("-n", "--nested",
                         help="If sequences files are nested within each corrispective sample dir names",
                         action='store_true'
                         )
    
     parser.add_argument("-u", "--username",
-                        help="Username for the submission.",
+                        help="User for the submission (e.g. user1).",
                         type=str
     )
     parser.add_argument("-i", "--interactive",
@@ -152,8 +200,8 @@ def parse_args():
                         type=bool,
                         default=False
     )
-    parser.add_argument("--dry_run", action='store_true',
-                        help="Execute a dry_run with only printing the command")
+    parser.add_argument("-z", "--dry_run", action='store_true',
+                        help="Execute a dry_run with only printing the command.")
     
     return parser.parse_args()
 

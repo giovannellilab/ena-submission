@@ -10,20 +10,43 @@ from datetime import datetime
 import pandas as pd
 import bs4 as bs
 import subprocess
+from ena_utils import read_config, get_config_variable
 
 
 def main():
     args = parse_args()
 
+    config_file = args.config_path
+    data = read_config(config_file)
+
+    project_name = get_config_variable(data, "project_name") 
+    template_dir = get_config_variable(data, "template_dir") 
+    metadata_file = get_config_variable(data, "metadata_file") 
     
+    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs")
+    readmapping_table_ampl = get_config_variable(data, "readmapping_table_amplicon")
+    recipe = get_config_variable(data, "receipt_samples_permanent") 
+    
+    sequencing_year = get_config_variable(data, "SEQUENCING_YEAR")
+    sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
+    sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
+    sequencing_library_construction_protocol = get_config_variable(data,"SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL")
+
+
     create_experiment(
-        samples_receipt_path=args.recipe,
-        metadata_path=args.metadata_path,
-        template_dir=args.template_dir,
+        samples_receipt_path=recipe,
+        metadata_path=metadata_file,
+        template_dir=template_dir,
         experiment_type=args.experiment_type,
 
-        mapping_WGS = args.mapping_WGS,
-        mapping_AMP = args.mapping_AMP,
+        mapping_WGS = readmapping_table_wgs,
+        mapping_AMP = readmapping_table_ampl,
+        project_name = project_name,
+
+        sequencing_platform = sequencing_platform,
+        sequencing_instrument_model = sequencing_instrument_model,
+        sequencing_library_construction_protocol = sequencing_library_construction_protocol,
+        sequencing_year = sequencing_year
     )
 
 
@@ -33,13 +56,17 @@ def create_experiment(
     template_dir: str,
     experiment_type: str,
     mapping_WGS : str,
-    mapping_AMP : str
+    mapping_AMP : str,
+    project_name : str,
+    sequencing_year : str,
+    sequencing_platform : str,
+    sequencing_instrument_model: str,
+    sequencing_library_construction_protocol: str
+
 ) -> str:
 
-    # WARNING: project name is assumed to be in the first field of the path
-    project_name = os.path.basename(metadata_path).split("_")[0]
-
     receipt_df = parse_samples_receipt(
+        project_name=project_name,
         samples_receipt_path=samples_receipt_path,
         metadata_path=metadata_path
     )
@@ -84,7 +111,10 @@ def create_experiment(
                     .replace("$$$EXPERIMENT_ALIAS$$$", exp_alias)\
                     .replace("$$$EXPERIMENT_TITLE$$$", exp_alias)\
                     .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
-                    .replace("$$$YEAR$$$", str(datetime.now().year))
+                    .replace("$$$PLATFORM_TYPE$$$", sequencing_platform)\
+                    .replace("$$$SEQ_INSTRUMENT_MODEL$$$", str(sequencing_instrument_model))\
+                    .replace("$$$LIBRARY_PROTOCOL$$$", str(sequencing_library_construction_protocol))\
+                    .replace("$$$YEAR$$$", str(sequencing_year))
 
                 experiment_xml += [template_xml]
             else:
@@ -107,14 +137,14 @@ def create_experiment(
         handle.write(experiment_xml)
     
     print(f"\nIn the case a Sample alias check is FALSE. it means either:\n"
-                "NO experiment was generated for this alias, do not bother, continue with STEP3\n"
+                "NO sequence data {WGS or AMP},  was generated for this alias, do not bother, continue with STEP3\n"
                 "Otherwise, check naming correspondence, it might be wrong. check, modify,repeat! \n")
     print(f"[STEP2][+] Experiment XML saved to:  {output_path}")
 
     return output_path
 
 
-def parse_samples_receipt(samples_receipt_path: str, metadata_path: str) -> pd.DataFrame:
+def parse_samples_receipt(project_name:str, samples_receipt_path: str, metadata_path: str) -> pd.DataFrame:
     # Programmatically assign study ID
     metadata_df = load_metadata(metadata_path)
 
@@ -130,9 +160,7 @@ def parse_samples_receipt(samples_receipt_path: str, metadata_path: str) -> pd.D
             title = sample.get("accession")
             ext_id_element = sample.find("EXT_ID")
             ext_id = ext_id_element.get("accession")
-            study_id = metadata_df[metadata_df["sample_alias"] == alias]\
-                ["project_name"]\
-                .values[0]
+            study_id = project_name
 
             row = pd.Series({
                 "project_id": study_id,
@@ -182,29 +210,15 @@ def load_metadata(metadata_path: str) -> pd.DataFrame:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("preprocess_sequences")
+    parser = argparse.ArgumentParser("Create experiments Objects")
+    parser.add_argument("-s", "--config_path", 
+                        help="config yaml file containing direcotries for the whole workflow.",
+                        type=str
+                        )
     parser.add_argument("-e", "--experiment_type",
                         help="String defining either 16S, WGS, 18S or ITS sequences",
                         choices=["16S", "WGS"]
                         )
-    parser.add_argument("-i", "--metadata_path", 
-                        help="Spreadsheet file containing the metadata for the sequences.",
-                        type=str
-                        )
-    parser.add_argument("-t", "--template_dir",
-                        help="Directory containing the templates for the submission.",
-                        type=str
-                        )
-    parser.add_argument("-r", "--recipe",
-                        help="XML sample receipt File obtained from the s01 script.",
-                        type=str    
-                        )
-    parser.add_argument("-m", "--mapping_WGS",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for WGS",
-                        type=str,)
-    parser.add_argument("-k", "--mapping_AMP",
-                        help="Table containing rawreads filename (forward and reverse) and sample_alias for AMPLICON",
-                        type=str,)
 
     return parser.parse_args()
 
