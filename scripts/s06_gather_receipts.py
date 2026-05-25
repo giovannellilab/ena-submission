@@ -3,10 +3,10 @@ import argparse
 import os
 import csv
 import subprocess
-import bs4 as bs
+from bs4 import BeautifulSoup
 import sys 
 import pandas as pd
-import yaml
+from ruamel.yaml import YAML
 
 
 def main():
@@ -41,11 +41,18 @@ def main():
         print(f"[STEP6][+] Metadata written to {details_path}")
 
 
-
 def read_config(config_file: str):
+    yaml = YAML(typ="safe")
+
+    try:
+        with open(config_file, "r") as file:
+            data = yaml.load(file) or {}
+    except FileNotFoundError:
+        # If the file doesn't exist yet, start with a fresh dictionary
+        data = {}
 
     with open(config_file, "r") as file:
-        data = yaml.load(file, Loader=yaml.SafeLoader)
+        data = yaml.load(file)
     return data
 
 
@@ -87,7 +94,7 @@ def parse_objects_receipts(
     # ------------------------------------------------------------------------ #
     # RETRIEVING METADATA from samples_receipt.xml file
     with open(sample_receipt_path, mode="r") as handle:
-        xml_data = bs.BeautifulSoup(handle, "xml")
+        xml_data = BeautifulSoup(handle, "xml")
 
         samples = {}
         for sample in xml_data.find_all("SAMPLE"):
@@ -98,7 +105,7 @@ def parse_objects_receipts(
     # ------------------------------------------------------------------------ #
     # RETRIEVING METADATA from Object-registration-receipt.xml file
     with open(object_receipt_path, mode="r") as handle:
-        xml_data = bs.BeautifulSoup(handle, "xml")
+        xml_data = BeautifulSoup(handle, "xml")
 
     exps = {}
     for exp in xml_data.find_all("EXPERIMENT"):
@@ -120,8 +127,8 @@ def parse_objects_receipts(
 
     # RETRIEVING METADATA from experiment.xml AND run.xml
     with open(experiment_path, mode="r") as ef, open(run_path, mode="r") as rf:
-        xml_exp = bs.BeautifulSoup(ef, "xml")
-        xml_run = bs.BeautifulSoup(rf, "xml")
+        xml_exp = BeautifulSoup(ef, "xml")
+        xml_run = BeautifulSoup(rf, "xml")
 
         exp_meta = {}
         for exp in xml_exp.find_all("EXPERIMENT"):
@@ -212,7 +219,7 @@ def save_results_metadata(
     sample_xml_file = f'{project_name}_ena_sample_{ena_checklist}.xml'
     
     with open(os.path.join(metadata_dir,sample_xml_file), mode="r") as handle:
-        xml_sample = bs.BeautifulSoup(handle, "xml")
+        xml_sample = BeautifulSoup(handle, "xml")
 
         for attr in xml_sample.find_all("SAMPLE_ATTRIBUTE"):
             tag = attr.find("TAG")
