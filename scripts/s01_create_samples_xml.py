@@ -8,10 +8,9 @@ import sys
 import argparse
 from datetime import datetime
 import pandas as pd
-import bs4 as bs
+from bs4 import BeautifulSoup
 import subprocess
 import json
-import yaml
 from ruamel.yaml import YAML
 
 def main():
@@ -29,6 +28,7 @@ def main():
     ena_checklist = data.get("ena_checklist")
 
     samples_xml_path = create_samples_file(
+        project_name=project_name,
         metadata_path=metadata_file,
         template_dir=template_dir,
         ena_checklist=ena_checklist
@@ -50,7 +50,7 @@ def main():
 
         write_config(
             config_file=config_file, 
-            key="receipt_sample_permanent",
+            key="receipt_samples_permanent",
             value=samples_receipt_path
             )
     elif not registrationType:
@@ -62,15 +62,17 @@ def main():
             )
 
 def read_config(config_file: str):
+    yaml = YAML(typ="safe")
+
     try:
         with open(config_file, "r") as file:
-            data = yaml.safe_load(file) or {}
+            data = yaml.load(file) or {}
     except FileNotFoundError:
         # If the file doesn't exist yet, start with a fresh dictionary
         data = {}
 
     with open(config_file, "r") as file:
-        data = yaml.load(file, Loader=yaml.SafeLoader)
+        data = yaml.load(file)
     return data
 
 
@@ -202,7 +204,7 @@ def receipt_output_handling(receipt_path: str)-> dict:
     with open(receipt_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
-    soup = bs.BeautifulSoup(content, 'xml')
+    soup = BeautifulSoup(content, 'xml')
     receipt = soup.find('RECEIPT')
     success = receipt.get('success', 'false').lower() == 'true'
 
@@ -265,10 +267,9 @@ def select_template(template_dir:str, metadata_df:pd.DataFrame, checklist_code: 
 
 
 ### CREATING SAMPLES XML
-def create_samples_file( metadata_path: str, template_dir: str, ena_checklist: str) -> str:
+def create_samples_file(project_name:str,  metadata_path: str, template_dir: str, ena_checklist: str) -> str:
 
     metadata_df = load_metadata(metadata_path)
-    project_name = metadata_df["expid"].iloc[0]
 
     mapping_dict, template_xml, checklist_code = select_template(template_dir, metadata_df, ena_checklist)
     samples_all = []
