@@ -72,7 +72,7 @@ def register_objects(
             template_dir,
             "submission_ADD.xml"
         )
-    elif submission_mode == "MOD":
+    elif submission_mode == "MODIFY":
         print(f'[INFO] Submitting metadata in MODIFY mode')
         submission_path = os.path.join(
             template_dir,
@@ -121,6 +121,8 @@ def register_objects(
 
     # Check all files exist beforehand
     for path in (submission_path, experiment_path, run_path):
+        if path is None:
+            raise ValueError(f"A required path is None — check your config and file naming.")
         if not os.path.exists(path):
             raise FileNotFoundError(f"Required file not found: {path}")
 
@@ -200,22 +202,26 @@ def parse_args():
     parser.add_argument(
         "-s", "--config_path", 
         help="config yaml file containing direcotries for the whole workflow.",
+        required=True,
         type=str
     )
     parser.add_argument(
         "-e", "--experiment_type",
         help="String defining either 16S, WGS or both.",
+        required=True,
         type=str,
         choices=["16S","WGS"]
     )
     parser.add_argument(
         "-u", "--user_password",
         help="User and password for the submission (e.g. user1:password1234).",
+        required=True,
         type=str
     )
     parser.add_argument(
         "-x", "--registration_type",
         help="Registration type: 'y' or 'yes' for permanent; 'n' or 'no' for test. Leave empty for dry run.",
+        required=True,
         type=str,
         default="null",
         choices=['y', 'yes', 'n', 'no', 'null']

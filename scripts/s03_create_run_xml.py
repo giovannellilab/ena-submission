@@ -25,10 +25,10 @@ def main():
     template_dir = get_config_variable(data, "template_dir")
     metadata_file = get_config_variable(data, "metadata_file")
 
-    readmapping_table_wgs = get_config_variable(data,"readmapping_table_wgs")
-    readmapping_table_amp = get_config_variable(data,"readmapping_table_amp")
-    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp")
-    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs")
+    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs", args.experiment_types)
+    readmapping_table_amp = get_config_variable(data, "readmapping_table_amp", args.experiment_types)
+    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp",args.experiment_types)
+    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs",args.experiment_types)
 
     if args.experiment_types == "16S":
         updated_table, table_file = compute_gather_amp(

@@ -15,10 +15,10 @@ def main():
     config_file = args.config_path
     data = read_config(config_file)
 
-    readmapping_table_wgs = get_config_variable(data,"readmapping_table_wgs")
-    readmapping_table_amp = get_config_variable(data,"readmapping_table_amp")
-    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp")
-    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs")
+    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs", args.experiment_type)
+    readmapping_table_amp = get_config_variable(data, "readmapping_table_amp", args.experiment_type)
+    raw_data_dir_amp = get_config_variable(data,"raw_data_dir_amp",args.experiment_type)
+    raw_data_dir_wgs = get_config_variable(data,"raw_data_dir_wgs",args.experiment_type)
 
 
     file_list = gather_files(

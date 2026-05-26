@@ -23,8 +23,8 @@ def main():
     template_dir = get_config_variable(data, "template_dir") 
     metadata_file = get_config_variable(data, "metadata_file") 
     
-    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs")
-    readmapping_table_ampl = get_config_variable(data, "readmapping_table_amplicon")
+    readmapping_table_wgs = get_config_variable(data, "readmapping_table_wgs", args.experiment_type)
+    readmapping_table_amp = get_config_variable(data, "readmapping_table_amp", args.experiment_type)
     recipe = get_config_variable(data, "receipt_samples_permanent") 
     
     sequencing_year = get_config_variable(data, "SEQUENCING_YEAR")
@@ -40,7 +40,7 @@ def main():
         experiment_type=args.experiment_type,
 
         mapping_WGS = readmapping_table_wgs,
-        mapping_AMP = readmapping_table_ampl,
+        mapping_AMP = readmapping_table_amp,
         project_name = project_name,
 
         sequencing_platform = sequencing_platform,
