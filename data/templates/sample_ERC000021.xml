@@ -1,6 +1,5 @@
 <SAMPLE alias="$$$SAMPLE_ALIAS$$$" center_name="">
   <TITLE>$$$SAMPLE_TITLE$$$</TITLE>
-  <DESCRIPTION>$$$SAMPLE_DESCRIPTION$$$</DESCRIPTION>
   <SAMPLE_NAME>
     <TAXON_ID>$$$ENV_TAX_ID$$$</TAXON_ID>
     <SCIENTIFIC_NAME>$$$ENV_SCI_NAME$$$</SCIENTIFIC_NAME>
@@ -45,10 +44,6 @@
     <SAMPLE_ATTRIBUTE>
       <TAG>geographic location (country and/or sea)</TAG>
       <VALUE>$$$LOC$$$</VALUE>
-    </SAMPLE_ATTRIBUTE>
-    <SAMPLE_ATTRIBUTE>
-      <TAG>geographic location (region and locality)</TAG>
-      <VALUE>$$$REGLOC$$$</VALUE>
     </SAMPLE_ATTRIBUTE>
     <SAMPLE_ATTRIBUTE>
       <TAG>depth</TAG>

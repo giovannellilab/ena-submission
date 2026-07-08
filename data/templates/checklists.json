@@ -29,15 +29,14 @@
     "$$$ENV_TAX_ID$$$": "tax_id",
     "$$$ENV_SCI_NAME$$$": "scientific_name",
     "$$$PROJECT_NAME$$$": "project name",
-    "$$$COLLECTION_DATE$$$": "collection_date",
+    "$$$COLLECTION_DATE$$$": "collection date",
     "$$$LATITUDE$$$": "geographic location (latitude)",
     "$$$LONGITUDE$$$": "geographic location (longitude)",
-    "$$$ENV_BROAD$$$": "broad scalenenvironmental context",
+    "$$$ENV_BROAD$$$": "broad-scale environmental context",
     "$$$ENV_LOCAL$$$": "local environmental context",
     "$$$ENV_MEDIUM$$$": "environmental medium",
     "$$$ELEVATION$$$": "elevation",
-    "$$$LOC$$$": "graphic location (country or sea)",
-    "$$$REGLOC$$$": "geographic location (region_and_locality)",
+    "$$$LOC$$$": "geographic location (country and/or sea)",
     "$$$DEPTH$$$" : "depth"
   },
   "ERC000022" : {
