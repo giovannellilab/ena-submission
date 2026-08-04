@@ -184,8 +184,14 @@ def download_one(job, preset, outdir, retries, rate_kbps, log_level):
         logging.info("[%s] %s already exists, skipping", accession, filename)
         return (accession, filename, "SKIPPED")
 
+    # Ensure relative_path starts with a leading slash / for ascli
+    server_path = relative_path if relative_path.startswith("/") else f"/{relative_path}"
+
     command = [
-        "ascli", f"-P{preset}", "server", "download", relative_path,
+        "ascli", 
+        f"--preset={preset}",
+        "server", "download", 
+        server_path,
         f"--to-folder={dest_dir}",
         f"--log-level={log_level}",
     ]
