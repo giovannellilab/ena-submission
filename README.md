@@ -235,10 +235,31 @@ options:
                         config yaml file containing direcotries for the whole workflow.
   -e {16S,WGS} [{16S,WGS} ...], --experiment_types {16S,WGS} [{16S,WGS} ...]
                         String defining either 16S, WGS or both.
-
+```
 
 ## Workflow ENA-data-download
 STEP 1) Download data from ENA database
+First install in your machine the [ASPERA-cli](https://github.com/IBM/aspera-cli) software following the next steps:
+
+Activate conda environment:
+```bash
+conda activate ena
+```
+execute in succession:
+```bash
+bash install-aspera.sh
+bash preset-server.sh
+```
+```bash
+whcih ascli
+```
+You are ready to execute the script by setting the server (for public dataset, use the 'era' server) and passing a file storing run_accession, forward and reverse file name, as below:
+
+| run_accession | forward_file	           | reverse_file            |
+| ------------- | ------------------------ | ----------------------- |
+| ERR14788452   |	QG_220801_BG_1.fastq.gz	 | QG_220801_BG_2.fastq.gz |
+| ERR14788436   |	QG_220801_S_1.fastq.gz	 | QG_220801_S_2.fastq.gz  |
+| ERR14788430   |	QG_220801_F_1.fastq.gz	 | QG_220801_F_2.fastq.gz  |
 
 ```bash
 python3 ena_aspera_download.py -h
