@@ -120,7 +120,7 @@ SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL: Sequencing was carried out by Novogene
 
 ```
 
-## Workflow
+## Workflow ENA-submission/upload
 
 The workflow  is divided into 5 mandatory steps to be executed in numerical order:
 ### Creating and registering sample metadata under projectID
@@ -235,7 +235,71 @@ options:
                         config yaml file containing direcotries for the whole workflow.
   -e {16S,WGS} [{16S,WGS} ...], --experiment_types {16S,WGS} [{16S,WGS} ...]
                         String defining either 16S, WGS or both.
+
+
+## Workflow ENA-data-download
+STEP 1) Download data from ENA database
+
+```bash
+python3 ena_aspera_download.py -h
+
+usage: ena_aspera_download.py [-h] -l TABLE --preset PRESET -o OUTDIR [-t THREADS] [-r RETRIES] [--host HOST] [--rate-kbps RATE_KBPS] [--log-level {error,warn,info,debug}]
+                              [--dry-run]
+
+ena_aspera_download.py
+
+Bulk-downloads ENA read files via Aspera (ascli), in parallel.
+
+Accepts TWO possible kinds of input table, and figures out which one you
+gave it automatically:
+
+  1. A table that already has run_accession + fastq_ftp columns
+     (e.g. straight from the ENA Portal API, or already converted).
+
+  2. A raw Webin Reports Service file report, with id + fileName columns
+     (id = run accession, fileName = your original submitted filename).
+     In this case, the fastq_ftp path is built for you automatically,
+     using ENA's "submitted files" convention:
+         vol1/run/<first 6 chars of accession>/<accession>/<fileName>
+
+Either way, only two things matter for the download step: which run each
+file belongs to, and its path on the server. Everything else in your file
+is ignored.
+
+Prerequisites (must already be done once, outside this script):
+  1. aspera-cli installed (`gem install aspera-cli`) and
+     `ascli config transferd install` run successfully.
+  2. A configured ascli preset, e.g. for public data:
+       ascli conf preset update era --url=ssh://fasp.sra.ebi.ac.uk:33001 \
+         --username=era-fasp \
+         --ssh-keys=@ruby:Fasp::Installation.instance.bypass_keys.first \
+         --ts=@json:'{"target_rate_kbps":300000}'
+
+Usage:
+    python3 ena_aspera_download.py --table runs.tsv --preset era --outdir ./downloads --threads 4
+    python3 ena_aspera_download.py --table runs.tsv --preset era --outdir ./downloads --dry-run
+
+options:
+  -h, --help            show this help message and exit
+  -l TABLE, --table TABLE
+                        Input table: run_accession+fastq_ftp, or id+fileName
+  --preset PRESET       ascli preset name, e.g. 'era' (passed as -P<preset>)
+  -o OUTDIR, --outdir OUTDIR
+                        Output directory (one subfolder per accession)
+  -t THREADS, --threads THREADS
+                        Parallel downloads (default: 4)
+  -r RETRIES, --retries RETRIES
+                        Retries per file (default: 3)
+  --host HOST           Host to use when building paths from id+fileName (default: ftp.sra.ebi.ac.uk)
+  --rate-kbps RATE_KBPS
+                        Optional per-transfer rate cap in kbps
+  --log-level {error,warn,info,debug}
+                        ascli's own log verbosity (default: info)
+  --dry-run             List planned downloads without transferring
+
 ```
+
+'''
 
 <!-- STEP-1) Registering samples
 
@@ -370,4 +434,4 @@ python step3_register_objects.py -i data/HYD22/HYD22_ena_submission.xlsx -t data
 
 ```
 
--->
+'''
