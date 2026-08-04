@@ -179,10 +179,16 @@ options:
 ### Uploading data files (Can be done indepdenlty BUT always before registering)
 
 STEP 4) Upload files: is also executed a number of times N equal to your experiment types. Or in alternitive you can compile a comprehensive sample_table.tsv with all the sequences for all the experiemtnal conditions.
-```bash
-python s04_upload_files.py -h
 
-usage: Uploading raw sequences [-h] [-s CONFIG_PATH] [-e {WGS,16S}] [-n] [-u USERNAME] [-i INTERACTIVE] [--dry_run]
+Aspera: If available you can use aspera-cli sofware for a faste upload rate. Remmeber to define the ENV var with your password first :
+```bash
+export ASPERA_SCP_PASS="your_passw"
+```
+
+```bash
+python scripts/s04_upload_files.py -h
+usage: Uploading raw sequences [-h] [-s CONFIG_PATH] [-e {WGS,16S}] [-n] [-u USERNAME] [-i INTERACTIVE] [-z] [--aspera] [-p PASSWORD]
+
 options:
   -h, --help            show this help message and exit
   -s CONFIG_PATH, --config_path CONFIG_PATH
@@ -194,7 +200,10 @@ options:
                         User for the submission (e.g. user1).
   -i INTERACTIVE, --interactive INTERACTIVE
                         Whether to perform the upload in interactive mode.
-  -z, --dry_run         Execute a dry_run with only printing the command
+  -z, --dry_run         Execute a dry_run with only printing the command.
+  --aspera              Upload via Aspera (ascli) instead of lftp/mput.
+  -p PASSWORD, --password PASSWORD
+                        Webin password, required when --aspera is used. Can also be set via the WEBIN_PASSWORD environment variable to avoid passing it on the command line.
 ```
 You can check the presence of your files in the ENA bay area with your user:password by typing:
 ```bash

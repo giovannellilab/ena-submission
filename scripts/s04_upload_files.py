@@ -7,7 +7,7 @@ import subprocess
 import time
 from ruamel.yaml import YAML
 from ena_utils import read_config, get_config_variable, write_config
-
+import tempfile
 
 def main():
     args = parse_args()
@@ -32,9 +32,11 @@ def main():
 
     upload_files(
         file_list=file_list,
-        username = args.username,
+        username=args.username,
         interactive=args.interactive,
-        dry_run=args.dry_run
+        dry_run=args.dry_run,
+        aspera=args.aspera,
+        password=args.password,
     )
 
 
@@ -131,31 +133,66 @@ def gather_files(
     return all_files
 
 
-def upload_files(file_list: list, username: str,  interactive: bool, dry_run)-> None:
-    # NOTE: ftp will ask for each file confirmation, to disable interactive
-    # mode, issue the prompt command or use -i flag in ftp command. Save
-    # credentials in netrc file
-    if interactive:
-        mput_command =  "mput "+ " ".join(file_list) + "; bye"
+def upload_files(file_list: list, username: str, interactive: bool, dry_run: bool,
+                  aspera: bool = False, password: str = None) -> None:
+    # NOTE (lftp/FTP path): ftp will ask for each file confirmation, to disable
+    # interactive mode, issue the prompt command or use -i flag in ftp command.
+    # Save credentials in netrc file.
+    #
+    # NOTE (aspera/ascli path): ascli's "server" plugin talks directly to the
+    # SSH-based Aspera transfer server ENA exposes on webin.ebi.ac.uk:33001 -
+    # the same server raw `ascp -P33001 ...` connects to. Unlike lftp, ascli
+    # does not read credentials from netrc, so a password must be supplied
+    # explicitly (via --password on the CLI, or by setting the WEBIN_PASSWORD
+    # env var and reading it into args.password before calling this function).
+
+    if aspera:
+        if not password:
+            raise ValueError(
+                "A password is required for Aspera uploads (--password), "
+                "since ascli does not read credentials from netrc."
+            )
+        
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
+            tmp.write("\n".join(file_list) + "\n")
+            manifest_path = tmp.name
+
+        upload_command = [
+            "ascp", "-QT", "-l300M", "-L-", \
+            "--mode", "send", \
+            "--host", "webin.ebi.ac.uk", \
+            "--user", f"{username}", \
+            f"--file-list={manifest_path}", \
+            "."
+        ]
 
     else:
-        mput_command = "mput -c " + " ".join(file_list) + "; bye"
+        if interactive:
+            mput_command = "mput " + " ".join(file_list) + "; bye"
+        else:
+            mput_command = "mput -c " + " ".join(file_list) + "; bye"
 
-    ftp_connection = [
-        "lftp",
-        f"{username}@webin2.ebi.ac.uk",
-        "-e", mput_command
-    ]
-    
-    start_time = time.time() 
+        upload_command = [
+            "lftp",
+            f"{username}@webin2.ebi.ac.uk",
+            "-e", mput_command
+        ]
+
+    start_time = time.time()
 
     try:
         print('Uploading ...')
         if dry_run:
-            print(ftp_connection)
+            # Mask the password in dry-run/printed output so it never ends up
+            # in logs.
+            printable_command = [
+                "--password=****" if arg.startswith("--password=") else arg
+                for arg in upload_command
+            ]
+            print(printable_command)
         else:
-            subprocess.run(ftp_connection, check=True, text=True)
-        
+            subprocess.run(upload_command, check=True, text=True)
+
         print(f"First commmand run")
 
     except subprocess.CalledProcessError as e:
@@ -202,6 +239,16 @@ def parse_args():
     )
     parser.add_argument("-z", "--dry_run", action='store_true',
                         help="Execute a dry_run with only printing the command.")
+
+    parser.add_argument("--aspera", action='store_true',
+                        help="Upload via Aspera (ascli) instead of lftp/mput.")
+
+    parser.add_argument("-p", "--password",
+                        type=str,
+                        default=os.environ.get("WEBIN_PASSWORD"),
+                        help="Webin password, required when --aspera is used. "
+                             "Can also be set via the WEBIN_PASSWORD environment "
+                             "variable to avoid passing it on the command line.")
     
     return parser.parse_args()
 
