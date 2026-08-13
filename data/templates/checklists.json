@@ -5,7 +5,7 @@
     "ERC000047" : "sample_ERC000047",
     "ERC000050" : "sample_ERC000050",
     "ERC000022" : "sample_ERC000022",
-    "ERC000025_1.8" : "sample_ERC000025:1.8"
+    "ERC000025:1.8" : "sample_ERC000025_1.8"
   },
 
   "ERC000025": {
@@ -23,7 +23,7 @@
     "$$$ELEVATION$$$": "elevation",
     "$$$LOC$$$": "geographic location (country and/or sea)"
   },
-  "ERC000025_1.8": {
+  "ERC000025:1.8": {
     "$$$SAMPLE_TITLE$$$": "sample_title",
     "$$$SAMPLE_ALIAS$$$": "sample_alias",
     "$$$ENV_TAX_ID$$$": "tax_id",

@@ -1,5 +1,4 @@
-<SAMPLE_SET>
-  <SAMPLE accession="$$$SAMPLE_ACCESSION$$$" alias="$$$SAMPLE_ALIAS$$$" center_name="$$$CENTER_NAME$$$">
+<SAMPLE accession="$$$SAMPLE_ACCESSION$$$" alias="$$$SAMPLE_ALIAS$$$" center_name="$$$CENTER_NAME$$$">
     <IDENTIFIERS>
       <PRIMARY_ID>$$$SAMPLE_ACCESSION$$$</PRIMARY_ID>
       <SUBMITTER_ID namespace="$$$CENTER_NAME$$$">$$$SAMPLE_ALIAS$$$</SUBMITTER_ID>
@@ -50,5 +49,4 @@
         <VALUE>$$$ENA_CHECKLIST$$$</VALUE>
       </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
-  </SAMPLE>
-</SAMPLE_SET>
+</SAMPLE>
