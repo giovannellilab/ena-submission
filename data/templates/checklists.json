@@ -4,7 +4,8 @@
     "ERC000025" : "sample_ERC000025",
     "ERC000047" : "sample_ERC000047",
     "ERC000050" : "sample_ERC000050",
-    "ERC000022" : "sample_ERC000022"
+    "ERC000022" : "sample_ERC000022",
+    "ERC000025_1.8" : "sample_ERC000025:1.8"
   },
 
   "ERC000025": {
@@ -20,6 +21,20 @@
     "$$$ENV_LOCAL$$$": "local environmental context",
     "$$$ENV_MEDIUM$$$": "environmental medium",
     "$$$ELEVATION$$$": "elevation",
+    "$$$LOC$$$": "geographic location (country and/or sea)"
+  },
+  "ERC000025_1.8": {
+    "$$$SAMPLE_TITLE$$$": "sample_title",
+    "$$$SAMPLE_ALIAS$$$": "sample_alias",
+    "$$$ENV_TAX_ID$$$": "tax_id",
+    "$$$ENV_SCI_NAME$$$": "scientific_name",
+    "$$$PROJECT_NAME$$$": "project name",
+    "$$$COLLECTION_DATE$$$": "collection date",
+    "$$$LATITUDE$$$": "geographic location (latitude)",
+    "$$$LONGITUDE$$$": "geographic location (longitude)",
+    "$$$ENV_BROAD$$$": "broad-scale environmental context",
+    "$$$ENV_LOCAL$$$": "local environmental context",
+    "$$$ENV_MEDIUM$$$": "environmental medium",
     "$$$LOC$$$": "geographic location (country and/or sea)"
   },
   "ERC000021" : {

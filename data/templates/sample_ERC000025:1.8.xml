@@ -1,0 +1,54 @@
+<SAMPLE_SET>
+  <SAMPLE accession="$$$SAMPLE_ACCESSION$$$" alias="$$$SAMPLE_ALIAS$$$" center_name="$$$CENTER_NAME$$$">
+    <IDENTIFIERS>
+      <PRIMARY_ID>$$$SAMPLE_ACCESSION$$$</PRIMARY_ID>
+      <SUBMITTER_ID namespace="$$$CENTER_NAME$$$">$$$SAMPLE_ALIAS$$$</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>$$$SAMPLE_TITLE$$$</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>$$$ENV_TAX_ID$$$</TAXON_ID>
+      <SCIENTIFIC_NAME>$$$ENV_SCI_NAME$$$</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>$$$SAMPLE_DESCRIPTION$$$</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>broad-scale environmental context</TAG>
+        <VALUE>$$$ENV_BROAD$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>collection date</TAG>
+        <VALUE>$$$COLLECTION_DATE$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>environmental medium</TAG>
+        <VALUE>$$$ENV_MEDIUM$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (country and/or sea)</TAG>
+        <VALUE>$$$LOC$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (latitude)</TAG>
+        <VALUE>$$$LATITUDE$$$</VALUE>
+        <UNITS>DD</UNITS>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (longitude)</TAG>
+        <VALUE>$$$LONGITUDE$$$</VALUE>
+        <UNITS>DD</UNITS>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>local environmental context</TAG>
+        <VALUE>$$$ENV_LOCAL$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>project name</TAG>
+        <VALUE>$$$PROJECT_NAME$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-CHECKLIST</TAG>
+        <VALUE>$$$ENA_CHECKLIST$$$</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>
