@@ -31,6 +31,7 @@ def main():
         receipt_df = parse_objects_receipts(
             metadata_path = metadata_file,
             sample_receipt_path = recipe_samples,
+            object_receipt_path = object_receipt,
             experiment_type=experiment_type,
             project_name=project_name
         )
