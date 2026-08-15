@@ -22,12 +22,15 @@ def main():
     metadata_file = get_config_variable(data, "metadata_file")
     sequencing_platform = get_config_variable(data,"SEQUENCING_PLATFORM")
     sequencing_instrument_model = get_config_variable(data,"SEQUENCING_INSTRUMENT_MODEL")
+    recipe_samples = get_config_variable(data, "receipt_samples_permanent")
+    object_receipt = get_config_variable(data, "receipt_objects_permanent")
 
     for experiment_type in args.experiment_types:
 
         print(f"Creating details registration for {experiment_type}")
         receipt_df = parse_objects_receipts(
             metadata_path = metadata_file,
+            sample_receipt_path = recipe_samples,
             experiment_type=experiment_type,
             project_name=project_name
         )
@@ -47,6 +50,8 @@ def main():
 
 def parse_objects_receipts(
     metadata_path: str,
+    sample_receipt_path: str,
+    object_receipt_path: str,
     experiment_type: str,
     project_name: str
 ) -> pd.DataFrame:
@@ -59,10 +64,6 @@ def parse_objects_receipts(
     # WARNING: project name is assumed to be in the first field of the path
     metadata_dir = os.path.dirname(metadata_path)
 
-    sample_receipt_path = os.path.join(
-        metadata_dir,
-        f"{project_name}_ena_samples_receipt.xml"
-    )
     experiment_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_experiment_{experiment_type}.xml"
@@ -70,10 +71,6 @@ def parse_objects_receipts(
     run_path = os.path.join(
         metadata_dir,
         f"{project_name}_ena_run_{experiment_type}.xml"
-    )
-    object_receipt_path = os.path.join(
-        metadata_dir,
-        f"{project_name}_ena_object_receipt_{experiment_type}.xml"
     )
 
     # ------------------------------------------------------------------------ #
