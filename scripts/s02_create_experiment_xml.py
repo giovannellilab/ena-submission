@@ -113,7 +113,7 @@ def create_experiment(
                     .replace("$$$SAMPLE_ACCESSION$$$", row["sample_accession"])\
                     .replace("$$$PLATFORM_TYPE$$$", sequencing_platform)\
                     .replace("$$$SEQ_INSTRUMENT_MODEL$$$", str(sequencing_instrument_model))\
-                    .replace("$$$LIBRARY_PROTOCOL$$$", str(sequencing_library_construction_protocol))\
+                    .replace("$$$SEQUENCING_LIBRARY_CONSTRUCTION_PROTOCOL$$$", str(sequencing_library_construction_protocol))\
                     .replace("$$$YEAR$$$", str(sequencing_year))
 
                 experiment_xml += [template_xml]
